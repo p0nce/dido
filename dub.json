@@ -1,0 +1,13 @@
+{
+	"name": "dido",
+
+	"targetType": "executable",
+	"importPaths": ["."],
+	"sourcePaths": ["."],
+
+	"dependencies": {
+        "gfm:sdl2": "~master",
+        "gfm:math": "~master",
+		"gfm:image": "~master"
+    }
+}
