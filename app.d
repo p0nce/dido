@@ -15,13 +15,13 @@ void main()
 {    
     Logger logger = new NullLogger();
 	auto sdl2 = scoped!SDL2(null);
-
+    auto sdlttf = scoped!SDLTTF(sdl2);
     
 
     string wholeFile = cast(string)(std.file.read("app.d"));
 
 
-    auto _window = scoped!Window(sdl2);
+    auto _window = scoped!Window(sdl2, sdlttf);
 
     bool finished = false;
 

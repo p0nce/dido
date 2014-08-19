@@ -7,7 +7,6 @@
 
 	"dependencies": {
         "gfm:sdl2": "~master",
-        "gfm:math": "~master",
-		"gfm:image": "~master"
+        "gfm:math": "~master"
     }
 }

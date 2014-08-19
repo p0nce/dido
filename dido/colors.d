@@ -7,9 +7,7 @@ import std.algorithm,
 
 public import gfm.math.vector,
               gfm.math.funcs,
-              gfm.math.simplerng,
-              ae.utils.graphics.hls;
-              //gfm.image.hsv;
+              gfm.math.simplerng;
 
 
 vec3ub rgb(int r, int g, int b) pure nothrow
