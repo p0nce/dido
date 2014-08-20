@@ -18,10 +18,10 @@ public:
         _window.setTitle("Dido v0.0.1");
         _renderer = new SDL2Renderer(_window, 0);
 
-        _fontNormal = new Font(sdlttf, renderer, "fonts/consola.ttf", 24);
-        _fontItalic = new Font(sdlttf, renderer, "fonts/consolai.ttf", 24);
-        _fontBold = new Font(sdlttf, renderer, "fonts/consolab.ttf", 24);
-        _fontBoldItalic = new Font(sdlttf, renderer, "fonts/consolaz.ttf", 24);
+        _fontNormal = new Font(sdlttf, renderer, "fonts/consola.ttf", 14);
+        _fontItalic = new Font(sdlttf, renderer, "fonts/consolai.ttf", 14);
+        _fontBold = new Font(sdlttf, renderer, "fonts/consolab.ttf", 14);
+        _fontBoldItalic = new Font(sdlttf, renderer, "fonts/consolaz.ttf", 14);
 
     }
 
@@ -50,17 +50,7 @@ public:
             _window.setFullscreenSetting(0);
     }
 
-    void renderBegin()
-    {
-        _renderer.setViewportFull();
-        _renderer.setColor(12, 12, 12, 255);
-        _renderer.clear();
-    }
 
-    void renderEnd()
-    {
-        _renderer.present();
-    }
 
     SDL2Renderer renderer()
     {
@@ -91,6 +81,16 @@ public:
     int charHeight()
     {
         return _fontNormal.charHeight();
+    }
+
+    int getWidth()
+    {
+        return _window.getWidth();
+    }
+
+    int getHeight()
+    {
+        return _window.getHeight();
     }
 
 private:

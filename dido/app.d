@@ -61,14 +61,37 @@ public:
                 }
             }
 
-            _window.renderBegin();
+            SDL2Renderer renderer = _window.renderer();
+            
+            renderer.setViewportFull();
+            renderer.setColor(23, 23, 23, 255);
+            renderer.clear();
 
+            int width = _window.getWidth();
+            int height = _window.getHeight();
+
+            int widthOfSolutionExplorer = 250;
+            int widthOfLineNumberMargin = 50;
+
+            renderer.setColor(34, 34, 34, 255);
+            renderer.fillRect(0, 0, widthOfSolutionExplorer, height);
+
+            renderer.setColor(28, 28, 28, 255);
+            renderer.fillRect(widthOfSolutionExplorer, 0, widthOfLineNumberMargin, height);
+
+            renderer.setColor(34, 34, 34, 255);
+            renderer.fillRect(width - 32, 0, width, height);
+
+            int marginEditor = 16;
+            
             for (int i = 0; i < _buffer.lines.length; ++i)
             {
                 dstring line = _buffer.lines[i];
+                
+                renderer.setColor(0, 255, 0, 255);
 
-                int posX = -_cameraX + 16;
-                int posY = -_cameraY + i * _window.charHeight();
+                int posX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
+                int posY = -_cameraY + marginEditor + i * _window.charHeight();
                 foreach(dchar ch; line)
                 {
                     _window.renderChar(ch, posX, posY);
@@ -76,7 +99,7 @@ public:
                 }
             }
 
-            _window.renderEnd();
+            renderer.present();
         }
     }
 
