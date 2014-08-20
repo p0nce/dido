@@ -75,7 +75,7 @@ public:
             int charHeight = _window.charHeight();
 
             int widthOfSolutionExplorer = 250;
-            int widthOfLineNumberMargin = charWidth * 5;
+            int widthOfLineNumberMargin = charWidth * 6;
             int widthOfLeftScrollbar = 12;
             int marginScrollbar = 4;
 
@@ -94,12 +94,12 @@ public:
             {
                 dstring line = _buffer.lines[i];
                 dstring lineNumber = to!dstring(i + 1) ~ " ";
-                while (lineNumber.length < 5)
+                while (lineNumber.length < 6)
                 {
                     lineNumber = " "d ~ lineNumber;
                 }
                 
-                _window.setColor(49, 97, 107);
+                _window.setColor(49, 97, 107, 160);
                 _window.renderString(lineNumber, widthOfSolutionExplorer, marginEditor + i * charHeight);
 
                 
@@ -110,11 +110,23 @@ public:
                 {
                     switch (ch)
                     {
-                        case '+', '-', '(', ')', '=', '>', '<', '^', ',', '$', '|', '&', '`', '/', '@', '.', '"', '[', ']':
+                        case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+                            _window.setColor(255, 200, 200);
+                            break;
+
+                        case '+', '-', '=', '>', '<', '^', ',', '$', '|', '&', '`', '/', '@', '.', '"', '[', ']', '?', ':', '\'', '\\':
                             _window.setColor(255, 255, 106);
                             break;
 
-                        case '{', '}':
+                        case '(', ')', ';':
+                            _window.setColor(255, 255, 150);
+                            break;
+
+                        case '{':
+                            _window.setColor(108, 108, 128);
+                            break;
+
+                        case '}':
                             _window.setColor(108, 108, 138);
                             break;
 
@@ -123,7 +135,24 @@ public:
                             break;
                     }
                     
-                    _window.renderChar(ch, posX, posY);
+                    int offsetX = 0;
+                    int offsetY = 0;
+/*
+                    switch (ch)
+                    {
+                        case '(', '{', '[':
+                            offsetX = -1;
+                            break;
+
+                        case ')', '}', ']':
+                            offsetX = +1;
+                            break;
+
+                        default:
+                            break;
+                    }*/
+                    
+                    _window.renderChar(ch, posX + offsetX, posY + offsetY);
                     posX += charWidth;
                 }
             }

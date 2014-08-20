@@ -25,6 +25,7 @@ public:
         _r = 255;
         _g = 255;
         _b = 255;
+        _a = 255;
         _initialized = true;
     }
 
@@ -69,7 +70,8 @@ public:
         foreach(dchar ch; s)
         {
             SDL2Texture tex = _fontNormal.getCharTexture(ch);
-            tex.setColorMod(cast(ubyte)_r, cast(ubyte)_g, cast(ubyte)_b);
+            tex.setColorMod(_r, _g, _b);
+            tex.setAlphaMod(_a);
             _renderer.copy(tex, x, y);
             x += tex.width();
         }
@@ -89,7 +91,7 @@ public:
 
     int charHeight()
     {
-        return _fontNormal.charHeight();
+        return _fontNormal.charHeight() + 1;
     }
 
     int getWidth()
@@ -102,15 +104,16 @@ public:
         return _window.getHeight();
     }
 
-    void setColor(int r, int g, int b)
+    void setColor(int r, int g, int b, int a = 255)
     {
         _r = r;
         _g = g;
         _b = b;
+        _a = a;
     }
 
 private:
-    int _r, _g, _b;
+    int _r, _g, _b, _a;
 
     SDL2Window _window;
     SDL2Renderer _renderer;
