@@ -15,6 +15,6 @@ void main(string[] args)
         inputFiles ~= arg;
     }  
 
-    auto app = scoped!App("main.d");
+    auto app = scoped!App("dido/app.d");
     app.mainLoop();
 }

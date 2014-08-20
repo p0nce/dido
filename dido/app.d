@@ -76,6 +76,8 @@ public:
 
             int widthOfSolutionExplorer = 250;
             int widthOfLineNumberMargin = charWidth * 5;
+            int widthOfLeftScrollbar = 12;
+            int marginScrollbar = 4;
 
             renderer.setColor(34, 34, 34, 255);
             renderer.fillRect(0, 0, widthOfSolutionExplorer, height);
@@ -83,8 +85,8 @@ public:
             renderer.setColor(28, 28, 28, 255);
             renderer.fillRect(widthOfSolutionExplorer, 0, widthOfLineNumberMargin, height);
 
-            renderer.setColor(34, 34, 34, 255);
-            renderer.fillRect(width - 32, 0, width, height);
+            renderer.setColor(34, 34, 34, 128);
+            renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2);
 
             int marginEditor = 16;
             
@@ -100,12 +102,27 @@ public:
                 _window.setColor(49, 97, 107);
                 _window.renderString(lineNumber, widthOfSolutionExplorer, marginEditor + i * charHeight);
 
-                _window.setColor(250, 250, 250);
+                
                 int posX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
                 int posY = -_cameraY + marginEditor + i * charHeight;
                 
                 foreach(dchar ch; line)
                 {
+                    switch (ch)
+                    {
+                        case '+', '-', '(', ')', '=', '>', '<', '^', ',', '$', '|', '&', '`', '/', '@', '.', '"', '[', ']':
+                            _window.setColor(255, 255, 106);
+                            break;
+
+                        case '{', '}':
+                            _window.setColor(108, 108, 138);
+                            break;
+
+                        default:
+                            _window.setColor(250, 250, 250);
+                            break;
+                    }
+                    
                     _window.renderChar(ch, posX, posY);
                     posX += charWidth;
                 }
