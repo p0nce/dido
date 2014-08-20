@@ -25,7 +25,7 @@ public:
         _r = 255;
         _g = 255;
         _b = 255;
-
+        _initialized = true;
     }
 
     ~this()
@@ -35,13 +35,17 @@ public:
 
     void close()
     {
-        _fontBold.close();
-        _fontBoldItalic.close();
-        _fontItalic.close();
-        _fontNormal.close();
+        if (_initialized)
+        {
+            _fontBold.close();
+            _fontBoldItalic.close();
+            _fontItalic.close();
+            _fontNormal.close();
 
-        _renderer.close();
-        _window.close();
+            _renderer.close();
+            _window.close();
+            _initialized = false;
+        }
     }
 
     void toggleFullscreen()
@@ -111,6 +115,7 @@ private:
     SDL2Window _window;
     SDL2Renderer _renderer;
     bool isFullscreen = false;
+    bool _initialized;
 
     Font _fontNormal, _fontItalic, _fontBold, _fontBoldItalic;
 }

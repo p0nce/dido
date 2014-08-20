@@ -15,6 +15,8 @@ public:
 
         _charWidth = makeCharTexture('A').width();
         _charHeight = makeCharTexture('A').height();
+
+        _initialized = true;
     }
 
     ~this()
@@ -24,9 +26,13 @@ public:
 
     void close()
     {
-        foreach (tex; _glyphCache)
-            tex.close();
-        _font.close();
+        if (_initialized)
+        {
+            foreach (tex; _glyphCache)
+                tex.close();
+            _font.close();
+            _initialized = false;
+        }
     }
 
     SDL2Texture getCharTexture(dchar ch)
@@ -61,4 +67,5 @@ private:
     SDL2Texture[dchar] _glyphCache;
     int _charWidth;
     int _charHeight;
+    bool _initialized;
 }

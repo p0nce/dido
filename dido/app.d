@@ -100,7 +100,7 @@ public:
                 _window.setColor(49, 97, 107);
                 _window.renderString(lineNumber, widthOfSolutionExplorer, marginEditor + i * charHeight);
 
-                _window.setColor(0, 255, 0);
+                _window.setColor(250, 250, 250);
                 int posX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
                 int posY = -_cameraY + marginEditor + i * charHeight;
                 
