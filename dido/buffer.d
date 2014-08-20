@@ -7,7 +7,7 @@ import std.conv;
 
 // text buffers
 
-class Buffer
+final class Buffer
 {
     this()
     {
@@ -15,7 +15,9 @@ class Buffer
 
     void loadFromFile(string path)
     {
-        lines = splitLines!(dstring)( cast(dstring)( readText(path) ) );
+        string wholeFile = readText(path);
+        dstring wholeFileUTF32 = to!dstring( wholeFile );
+        lines = splitLines!(dstring)( wholeFileUTF32 );
     }
 
     void saveToFile(string path)

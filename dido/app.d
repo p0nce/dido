@@ -8,7 +8,7 @@ import gfm.math;
 import dido.buffer;
 import dido.window;
 
-class App
+final class App
 {
 public:
     this(string path)
@@ -61,12 +61,31 @@ public:
                 }
             }
 
-            _window.render();
+            _window.renderBegin();
+
+            for (int i = 0; i < _buffer.lines.length; ++i)
+            {
+                dstring line = _buffer.lines[i];
+
+                int posX = -_cameraX + 16;
+                int posY = -_cameraY + i * _window.charHeight();
+                foreach(dchar ch; line)
+                {
+                    _window.renderChar(ch, posX, posY);
+                    posX += _window.charWidth();
+                }
+            }
+
+            _window.renderEnd();
         }
     }
 
 
 private:
+
+    int _cameraX = 0;
+    int _cameraY = 0;
+
     bool _finished;
     SDL2 _sdl2;
     SDLTTF _sdlttf;

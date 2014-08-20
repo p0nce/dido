@@ -3,7 +3,7 @@ module dido.window;
 import gfm.sdl2;
 import dido.font;
 
-class Window
+final class Window
 {
 public:
     this(SDL2 sdl2, SDLTTF sdlttf)
@@ -50,17 +50,15 @@ public:
             _window.setFullscreenSetting(0);
     }
 
-    void render()
+    void renderBegin()
     {
         _renderer.setViewportFull();
         _renderer.setColor(12, 12, 12, 255);
         _renderer.clear();
+    }
 
-        renderString(_fontNormal, "Hello", 15, 15);
-        renderString(_fontBold, "Hello", 15, 60);
-        renderString(_fontItalic, "Hello", 15, 120);
-        renderString(_fontBoldItalic, "Hello", 15, 180);
-
+    void renderEnd()
+    {
         _renderer.present();
     }
 
@@ -69,15 +67,30 @@ public:
         return _renderer;
     }
 
-    void renderString(Font font, string s, int x, int y)
+    void renderString(dstring s, int x, int y)
     {
         foreach(dchar ch; s)
         {
-            SDL2Texture tex = font.getCharTexture(ch);
-
+            SDL2Texture tex = _fontNormal.getCharTexture(ch);
             _renderer.copy(tex, x, y);
             x += tex.width();
         }
+    }
+
+    void renderChar(dchar ch, int x, int y)
+    {
+        SDL2Texture tex = _fontNormal.getCharTexture(ch);
+        _renderer.copy(tex, x, y);
+    }
+
+    int charWidth()
+    {
+        return _fontNormal.charWidth();
+    }
+
+    int charHeight()
+    {
+        return _fontNormal.charHeight();
     }
 
 private:
@@ -87,5 +100,4 @@ private:
     bool isFullscreen = false;
 
     Font _fontNormal, _fontItalic, _fontBold, _fontBoldItalic;
-
 }

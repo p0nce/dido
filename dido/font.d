@@ -3,7 +3,7 @@ module dido.font;
 import std.conv;
 import gfm.sdl2;
 
-class Font
+final class Font
 {
 public:
     this(SDLTTF sdlttf, SDL2Renderer renderer, string fontface, int ptSize)
@@ -12,6 +12,9 @@ public:
         _renderer = renderer;
 
         _font = new SDLFont(_sdlttf, fontface, ptSize);
+
+        _charWidth = makeCharTexture('A').width();
+        _charHeight = makeCharTexture('A').height();
     }
 
     ~this()
@@ -40,10 +43,22 @@ public:
         return new SDL2Texture(_renderer, surface);
     }
 
+    int charWidth()
+    {
+        return _charWidth;
+    }
+
+    int charHeight()
+    {
+        return _charHeight;
+    }
+
 
 private:
     SDLTTF _sdlttf;
     SDL2Renderer _renderer;
     SDLFont _font;
     SDL2Texture[dchar] _glyphCache;
+    int _charWidth;
+    int _charHeight;
 }
