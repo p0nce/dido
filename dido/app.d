@@ -1,6 +1,8 @@
 module dido.app;
 
 import std.file;
+import std.conv;
+
 import gfm.sdl2;
 import gfm.math;
 
@@ -69,9 +71,11 @@ public:
 
             int width = _window.getWidth();
             int height = _window.getHeight();
+            int charWidth = _window.charWidth();
+            int charHeight = _window.charHeight();
 
             int widthOfSolutionExplorer = 250;
-            int widthOfLineNumberMargin = 50;
+            int widthOfLineNumberMargin = charWidth * 5;
 
             renderer.setColor(34, 34, 34, 255);
             renderer.fillRect(0, 0, widthOfSolutionExplorer, height);
@@ -87,15 +91,23 @@ public:
             for (int i = 0; i < _buffer.lines.length; ++i)
             {
                 dstring line = _buffer.lines[i];
+                dstring lineNumber = to!dstring(i + 1) ~ " ";
+                while (lineNumber.length < 5)
+                {
+                    lineNumber = " "d ~ lineNumber;
+                }
                 
-                renderer.setColor(0, 255, 0, 255);
+                _window.setColor(49, 97, 107);
+                _window.renderString(lineNumber, widthOfSolutionExplorer, marginEditor + i * charHeight);
 
+                _window.setColor(0, 255, 0);
                 int posX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
-                int posY = -_cameraY + marginEditor + i * _window.charHeight();
+                int posY = -_cameraY + marginEditor + i * charHeight;
+                
                 foreach(dchar ch; line)
                 {
                     _window.renderChar(ch, posX, posY);
-                    posX += _window.charWidth();
+                    posX += charWidth;
                 }
             }
 

@@ -22,6 +22,9 @@ public:
         _fontItalic = new Font(sdlttf, renderer, "fonts/consolai.ttf", 14);
         _fontBold = new Font(sdlttf, renderer, "fonts/consolab.ttf", 14);
         _fontBoldItalic = new Font(sdlttf, renderer, "fonts/consolaz.ttf", 14);
+        _r = 255;
+        _g = 255;
+        _b = 255;
 
     }
 
@@ -62,6 +65,7 @@ public:
         foreach(dchar ch; s)
         {
             SDL2Texture tex = _fontNormal.getCharTexture(ch);
+            tex.setColorMod(cast(ubyte)_r, cast(ubyte)_g, cast(ubyte)_b);
             _renderer.copy(tex, x, y);
             x += tex.width();
         }
@@ -70,6 +74,7 @@ public:
     void renderChar(dchar ch, int x, int y)
     {
         SDL2Texture tex = _fontNormal.getCharTexture(ch);
+        tex.setColorMod(_r, _g, _b);
         _renderer.copy(tex, x, y);
     }
 
@@ -93,7 +98,15 @@ public:
         return _window.getHeight();
     }
 
+    void setColor(int r, int g, int b)
+    {
+        _r = r;
+        _g = g;
+        _b = b;
+    }
+
 private:
+    int _r, _g, _b;
 
     SDL2Window _window;
     SDL2Renderer _renderer;
