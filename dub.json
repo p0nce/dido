@@ -6,7 +6,7 @@
 	"sourcePaths": ["."],
 
 	"dependencies": {
-        "gfm:sdl2": "~master",
-        "gfm:math": "~master"
+        "gfm:sdl2": "~>1.1.9",
+        "gfm:math": "~>1.1.9"
     }
 }
