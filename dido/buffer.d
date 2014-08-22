@@ -26,7 +26,11 @@ final class Buffer
         foreach(ref dstring line; lines)
         {
             result ~= cast(ubyte[])( to!string(line) );
-            result ~= 0x10;
+
+            version(Windows)
+                result ~= 0x0D;
+
+            result ~= 0x0A;
         }
         std.file.write(path, result);
     }
