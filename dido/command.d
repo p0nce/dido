@@ -14,12 +14,26 @@ enum CommandType
     TOGGLE_FULLSCREEN,
     ENTER_COMMANDLINE_MODE, 
     EXIT, 
-    RETURN
+    RETURN,
+    INSERT_CHAR,
+    BACKSPACE
 }
 
 struct Command
 {
+    this(CommandType type_)
+    {
+        type = type_;
+    }
+
+    this(CommandType type_, dchar ch_)
+    {
+        type = type_;
+        ch = ch_;
+    }
+
     CommandType type;
+    dchar ch;
 }
 
 

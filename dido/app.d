@@ -5,6 +5,7 @@ import std.conv;
 
 import gfm.sdl2;
 import gfm.math;
+import gfm.core;
 
 
 import dido.buffer;
@@ -27,6 +28,8 @@ public:
         _sdl2 = new SDL2(null);
         _sdlttf = new SDLTTF(_sdl2);
         _window = new Window(_sdl2, _sdlttf);
+
+        _sdl2.startTextInput();
     }
 
     ~this()
@@ -36,6 +39,7 @@ public:
 
     void close()
     {
+        _sdl2.stopTextInput();
 //        _buffer.close();
         _window.close();
         _sdlttf.close();
@@ -63,18 +67,19 @@ public:
             int widthOfLineNumberMargin = charWidth * 6;
             int widthOfLeftScrollbar = 12;
             int marginScrollbar = 4;
+            int marginCmdline = 4;
+
+            int heightOfTopBar = 8 + charHeight;
+            int heightOfCommandLineBar = 8 + charHeight;
 
             renderer.setColor(34, 34, 34, 255);
-            renderer.fillRect(0, 0, widthOfSolutionExplorer, height);
+            renderer.fillRect(0, heightOfTopBar, widthOfSolutionExplorer, height - heightOfCommandLineBar - heightOfTopBar);
 
             renderer.setColor(28, 28, 28, 255);
-            renderer.fillRect(widthOfSolutionExplorer, 0, widthOfLineNumberMargin, height);
+            renderer.fillRect(widthOfSolutionExplorer, heightOfTopBar, widthOfLineNumberMargin, height - heightOfCommandLineBar - heightOfTopBar);
 
             renderer.setColor(34, 34, 34, 128);
-            renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2);
-
-            // command-line box: TODO
-
+            renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, heightOfTopBar + marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2 - heightOfCommandLineBar - heightOfTopBar);
 
             int marginEditor = 16;
             
@@ -88,11 +93,11 @@ public:
                 }
                 
                 _window.setColor(49, 97, 107, 160);
-                _window.renderString(lineNumber, widthOfSolutionExplorer, marginEditor + i * charHeight);
+                _window.renderString(lineNumber, -_cameraX + widthOfSolutionExplorer, -_cameraY + marginEditor + i * charHeight + heightOfTopBar);
 
                 
                 int posX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
-                int posY = -_cameraY + marginEditor + i * charHeight;
+                int posY = -_cameraY + marginEditor + heightOfTopBar + i * charHeight;
                 
                 foreach(dchar ch; line)
                 {
@@ -128,6 +133,20 @@ public:
                 }
             }
 
+            renderer.setColor(14, 14, 14, 230);
+            renderer.fillRect(0, 0,  width, heightOfTopBar);
+
+            renderer.setColor(14, 14, 14, 230);            
+            renderer.fillRect(0, height - heightOfCommandLineBar,  width, heightOfCommandLineBar);
+
+            if (_commandLineMode)
+            {
+                _window.setColor(255, 255, 0, 255);
+                _window.renderString(":", 4, height - heightOfCommandLineBar + 4);
+                _window.setColor(255, 255, 255, 255);
+                _window.renderString(_currentCommandLine, 4 + charWidth, height - heightOfCommandLineBar + 4);
+            }
+
             renderer.present();
         }
     }
@@ -140,13 +159,13 @@ private:
 
     bool _finished;
     bool _commandLineMode;
-    string _currentCommandLine;
+    dstring _currentCommandLine;
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
     Buffer _buffer;
 
-    void executeCommandLine(string cmdline)
+    void executeCommandLine(dstring cmdline)
     {
         // TODO
     }
@@ -155,12 +174,24 @@ private:
     {
         final switch (command.type) with (CommandType)
         {            
-            case MOVE_LEFT:
-            case MOVE_RIGHT:
             case MOVE_UP:
+                _cameraY -= 1;
+                break;
             case MOVE_DOWN:
+                _cameraY += 1;
+                break;
+
+            case MOVE_LEFT:
+                _cameraX -= 1;
+                break;
+
+            case MOVE_RIGHT:            
+                _cameraX += 1;
+                break;
+
             case MOVE_LINE_END:
             case MOVE_LINE_BEGIN:
+                break;
 
             case TOGGLE_FULLSCREEN:
                 _window.toggleFullscreen();
@@ -175,7 +206,18 @@ private:
                 }
                 else
                 {
-                    
+                    // pressing : in command-line mode leaves it and insert ":"
+                    // TODO insert :
+                    _commandLineMode = false;                    
+                }
+                break;
+
+            case BACKSPACE:
+                if (_commandLineMode)
+                {
+                    if (_currentCommandLine.length > 0)
+                        _currentCommandLine = _currentCommandLine[0..$-1];
+
                 }
                 break;
             
@@ -196,6 +238,15 @@ private:
                     _commandLineMode = false;
                 else
                     _finished = true;
+                break;
+
+            case INSERT_CHAR:
+                if (_commandLineMode)
+                    _currentCommandLine ~= cast(dchar)(command.ch);
+                else
+                {
+                    // TODO
+                }
                 break;
         }
     }
@@ -226,9 +277,34 @@ private:
                         else if (key.sym == SDLK_UP)
                             commands ~= Command(CommandType.MOVE_UP);
                         else if (key.sym == SDLK_DOWN)
-                            commands ~= Command(CommandType.MOVE_DOWN);                        
+                            commands ~= Command(CommandType.MOVE_DOWN);
+                        else if (key.sym == SDLK_BACKSPACE)
+                            commands ~= Command(CommandType.BACKSPACE);
+                                 
+                        else 
+                        {
+                        }
                         break;
                     }
+
+                case SDL_TEXTINPUT:
+                    {
+                        string s = sanitizeUTF8(event.text.text.ptr);
+
+                        if (s == ":")
+                        {
+                            commands ~= Command(CommandType.ENTER_COMMANDLINE_MODE);
+                        }
+                        else
+                        {
+                            dstring ds = to!dstring(s);
+
+                            foreach(ch; ds)
+                                commands ~= Command(CommandType.INSERT_CHAR, ch);
+                        }
+                    }
+                    break;
+
                 default:
                     break;
             }
