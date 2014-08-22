@@ -6,3 +6,4 @@ public import dido.colors;
 public import dido.window;
 public import dido.buffer;
 public import dido.app;
+public import dido.command;

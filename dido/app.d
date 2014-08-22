@@ -9,6 +9,7 @@ import gfm.math;
 
 import dido.buffer;
 import dido.window;
+import dido.command;
 
 final class App
 {
@@ -20,6 +21,8 @@ public:
 
 
         _finished = false;
+        _commandLineMode = false;
+        _currentCommandLine = "";
 
         _sdl2 = new SDL2(null);
         _sdlttf = new SDLTTF(_sdl2);
@@ -42,26 +45,8 @@ public:
     void mainLoop()
     {
         while(!_sdl2.wasQuitRequested() && !_finished)
-        {
-
-            SDL_Event event;
-            while (_sdl2.pollEvent(&event))
-            {
-                switch (event.type)
-                {
-                    case SDL_KEYDOWN:
-                        {
-                            auto key = event.key.keysym;
-                            if (key.sym == SDLK_RETURN && ((key.mod & KMOD_ALT) != 0))
-                                _window.toggleFullscreen();
-                            else if (key.sym == SDLK_ESCAPE)
-                                _finished = true;
-                            break;
-                        }
-                    default:
-                        break;
-                }
-            }
+        {     
+            pollCommandsFromKeyboard();
 
             SDL2Renderer renderer = _window.renderer();
             
@@ -87,6 +72,9 @@ public:
 
             renderer.setColor(34, 34, 34, 128);
             renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2);
+
+            // command-line box: TODO
+
 
             int marginEditor = 16;
             
@@ -135,24 +123,7 @@ public:
                             break;
                     }
                     
-                    int offsetX = 0;
-                    int offsetY = 0;
-/*
-                    switch (ch)
-                    {
-                        case '(', '{', '[':
-                            offsetX = -1;
-                            break;
-
-                        case ')', '}', ']':
-                            offsetX = +1;
-                            break;
-
-                        default:
-                            break;
-                    }*/
-                    
-                    _window.renderChar(ch, posX + offsetX, posY + offsetY);
+                    _window.renderChar(ch, posX, posY);
                     posX += charWidth;
                 }
             }
@@ -168,8 +139,102 @@ private:
     int _cameraY = 0;
 
     bool _finished;
+    bool _commandLineMode;
+    string _currentCommandLine;
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
     Buffer _buffer;
+
+    void executeCommandLine(string cmdline)
+    {
+        // TODO
+    }
+
+    void execute(Command command)
+    {
+        final switch (command.type) with (CommandType)
+        {            
+            case MOVE_LEFT:
+            case MOVE_RIGHT:
+            case MOVE_UP:
+            case MOVE_DOWN:
+            case MOVE_LINE_END:
+            case MOVE_LINE_BEGIN:
+
+            case TOGGLE_FULLSCREEN:
+                _window.toggleFullscreen();
+                break;
+
+
+            case ENTER_COMMANDLINE_MODE:
+                if (!_commandLineMode)
+                {
+                    _currentCommandLine = "";
+                    _commandLineMode = true;
+                }
+                else
+                {
+                    
+                }
+                break;
+            
+            case RETURN:
+                if (_commandLineMode)
+                {
+                    executeCommandLine(_currentCommandLine);
+                    goto case EXIT;
+                }
+                else
+                {
+                    // TODO
+                    break;
+                }
+
+            case EXIT:
+                if (_commandLineMode)
+                    _commandLineMode = false;
+                else
+                    _finished = true;
+                break;
+        }
+    }
+
+
+    // retrieve list of commands to execute given by keyboard input
+    void pollCommandsFromKeyboard()
+    {
+        Command[] commands;
+        SDL_Event event;
+        while (_sdl2.pollEvent(&event))
+        {
+            switch (event.type)
+            {
+                case SDL_KEYDOWN:
+                    {
+                        auto key = event.key.keysym;
+                        if (key.sym == SDLK_RETURN && ((key.mod & KMOD_ALT) != 0))
+                            commands ~= Command(CommandType.TOGGLE_FULLSCREEN);                            
+                        else if (key.sym == SDLK_ESCAPE)
+                            commands ~= Command(CommandType.EXIT);
+                        else if (key.sym == SDLK_RETURN)
+                            commands ~= Command(CommandType.RETURN);
+                        else if (key.sym == SDLK_LEFT)
+                            commands ~= Command(CommandType.MOVE_LEFT);
+                        else if (key.sym == SDLK_RIGHT)
+                            commands ~= Command(CommandType.MOVE_RIGHT);
+                        else if (key.sym == SDLK_UP)
+                            commands ~= Command(CommandType.MOVE_UP);
+                        else if (key.sym == SDLK_DOWN)
+                            commands ~= Command(CommandType.MOVE_DOWN);                        
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
+
+        foreach (cmd; commands)
+            execute(cmd);
+    }    
 }
