@@ -17,13 +17,14 @@ final class App
 public:
     this(string path)
     {
-        _buffer = new Buffer();
+        _buffer = new CursorBuffer();
         _buffer.loadFromFile(path);
 
 
         _finished = false;
         _commandLineMode = false;
         _currentCommandLine = "";
+        _statusLine = "";
 
         _sdl2 = new SDL2(null);
         _sdlttf = new SDLTTF(_sdl2);
@@ -83,9 +84,9 @@ public:
 
             int marginEditor = 16;
             
-            for (int i = 0; i < _buffer.lines.length; ++i)
+            for (int i = 0; i < _buffer.numLines(); ++i)
             {
-                dstring line = _buffer.lines[i];
+                dstring line = _buffer.line(i);
                 dstring lineNumber = to!dstring(i + 1) ~ " ";
                 while (lineNumber.length < 6)
                 {
@@ -139,12 +140,25 @@ public:
             renderer.setColor(14, 14, 14, 230);            
             renderer.fillRect(0, height - heightOfCommandLineBar,  width, heightOfCommandLineBar);
 
-            if (_commandLineMode)
             {
-                _window.setColor(255, 255, 0, 255);
-                _window.renderString(":", 4, height - heightOfCommandLineBar + 4);
-                _window.setColor(255, 255, 255, 255);
-                _window.renderString(_currentCommandLine, 4 + charWidth, height - heightOfCommandLineBar + 4);
+                // commandline bar at bottom
+
+                int textPosx = 4 + charWidth;
+                int textPosy = height - heightOfCommandLineBar + 4;
+
+                if (_commandLineMode)
+                {
+                    _window.setColor(255, 255, 0, 255);
+                    _window.renderString(":", 4, height - heightOfCommandLineBar + 4);
+                    _window.setColor(255, 255, 128, 255);
+                    _window.renderString(_currentCommandLine, textPosx, textPosy);
+                }
+                else
+                {
+                    // Write status line
+                    _window.setColor(_statusColor.r, _statusColor.g, _statusColor.b, 255);
+                    _window.renderString(_statusLine, textPosx, textPosy);
+                }
             }
 
             renderer.present();
@@ -160,14 +174,29 @@ private:
     bool _finished;
     bool _commandLineMode;
     dstring _currentCommandLine;
+    dstring _statusLine;
+    vec3i _statusColor;
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
-    Buffer _buffer;
+    CursorBuffer _buffer;
 
     void executeCommandLine(dstring cmdline)
     {
-        // TODO
+        vec3i green = vec3i(0, 255, 0);
+        vec3i yellow = vec3i(255, 255, 0);
+        vec3i red = vec3i(255, 0, 0);
+        if (cmdline == "exit")
+        {
+            _finished = true;
+            _statusLine = "OK";
+            _statusColor = green;
+        }
+        else
+        {
+            _statusLine = to!dstring(format("Unknown command '%s'"d, cmdline));
+            _statusColor = red;
+        }
     }
 
     void execute(Command command)
