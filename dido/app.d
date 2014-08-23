@@ -17,7 +17,7 @@ final class App
 public:
     this(string path)
     {
-        _buffer = new CursorBuffer();
+        _buffer = new SelectionBuffer();
         _buffer.loadFromFile(path);
 
 
@@ -80,9 +80,13 @@ public:
             renderer.fillRect(widthOfSolutionExplorer, heightOfTopBar, widthOfLineNumberMargin, height - heightOfCommandLineBar - heightOfTopBar);
 
             renderer.setColor(34, 34, 34, 128);
+
             renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, heightOfTopBar + marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2 - heightOfCommandLineBar - heightOfTopBar);
 
             int marginEditor = 16;
+
+            int editPosX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
+            int editPosY = -_cameraY + marginEditor + heightOfTopBar;
             
             for (int i = 0; i < _buffer.numLines(); ++i)
             {
@@ -94,11 +98,11 @@ public:
                 }
                 
                 _window.setColor(49, 97, 107, 160);
-                _window.renderString(lineNumber, -_cameraX + widthOfSolutionExplorer, -_cameraY + marginEditor + i * charHeight + heightOfTopBar);
+                _window.renderString(lineNumber, widthOfSolutionExplorer, -_cameraY + marginEditor + i * charHeight + heightOfTopBar);
 
-                
-                int posX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
-                int posY = -_cameraY + marginEditor + heightOfTopBar + i * charHeight;
+
+                int posX = editPosX;
+                int posY = editPosY + i * charHeight;
                 
                 foreach(dchar ch; line)
                 {
@@ -132,6 +136,13 @@ public:
                     _window.renderChar(ch, posX, posY);
                     posX += charWidth;
                 }
+            }
+
+            // draw cursors
+            SelectionSet selset = _buffer.selectionSet;
+            foreach(Selection sel; selset.selections)
+            {
+                renderSelection(renderer, editPosX, editPosY, sel);
             }
 
             renderer.setColor(14, 14, 14, 230);
@@ -179,7 +190,7 @@ private:
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
-    CursorBuffer _buffer;
+    SelectionBuffer _buffer;
 
     void executeCommandLine(dstring cmdline)
     {
@@ -342,4 +353,16 @@ private:
         foreach (cmd; commands)
             execute(cmd);
     }    
+
+    void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
+    {
+        int startX = offsetX + selection.column * _window.charWidth();
+        int startY = offsetY + selection.line * _window.charHeight();
+
+        // draw the cursor part
+        renderer.setColor(255, 255, 255, 255);
+        renderer.fillRect(startX, startY, 1, _window.charHeight() - 1);
+
+        // TODO draw extent
+    }
 }

@@ -5,16 +5,19 @@ import std.file;
 import std.string;
 import std.conv;
 
-struct Cursor
+struct Selection
 {
-    union
+    int line;
+    int column;
+    int extent; // 0 => cursor not selection
+
+    int opCmp(ref const(Selection) other)
     {
-        struct
-        {
-            int line;
-            int column;
-        }
-        ulong as64b;
+        if (line != other.line)
+            return line - other.line;
+        if (column != other.column)
+            return column - other.column;
+        return 0;
     }
 }
 
@@ -27,6 +30,7 @@ public:
     {
     }
 
+    // load file in buffer, non-conrofming utf-8 is lost
     final void loadFromFile(string path)
     {
         string wholeFile = readText(path);
@@ -34,6 +38,7 @@ public:
         lines = splitLines!(dstring)( wholeFileUTF32 );
     }
 
+    // save file using OS end-of-lines
     final void saveToFile(string path)
     {
         ubyte[] result;
@@ -73,52 +78,50 @@ private:
     dstring[] lines;
 }
 
-class CursorSet
+class SelectionSet
 {
-    Cursor[] cursors;
+    Selection[] selections;
 
     this()
     {
         // always have a cursor
-        cursors ~= Cursor(0, 0);
+        selections ~= Selection(0, 0, 0);
     }
 
     void removeDuplicate()
     {
         import std.algorithm;
         import std.array;
-        cursors = cursors.uniq.array;
+        selections = selections.uniq.array;
     }
 
     void sortCursors()
     {
         // sort cursors
         import std.algorithm;
-        sort!("a.as64b < b.as64b", SwapStrategy.stable)(cursors);
+        sort!("a < b", SwapStrategy.stable)(selections);
     }
 
     void keepOnlyFirst()
     {
-        cursors = cursors[0..1];
+        selections = selections[0..1];
     }
 }
 
 // A buffer + cursors
-class CursorBuffer
+class SelectionBuffer
 {
-
 public:
-
     Buffer buffer;
     alias buffer this;
 
     this()
     {
         buffer = new Buffer();
-        cursors = new CursorSet();
+        selectionSet = new SelectionSet();
     }
 
-    CursorSet cursors;
+    SelectionSet selectionSet;
 private:
 
 }
