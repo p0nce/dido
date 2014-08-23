@@ -7,8 +7,15 @@ import std.conv;
 
 struct Cursor
 {
-    int line;
-    int column;
+    union
+    {
+        struct
+        {
+            int line;
+            int column;
+        }
+        ulong as64b;
+    }
 }
 
 // text buffers
@@ -70,19 +77,36 @@ class CursorSet
 {
     Cursor[] cursors;
 
+    this()
+    {
+        // always have a cursor
+        cursors ~= Cursor(0, 0);
+    }
+
     void removeDuplicate()
     {
         import std.algorithm;
         import std.array;
         cursors = cursors.uniq.array;
     }
+
+    void sortCursors()
+    {
+        // sort cursors
+        import std.algorithm;
+        sort!("a.as64b < b.as64b", SwapStrategy.stable)(cursors);
+    }
+
+    void keepOnlyFirst()
+    {
+        cursors = cursors[0..1];
+    }
 }
 
 // A buffer + cursors
 class CursorBuffer
 {
-private:
-    
+
 public:
 
     Buffer buffer;
@@ -91,9 +115,10 @@ public:
     this()
     {
         buffer = new Buffer();
+        cursors = new CursorSet();
     }
 
-    Cursor[] cursors;
+    CursorSet cursors;
 private:
 
 }
