@@ -5,21 +5,8 @@ import std.file;
 import std.string;
 import std.conv;
 
-struct Selection
-{
-    int line;
-    int column;
-    int extent; // 0 => cursor not selection
+import dido.selection;
 
-    int opCmp(ref const(Selection) other)
-    {
-        if (line != other.line)
-            return line - other.line;
-        if (column != other.column)
-            return column - other.column;
-        return 0;
-    }
-}
 
 // text buffers
 
@@ -66,7 +53,7 @@ public:
 
     int lastColumn(int lineIndex) pure const nothrow
     {
-        return lines.length;
+        return lines[lineIndex].length;
     }
 
     dstring line(int lineIndex) pure const nothrow
@@ -78,35 +65,6 @@ private:
     dstring[] lines;
 }
 
-class SelectionSet
-{
-    Selection[] selections;
-
-    this()
-    {
-        // always have a cursor
-        selections ~= Selection(0, 0, 0);
-    }
-
-    void removeDuplicate()
-    {
-        import std.algorithm;
-        import std.array;
-        selections = selections.uniq.array;
-    }
-
-    void sortCursors()
-    {
-        // sort cursors
-        import std.algorithm;
-        sort!("a < b", SwapStrategy.stable)(selections);
-    }
-
-    void keepOnlyFirst()
-    {
-        selections = selections[0..1];
-    }
-}
 
 // A buffer + cursors
 class SelectionBuffer
@@ -119,6 +77,11 @@ public:
     {
         buffer = new Buffer();
         selectionSet = new SelectionSet();
+    }
+
+    void moveSelection(int dx, int dy)
+    {
+        selectionSet.move(buffer, dx, dy);
     }
 
     SelectionSet selectionSet;

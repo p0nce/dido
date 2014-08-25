@@ -11,6 +11,7 @@ import gfm.core;
 import dido.buffer;
 import dido.window;
 import dido.command;
+import dido.selection;
 
 final class App
 {
@@ -215,18 +216,18 @@ private:
         final switch (command.type) with (CommandType)
         {            
             case MOVE_UP:
-                _cameraY -= 1;
+                _buffer.moveSelection(0, -1);                
                 break;
             case MOVE_DOWN:
-                _cameraY += 1;
+                _buffer.moveSelection(0, 1);
                 break;
 
             case MOVE_LEFT:
-                _cameraX -= 1;
+                _buffer.moveSelection(-1, 0);
                 break;
 
             case MOVE_RIGHT:            
-                _cameraX += 1;
+                _buffer.moveSelection(+1, 0);
                 break;
 
             case MOVE_LINE_END:
@@ -356,12 +357,22 @@ private:
 
     void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
     {
-        int startX = offsetX + selection.column * _window.charWidth();
-        int startY = offsetY + selection.line * _window.charHeight();
+        int startX = offsetX + selection.start.column * _window.charWidth();
+        int startY = offsetY + selection.start.line * _window.charHeight();
 
         // draw the cursor part
         renderer.setColor(255, 255, 255, 255);
         renderer.fillRect(startX, startY, 1, _window.charHeight() - 1);
+
+        if (selection.hasSelectedArea)
+        {
+            int stopX = offsetX + selection.stop.column * _window.charWidth();
+            int stopY = offsetY + selection.stop.line * _window.charHeight();
+
+            // draw the cursor part
+            renderer.setColor(128, 128, 128, 255);
+            renderer.fillRect(stopX, stopY, 1, _window.charHeight() - 1);
+        }
 
         // TODO draw extent
     }
