@@ -34,14 +34,19 @@ public:
     final void saveToFile(string path)
     {
         ubyte[] result;
-        foreach(ref dstring line; lines)
+        foreach(ref dstring dline; lines)
         {
-            result ~= cast(ubyte[])( to!string(line) );
+            string line = to!string(dline);
 
-            /*version(Windows)
-                result ~= 0x0D;
+            version(Windows)
+            {
+                if (line.length > 0 && line[$-1] == '\n')
+                {
+                    line = line[0..$-1] ~ "\r\n";
+                }
 
-            result ~= 0x0A;*/
+                result ~= line;
+            }
         }
         std.file.write(path, result);
     }
