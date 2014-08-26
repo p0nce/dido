@@ -17,6 +17,11 @@ public:
     {
     }
 
+    void initializeNew()
+    {
+        lines = ["\n"d];
+    }
+
     // load file in buffer, non-conrofming utf-8 is lost
     final void loadFromFile(string path)
     {

@@ -17,11 +17,23 @@ import dido.panel;
 final class App
 {
 public:
-    this(string path)
+    this(string paths[])
     {
-        _buffer = new SelectionBuffer();
-        _buffer.loadFromFile(path);
+        foreach (ref path; paths)
+        {
+            SelectionBuffer buf = new SelectionBuffer;
+            buf.loadFromFile(path);
+            _buffers ~= buf;
+        }
 
+        // create an empty buffer if no file provided
+        if (_buffers.length == 0)
+        {
+            SelectionBuffer buf = new SelectionBuffer;
+            buf.initializeNew();
+            _buffers ~= buf;
+        }
+        _bufferSelect = 0;
 
         _finished = false;
         _commandLineMode = false;
@@ -96,7 +108,7 @@ public:
             bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
             _cmdlinePanel.updateState(_commandLineMode);
             
-            _textArea.setState(_window, _buffer, drawCursors);
+            _textArea.setState(_window, _buffers[_bufferSelect], drawCursors);
 
             _mainPanel.reflow(box2i(0, 0, width, height), charWidth, charHeight);
 
@@ -115,7 +127,8 @@ private:
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
-    SelectionBuffer _buffer;
+    SelectionBuffer[] _buffers;
+    int _bufferSelect;
     uint _timeSinceEvent;
 
     MainPanel _mainPanel;
@@ -144,33 +157,42 @@ private:
 
     void execute(Command command)
     {
+        SelectionBuffer buffer = _buffers[_bufferSelect];
         final switch (command.type) with (CommandType)
         {            
             case MOVE_UP:
-                _buffer.moveSelection(0, -1);                
+                buffer.moveSelection(0, -1);                
                 break;
             case MOVE_DOWN:
-                _buffer.moveSelection(0, 1);
+                buffer.moveSelection(0, 1);
                 break;
 
             case MOVE_LEFT:
-                _buffer.moveSelection(-1, 0);
+                buffer.moveSelection(-1, 0);
                 break;
 
             case MOVE_RIGHT:            
-                _buffer.moveSelection(+1, 0);
+                buffer.moveSelection(+1, 0);
                 break;
 
             case MOVE_LINE_BEGIN:
-                _buffer.moveToLineBegin();
+                buffer.moveToLineBegin();
                 break;
 
             case MOVE_LINE_END:
-                _buffer.moveToLineEnd();
+                buffer.moveToLineEnd();
                 break;
 
             case TOGGLE_FULLSCREEN:
                 _window.toggleFullscreen();
+                break;
+
+            case ROTATE_NEXT_BUFFER:
+                _bufferSelect = (_bufferSelect + 1) % _buffers.length;
+                break;
+
+            case ROTATE_PREVIOUS_BUFFER:
+                _bufferSelect = (_bufferSelect + _buffers.length - 1) % _buffers.length;
                 break;
 
 
@@ -258,7 +280,11 @@ private:
                         else if (key.sym == SDLK_END)
                             commands ~= Command(CommandType.MOVE_LINE_END);
                         else if (key.sym == SDLK_HOME)
-                            commands ~= Command(CommandType.MOVE_LINE_BEGIN);         
+                            commands ~= Command(CommandType.MOVE_LINE_BEGIN);
+                        else if (key.sym == SDLK_PAGEUP && ((key.mod & KMOD_CTRL) != 0))
+                            commands ~= Command(CommandType.ROTATE_PREVIOUS_BUFFER);
+                        else if (key.sym == SDLK_PAGEDOWN && ((key.mod & KMOD_CTRL) != 0))
+                            commands ~= Command(CommandType.ROTATE_NEXT_BUFFER);
                         else 
                         {
                         }

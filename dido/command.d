@@ -16,7 +16,9 @@ enum CommandType
     EXIT, 
     RETURN,
     INSERT_CHAR,
-    BACKSPACE
+    BACKSPACE,
+    ROTATE_NEXT_BUFFER,
+    ROTATE_PREVIOUS_BUFFER
 }
 
 struct Command
