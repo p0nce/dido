@@ -106,15 +106,6 @@ public:
             int charWidth = _font.charWidth();
             int charHeight = _font.charHeight();
 
-            int widthOfSolutionExplorer = (250 + width / 3) / 2;
-            int widthOfLineNumberMargin = charWidth * 6;
-            int widthOfLeftScrollbar = 12;
-            int marginScrollbar = 4;
-            int marginCmdline = 4;
-
-            int heightOfTopBar = 8 + charHeight;
-            int heightOfCommandLineBar = 8 + charHeight;
-
             bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
             _cmdlinePanel.updateState(_commandLineMode);
             
