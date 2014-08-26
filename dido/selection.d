@@ -81,6 +81,25 @@ class SelectionSet
         normalize(buffer);
     }
 
+    void moveToLineBegin(Buffer buffer)
+    {
+        foreach(ref sel; selections)
+        {
+            sel.start.column = 0;
+        }
+        normalize(buffer);
+    }
+
+    void moveToLineEnd(Buffer buffer)
+    {
+        foreach(ref sel; selections)
+        {
+            sel.start.column = buffer.lastColumn(sel.start.line) - 1;
+        }
+        normalize(buffer);
+    }
+
+
     void normalize(Buffer buffer)
     {
         foreach(ref sel; selections)
@@ -91,8 +110,8 @@ class SelectionSet
             if (sel.start.line < 0)
                 sel.start.line = 0;
 
-            if (sel.start.column > buffer.lastColumn(sel.start.line))
-                sel.start.column = buffer.lastColumn(sel.start.line);
+            if (sel.start.column >= buffer.lastColumn(sel.start.line))
+                sel.start.column = buffer.lastColumn(sel.start.line) - 1;
 
             if (sel.start.column < 0)
                 sel.start.column = 0;

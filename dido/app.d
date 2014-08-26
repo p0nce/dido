@@ -140,6 +140,16 @@ public:
                             _window.setColor(108, 108, 138);
                             break;
 
+                        case '\n':
+                            ch = ' '; //0x2193; // down arrow
+                            _window.setColor(40, 40, 40);
+                            break;
+
+                        case ' ':
+                            ch = 0x2D1;
+                            _window.setColor(60, 60, 70);
+                            break;
+
                         default:
                             _window.setColor(250, 250, 250);
                             break;
@@ -243,8 +253,12 @@ private:
                 _buffer.moveSelection(+1, 0);
                 break;
 
-            case MOVE_LINE_END:
             case MOVE_LINE_BEGIN:
+                _buffer.moveToLineBegin();
+                break;
+
+            case MOVE_LINE_END:
+                _buffer.moveToLineEnd();
                 break;
 
             case TOGGLE_FULLSCREEN:
@@ -271,7 +285,6 @@ private:
                 {
                     if (_currentCommandLine.length > 0)
                         _currentCommandLine = _currentCommandLine[0..$-1];
-
                 }
                 break;
             
@@ -334,7 +347,10 @@ private:
                             commands ~= Command(CommandType.MOVE_DOWN);
                         else if (key.sym == SDLK_BACKSPACE)
                             commands ~= Command(CommandType.BACKSPACE);
-                                 
+                        else if (key.sym == SDLK_END)
+                            commands ~= Command(CommandType.MOVE_LINE_END);
+                        else if (key.sym == SDLK_HOME)
+                            commands ~= Command(CommandType.MOVE_LINE_BEGIN);         
                         else 
                         {
                         }

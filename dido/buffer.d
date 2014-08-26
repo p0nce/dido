@@ -23,6 +23,11 @@ public:
         string wholeFile = readText(path);
         dstring wholeFileUTF32 = to!dstring(wholeFile);
         lines = splitLines!(dstring)( wholeFileUTF32 );
+
+        foreach(ref dstring line; lines)
+        {
+            line ~= 0x0A;
+        }
     }
 
     // save file using OS end-of-lines
@@ -33,10 +38,10 @@ public:
         {
             result ~= cast(ubyte[])( to!string(line) );
 
-            version(Windows)
+            /*version(Windows)
                 result ~= 0x0D;
 
-            result ~= 0x0A;
+            result ~= 0x0A;*/
         }
         std.file.write(path, result);
     }
@@ -82,6 +87,16 @@ public:
     void moveSelection(int dx, int dy)
     {
         selectionSet.move(buffer, dx, dy);
+    }
+
+    void moveToLineBegin()
+    {
+        selectionSet.moveToLineBegin(buffer);
+    }
+
+    void moveToLineEnd()
+    {
+        selectionSet.moveToLineEnd(buffer);
     }
 
     SelectionSet selectionSet;
