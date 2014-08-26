@@ -50,8 +50,20 @@ public:
 
     void mainLoop()
     {
+        uint caretBlinkTime = 530 ; // default value on Win7
+        uint caretCycleTime = caretBlinkTime * 2; // default value on Win7
+
+        uint lastTime = SDL_GetTicks();
+
+        _timeSinceEvent = 0;
+
         while(!_sdl2.wasQuitRequested() && !_finished)
         {     
+            uint time = SDL_GetTicks();
+            uint deltaTime = time - lastTime;
+            lastTime = time;
+            _timeSinceEvent += deltaTime;
+
             pollCommandsFromKeyboard();
 
             SDL2Renderer renderer = _window.renderer();
@@ -81,7 +93,6 @@ public:
             renderer.fillRect(widthOfSolutionExplorer, heightOfTopBar, widthOfLineNumberMargin, height - heightOfCommandLineBar - heightOfTopBar);
 
             renderer.setColor(34, 34, 34, 128);
-
             renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, heightOfTopBar + marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2 - heightOfCommandLineBar - heightOfTopBar);
 
             int marginEditor = 16;
@@ -143,7 +154,8 @@ public:
             SelectionSet selset = _buffer.selectionSet;
             foreach(Selection sel; selset.selections)
             {
-                renderSelection(renderer, editPosX, editPosY, sel);
+                bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
+                renderSelection(renderer, editPosX, editPosY, sel, drawCursors);
             }
 
             renderer.setColor(14, 14, 14, 230);
@@ -192,6 +204,7 @@ private:
     SDLTTF _sdlttf;
     Window _window;
     SelectionBuffer _buffer;
+    uint _timeSinceEvent;
 
     void executeCommandLine(dstring cmdline)
     {
@@ -352,17 +365,23 @@ private:
         }
 
         foreach (cmd; commands)
+        {
+            _timeSinceEvent = 0;
             execute(cmd);
+        }
     }    
 
-    void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
+    void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection, bool drawCursors)
     {
-        int startX = offsetX + selection.start.column * _window.charWidth();
-        int startY = offsetY + selection.start.line * _window.charHeight();
-
         // draw the cursor part
-        renderer.setColor(255, 255, 255, 255);
-        renderer.fillRect(startX, startY, 1, _window.charHeight() - 1);
+        if (drawCursors)
+        {
+            int startX = offsetX + selection.start.column * _window.charWidth();
+            int startY = offsetY + selection.start.line * _window.charHeight();
+
+            renderer.setColor(255, 255, 255, 255);
+            renderer.fillRect(startX, startY, 1, _window.charHeight() - 1);
+        }
 
         if (selection.hasSelectedArea)
         {
