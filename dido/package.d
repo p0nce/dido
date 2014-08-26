@@ -8,3 +8,4 @@ public import dido.buffer;
 public import dido.app;
 public import dido.command;
 public import dido.selection;
+public import dido.panel;

@@ -12,6 +12,7 @@ import dido.buffer;
 import dido.window;
 import dido.command;
 import dido.selection;
+import dido.panel;
 
 final class App
 {
@@ -24,14 +25,20 @@ public:
 
         _finished = false;
         _commandLineMode = false;
-        _currentCommandLine = "";
-        _statusLine = "";
 
         _sdl2 = new SDL2(null);
         _sdlttf = new SDLTTF(_sdl2);
         _window = new Window(_sdl2, _sdlttf);
 
         _sdl2.startTextInput();
+
+
+        _mainPanel = new MainPanel;
+        _menuPanel = new MenuPanel;
+        _cmdlinePanel = new CommandLinePanel(_window);
+        _solutionPanel = new SolutionPanel;
+
+        _mainPanel.children ~= [ _solutionPanel, _menuPanel, _cmdlinePanel];
     }
 
     ~this()
@@ -42,7 +49,6 @@ public:
     void close()
     {
         _sdl2.stopTextInput();
-//        _buffer.close();
         _window.close();
         _sdlttf.close();
         _sdl2.close();
@@ -77,7 +83,7 @@ public:
             int charWidth = _window.charWidth();
             int charHeight = _window.charHeight();
 
-            int widthOfSolutionExplorer = 250;
+            int widthOfSolutionExplorer = (250 + width / 3) / 2;
             int widthOfLineNumberMargin = charWidth * 6;
             int widthOfLeftScrollbar = 12;
             int marginScrollbar = 4;
@@ -86,9 +92,14 @@ public:
             int heightOfTopBar = 8 + charHeight;
             int heightOfCommandLineBar = 8 + charHeight;
 
+            _cmdlinePanel.updateState(_commandLineMode);
+            _mainPanel.reflow(box2i(0, 0, width, height), charWidth, charHeight);
+
+            _mainPanel.render(renderer);/*
+
             renderer.setColor(34, 34, 34, 255);
             renderer.fillRect(0, heightOfTopBar, widthOfSolutionExplorer, height - heightOfCommandLineBar - heightOfTopBar);
-
+*/
             renderer.setColor(28, 28, 28, 255);
             renderer.fillRect(widthOfSolutionExplorer, heightOfTopBar, widthOfLineNumberMargin, height - heightOfCommandLineBar - heightOfTopBar);
 
@@ -168,33 +179,7 @@ public:
                 renderSelection(renderer, editPosX, editPosY, sel, drawCursors);
             }
 
-            renderer.setColor(14, 14, 14, 230);
-            renderer.fillRect(0, 0,  width, heightOfTopBar);
-
-            renderer.setColor(14, 14, 14, 230);            
-            renderer.fillRect(0, height - heightOfCommandLineBar,  width, heightOfCommandLineBar);
-
-            {
-                // commandline bar at bottom
-
-                int textPosx = 4 + charWidth;
-                int textPosy = height - heightOfCommandLineBar + 4;
-
-                if (_commandLineMode)
-                {
-                    _window.setColor(255, 255, 0, 255);
-                    _window.renderString(":", 4, height - heightOfCommandLineBar + 4);
-                    _window.setColor(255, 255, 128, 255);
-                    _window.renderString(_currentCommandLine, textPosx, textPosy);
-                }
-                else
-                {
-                    // Write status line
-                    _window.setColor(_statusColor.r, _statusColor.g, _statusColor.b, 255);
-                    _window.renderString(_statusLine, textPosx, textPosy);
-                }
-            }
-
+            
             renderer.present();
         }
     }
@@ -207,14 +192,18 @@ private:
 
     bool _finished;
     bool _commandLineMode;
-    dstring _currentCommandLine;
-    dstring _statusLine;
-    vec3i _statusColor;
+    
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
     SelectionBuffer _buffer;
     uint _timeSinceEvent;
+
+
+    MainPanel _mainPanel;
+    MenuPanel _menuPanel;
+    CommandLinePanel _cmdlinePanel;
+    SolutionPanel _solutionPanel;
 
     void executeCommandLine(dstring cmdline)
     {
@@ -224,13 +213,13 @@ private:
         if (cmdline == "exit")
         {
             _finished = true;
-            _statusLine = "OK";
-            _statusColor = green;
+            _cmdlinePanel.statusLine = "OK";
+            _cmdlinePanel.statusColor = green;
         }
         else
         {
-            _statusLine = to!dstring(format("Unknown command '%s'"d, cmdline));
-            _statusColor = red;
+            _cmdlinePanel.statusLine = to!dstring(format("Unknown command '%s'"d, cmdline));
+            _cmdlinePanel.statusColor = red;
         }
     }
 
@@ -269,7 +258,7 @@ private:
             case ENTER_COMMANDLINE_MODE:
                 if (!_commandLineMode)
                 {
-                    _currentCommandLine = "";
+                    _cmdlinePanel.currentCommandLine = "";
                     _commandLineMode = true;
                 }
                 else
@@ -283,15 +272,15 @@ private:
             case BACKSPACE:
                 if (_commandLineMode)
                 {
-                    if (_currentCommandLine.length > 0)
-                        _currentCommandLine = _currentCommandLine[0..$-1];
+                    if (_cmdlinePanel.currentCommandLine.length > 0)
+                        _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
                 }
                 break;
             
             case RETURN:
                 if (_commandLineMode)
                 {
-                    executeCommandLine(_currentCommandLine);
+                    executeCommandLine(_cmdlinePanel.currentCommandLine);
                     goto case EXIT;
                 }
                 else
@@ -309,7 +298,7 @@ private:
 
             case INSERT_CHAR:
                 if (_commandLineMode)
-                    _currentCommandLine ~= cast(dchar)(command.ch);
+                    _cmdlinePanel.currentCommandLine ~= cast(dchar)(command.ch);
                 else
                 {
                     // TODO
