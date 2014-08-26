@@ -9,6 +9,8 @@ enum CommandType
     MOVE_RIGHT,
     MOVE_UP,
     MOVE_DOWN,
+    PAGE_UP,
+    PAGE_DOWN,
     MOVE_LINE_END,
     MOVE_LINE_BEGIN,
     TOGGLE_FULLSCREEN,

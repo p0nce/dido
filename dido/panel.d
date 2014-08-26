@@ -18,6 +18,11 @@ public:
 
     abstract void reflow(box2i availableSpace, int charWidth, int charHeight);
 
+    final box2i position() pure const nothrow
+    {
+        return _position;
+    }
+
 private:
     box2i _position;
 }
@@ -257,6 +262,27 @@ public:
         _buffer = buffer;
         _font = font;
         _drawCursors = drawCursors;
+    }
+
+    void clearCamera()
+    {
+        _cameraX = 0;
+        _cameraY = 0;
+    }
+
+    void moveCamera(int dx, int dy)
+    {
+        _cameraX += dx;
+        _cameraY += dy;
+        normalizeCamera();       
+    }
+
+    void normalizeCamera()
+    {
+        if (_cameraX < 0)
+            _cameraX = 0;
+        if (_cameraY < 0)
+            _cameraY = 0;
     }
 
 private:

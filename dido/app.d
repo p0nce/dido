@@ -200,12 +200,21 @@ private:
 
             case ROTATE_NEXT_BUFFER:
                 _bufferSelect = (_bufferSelect + 1) % _buffers.length;
+                _textArea.clearCamera();
                 break;
 
             case ROTATE_PREVIOUS_BUFFER:
                 _bufferSelect = (_bufferSelect + _buffers.length - 1) % _buffers.length;
+                _textArea.clearCamera();
                 break;
 
+            case PAGE_UP:
+                _textArea.moveCamera(0, -_textArea.position().height);
+                break;
+
+            case PAGE_DOWN:
+                _textArea.moveCamera(0, _textArea.position().height);
+                break;
 
             case ENTER_COMMANDLINE_MODE:
                 if (!_commandLineMode)
@@ -296,6 +305,10 @@ private:
                             commands ~= Command(CommandType.ROTATE_PREVIOUS_BUFFER);
                         else if (key.sym == SDLK_PAGEDOWN && ((key.mod & KMOD_CTRL) != 0))
                             commands ~= Command(CommandType.ROTATE_NEXT_BUFFER);
+                        else if (key.sym == SDLK_PAGEUP)
+                            commands ~= Command(CommandType.PAGE_UP);
+                        else if (key.sym == SDLK_PAGEDOWN)
+                            commands ~= Command(CommandType.PAGE_DOWN);
                         else 
                         {
                         }
