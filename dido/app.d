@@ -13,6 +13,7 @@ import dido.window;
 import dido.command;
 import dido.selection;
 import dido.panel;
+import dido.font;
 
 final class App
 {
@@ -42,12 +43,13 @@ public:
         _sdlttf = new SDLTTF(_sdl2);
         _window = new Window(_sdl2, _sdlttf);
 
-        _sdl2.startTextInput();
+        _font = new Font(_sdlttf, _window.renderer(), "fonts/consola.ttf", 14);
 
+        _sdl2.startTextInput();
 
         _mainPanel = new MainPanel;
         _menuPanel = new MenuPanel;
-        _cmdlinePanel = new CommandLinePanel(_window);
+        _cmdlinePanel = new CommandLinePanel(_font);
         _solutionPanel = new SolutionPanel;
         _textArea = new TextArea;
 
@@ -61,7 +63,15 @@ public:
 
     void close()
     {
+        
+        destroy(_textArea);
+        destroy(_menuPanel);
+        destroy(_cmdlinePanel);
+        destroy(_solutionPanel);
+        destroy(_mainPanel);
+
         _sdl2.stopTextInput();
+        _font.close();
         _window.close();
         _sdlttf.close();
         _sdl2.close();
@@ -93,8 +103,8 @@ public:
 
             int width = _window.getWidth();
             int height = _window.getHeight();
-            int charWidth = _window.charWidth();
-            int charHeight = _window.charHeight();
+            int charWidth = _font.charWidth();
+            int charHeight = _font.charHeight();
 
             int widthOfSolutionExplorer = (250 + width / 3) / 2;
             int widthOfLineNumberMargin = charWidth * 6;
@@ -108,7 +118,7 @@ public:
             bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
             _cmdlinePanel.updateState(_commandLineMode);
             
-            _textArea.setState(_window, _buffers[_bufferSelect], drawCursors);
+            _textArea.setState(_font, _buffers[_bufferSelect], drawCursors);
 
             _mainPanel.reflow(box2i(0, 0, width, height), charWidth, charHeight);
 
@@ -136,6 +146,7 @@ private:
     CommandLinePanel _cmdlinePanel;
     SolutionPanel _solutionPanel;
     TextArea _textArea;
+    Font _font;
 
     void executeCommandLine(dstring cmdline)
     {

@@ -8,6 +8,7 @@ import gfm.sdl2;
 import dido.window;
 import dido.selection;
 import dido.buffer;
+import dido.font;
 
 class Panel
 {
@@ -70,8 +71,12 @@ class SolutionPanel : Panel
 
     override void render(SDL2Renderer renderer)
     {
+        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
         renderer.setColor(34, 34, 34, 255);
-        renderer.fillRect(_position.min.x, _position.min.y,  _position.width, _position.height);
+        renderer.fillRect(0, 0, _position.width, _position.height);
+
+
+        renderer.setViewportFull();
     }
 }
 
@@ -79,9 +84,9 @@ class CommandLinePanel : Panel
 {
 public:
 
-    this(Window window)
+    this(Font font)
     {
-        _window = window;
+        _font = font;
         currentCommandLine = "";
         statusLine = "";
     }
@@ -107,16 +112,16 @@ public:
 
             if (_commandLineMode)
             {
-                _window.setColor(255, 255, 0, 255);
-                _window.renderString(":", _position.min.x + 4, _position.min.y + 4);
-                _window.setColor(255, 255, 128, 255);
-                _window.renderString(currentCommandLine, textPosx, textPosy);
+                _font.setColor(255, 255, 0, 255);
+                _font.renderString(":", _position.min.x + 4, _position.min.y + 4);
+                _font.setColor(255, 255, 128, 255);
+                _font.renderString(currentCommandLine, textPosx, textPosy);
             }
             else
             {
                 // Write status line
-                _window.setColor(statusColor.r, statusColor.g, statusColor.b, 255);
-                _window.renderString(statusLine, textPosx, textPosy);
+                _font.setColor(statusColor.r, statusColor.g, statusColor.b, 255);
+                _font.renderString(statusLine, textPosx, textPosy);
             }
         }
 
@@ -132,7 +137,7 @@ public:
     vec3i statusColor;
 
 private:
-    Window _window;
+    Font _font;
     int _charWidth;
     bool _commandLineMode;
 
@@ -157,23 +162,25 @@ public:
 
     override void render(SDL2Renderer renderer)
     {
+        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
+
         int widthOfLineNumberMargin = _charWidth * 6;
         int widthOfLeftScrollbar = 12;
         int marginScrollbar = 4;
 
         renderer.setColor(28, 28, 28, 255);
-        renderer.fillRect(_position.min.x, _position.min.y, widthOfLineNumberMargin, _position.height);
+        renderer.fillRect(0, 0, widthOfLineNumberMargin, _position.height);
 
         renderer.setColor(34, 34, 34, 128);
-        renderer.fillRect(_position.max.x - marginScrollbar - widthOfLeftScrollbar, 
+        renderer.fillRect(_position.width - marginScrollbar - widthOfLeftScrollbar, 
                           marginScrollbar, 
                           widthOfLeftScrollbar, 
                           _position.height - marginScrollbar * 2);
 
         int marginEditor = 16;
 
-        int editPosX = -_cameraX + _position.min.x + widthOfLineNumberMargin + marginEditor;
-        int editPosY = -_cameraY + _position.min.y + marginEditor;
+        int editPosX = -_cameraX + widthOfLineNumberMargin + marginEditor;
+        int editPosY = -_cameraY + marginEditor;
 
         for (int i = 0; i < _buffer.numLines(); ++i)
         {
@@ -184,8 +191,8 @@ public:
                 lineNumber = " "d ~ lineNumber;
             }
 
-            _window.setColor(49, 97, 107, 160);
-            _window.renderString(lineNumber,  _position.min.x,  _position.min.y -_cameraY + marginEditor + i * _charHeight);
+            _font.setColor(49, 97, 107, 160);
+            _font.renderString(lineNumber,  0,  0 -_cameraY + marginEditor + i * _charHeight);
 
 
             int posX = editPosX;
@@ -196,41 +203,41 @@ public:
                 switch (ch)
                 {
                     case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-                        _window.setColor(255, 200, 200);
+                        _font.setColor(255, 200, 200);
                         break;
 
                     case '+', '-', '=', '>', '<', '^', ',', '$', '|', '&', '`', '/', '@', '.', '"', '[', ']', '?', ':', '\'', '\\':
-                        _window.setColor(255, 255, 106);
+                        _font.setColor(255, 255, 106);
                         break;
 
                     case '(', ')', ';':
-                        _window.setColor(255, 255, 150);
+                        _font.setColor(255, 255, 150);
                         break;
 
                     case '{':
-                        _window.setColor(108, 108, 128);
+                        _font.setColor(108, 108, 128);
                         break;
 
                     case '}':
-                        _window.setColor(108, 108, 138);
+                        _font.setColor(108, 108, 138);
                         break;
 
                     case '\n':
                         ch = ' '; //0x2193; // down arrow
-                        _window.setColor(40, 40, 40);
+                        _font.setColor(40, 40, 40);
                         break;
 
                     case ' ':
                         ch = 0x2D1;
-                        _window.setColor(60, 60, 70);
+                        _font.setColor(60, 60, 70);
                         break;
 
                     default:
-                        _window.setColor(250, 250, 250);
+                        _font.setColor(250, 250, 250);
                         break;
                 }
 
-                _window.renderChar(ch, posX, posY);
+                _font.renderChar(ch, posX, posY);
                 posX += _charWidth;
             }
         }
@@ -241,12 +248,14 @@ public:
         {
             renderSelection(renderer, editPosX, editPosY, sel, _drawCursors);
         }
+
+        renderer.setViewportFull();
     }
 
-    void setState(Window window, SelectionBuffer buffer, bool drawCursors)
+    void setState(Font font, SelectionBuffer buffer, bool drawCursors)
     {
         _buffer = buffer;
-        _window = window;
+        _font = font;
         _drawCursors = drawCursors;
     }
 
@@ -256,7 +265,7 @@ private:
     int _charWidth;
     int _charHeight;
     SelectionBuffer _buffer;    
-    Window _window;
+    Font _font;
     bool _drawCursors;
 
     void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection, bool drawCursors)
@@ -264,21 +273,21 @@ private:
         // draw the cursor part
         if (drawCursors)
         {
-            int startX = offsetX + selection.start.column * _window.charWidth();
-            int startY = offsetY + selection.start.line * _window.charHeight();
+            int startX = offsetX + selection.start.column * _font.charWidth();
+            int startY = offsetY + selection.start.line * _font.charHeight();
 
             renderer.setColor(255, 255, 255, 255);
-            renderer.fillRect(startX, startY, 1, _window.charHeight() - 1);
+            renderer.fillRect(startX, startY, 1, _font.charHeight() - 1);
         }
 
         if (selection.hasSelectedArea)
         {
-            int stopX = offsetX + selection.stop.column * _window.charWidth();
-            int stopY = offsetY + selection.stop.line * _window.charHeight();
+            int stopX = offsetX + selection.stop.column * _font.charWidth();
+            int stopY = offsetY + selection.stop.line * _font.charHeight();
 
             // draw the cursor part
             renderer.setColor(128, 128, 128, 255);
-            renderer.fillRect(stopX, stopY, 1, _window.charHeight() - 1);
+            renderer.fillRect(stopX, stopY, 1, _font.charHeight() - 1);
         }
 
         // TODO draw extent
