@@ -37,8 +37,9 @@ public:
         _menuPanel = new MenuPanel;
         _cmdlinePanel = new CommandLinePanel(_window);
         _solutionPanel = new SolutionPanel;
+        _textArea = new TextArea;
 
-        _mainPanel.children ~= [ _solutionPanel, _menuPanel, _cmdlinePanel];
+        _mainPanel.children ~= [ _textArea, _solutionPanel, _menuPanel, _cmdlinePanel];
     }
 
     ~this()
@@ -92,93 +93,14 @@ public:
             int heightOfTopBar = 8 + charHeight;
             int heightOfCommandLineBar = 8 + charHeight;
 
+            bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
             _cmdlinePanel.updateState(_commandLineMode);
+            
+            _textArea.setState(_window, _buffer, drawCursors);
+
             _mainPanel.reflow(box2i(0, 0, width, height), charWidth, charHeight);
 
-            _mainPanel.render(renderer);/*
-
-            renderer.setColor(34, 34, 34, 255);
-            renderer.fillRect(0, heightOfTopBar, widthOfSolutionExplorer, height - heightOfCommandLineBar - heightOfTopBar);
-*/
-            renderer.setColor(28, 28, 28, 255);
-            renderer.fillRect(widthOfSolutionExplorer, heightOfTopBar, widthOfLineNumberMargin, height - heightOfCommandLineBar - heightOfTopBar);
-
-            renderer.setColor(34, 34, 34, 128);
-            renderer.fillRect(width - marginScrollbar - widthOfLeftScrollbar, heightOfTopBar + marginScrollbar, widthOfLeftScrollbar, height - marginScrollbar * 2 - heightOfCommandLineBar - heightOfTopBar);
-
-            int marginEditor = 16;
-
-            int editPosX = -_cameraX + widthOfSolutionExplorer + widthOfLineNumberMargin + marginEditor;
-            int editPosY = -_cameraY + marginEditor + heightOfTopBar;
-            
-            for (int i = 0; i < _buffer.numLines(); ++i)
-            {
-                dstring line = _buffer.line(i);
-                dstring lineNumber = to!dstring(i + 1) ~ " ";
-                while (lineNumber.length < 6)
-                {
-                    lineNumber = " "d ~ lineNumber;
-                }
-                
-                _window.setColor(49, 97, 107, 160);
-                _window.renderString(lineNumber, widthOfSolutionExplorer, -_cameraY + marginEditor + i * charHeight + heightOfTopBar);
-
-
-                int posX = editPosX;
-                int posY = editPosY + i * charHeight;
-                
-                foreach(dchar ch; line)
-                {
-                    switch (ch)
-                    {
-                        case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-                            _window.setColor(255, 200, 200);
-                            break;
-
-                        case '+', '-', '=', '>', '<', '^', ',', '$', '|', '&', '`', '/', '@', '.', '"', '[', ']', '?', ':', '\'', '\\':
-                            _window.setColor(255, 255, 106);
-                            break;
-
-                        case '(', ')', ';':
-                            _window.setColor(255, 255, 150);
-                            break;
-
-                        case '{':
-                            _window.setColor(108, 108, 128);
-                            break;
-
-                        case '}':
-                            _window.setColor(108, 108, 138);
-                            break;
-
-                        case '\n':
-                            ch = ' '; //0x2193; // down arrow
-                            _window.setColor(40, 40, 40);
-                            break;
-
-                        case ' ':
-                            ch = 0x2D1;
-                            _window.setColor(60, 60, 70);
-                            break;
-
-                        default:
-                            _window.setColor(250, 250, 250);
-                            break;
-                    }
-                    
-                    _window.renderChar(ch, posX, posY);
-                    posX += charWidth;
-                }
-            }
-
-            // draw cursors
-            SelectionSet selset = _buffer.selectionSet;
-            foreach(Selection sel; selset.selections)
-            {
-                bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
-                renderSelection(renderer, editPosX, editPosY, sel, drawCursors);
-            }
-
+            _mainPanel.render(renderer);
             
             renderer.present();
         }
@@ -186,9 +108,6 @@ public:
 
 
 private:
-
-    int _cameraX = 0;
-    int _cameraY = 0;
 
     bool _finished;
     bool _commandLineMode;
@@ -199,11 +118,11 @@ private:
     SelectionBuffer _buffer;
     uint _timeSinceEvent;
 
-
     MainPanel _mainPanel;
     MenuPanel _menuPanel;
     CommandLinePanel _cmdlinePanel;
     SolutionPanel _solutionPanel;
+    TextArea _textArea;
 
     void executeCommandLine(dstring cmdline)
     {
@@ -376,28 +295,5 @@ private:
         }
     }    
 
-    void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection, bool drawCursors)
-    {
-        // draw the cursor part
-        if (drawCursors)
-        {
-            int startX = offsetX + selection.start.column * _window.charWidth();
-            int startY = offsetY + selection.start.line * _window.charHeight();
 
-            renderer.setColor(255, 255, 255, 255);
-            renderer.fillRect(startX, startY, 1, _window.charHeight() - 1);
-        }
-
-        if (selection.hasSelectedArea)
-        {
-            int stopX = offsetX + selection.stop.column * _window.charWidth();
-            int stopY = offsetY + selection.stop.line * _window.charHeight();
-
-            // draw the cursor part
-            renderer.setColor(128, 128, 128, 255);
-            renderer.fillRect(stopX, stopY, 1, _window.charHeight() - 1);
-        }
-
-        // TODO draw extent
-    }
 }
