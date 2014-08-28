@@ -72,7 +72,7 @@ public:
         _a = a;
     }
 
-    void renderString(dstring s, int x, int y)
+    void renderString(StringType)(StringType s, int x, int y)
     {
         foreach(dchar ch; s)
         {

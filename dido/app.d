@@ -22,8 +22,7 @@ public:
     {
         foreach (ref path; paths)
         {
-            SelectionBuffer buf = new SelectionBuffer;
-            buf.loadFromFile(path);
+            SelectionBuffer buf = new SelectionBuffer(path);
             _buffers ~= buf;
         }
 
@@ -31,7 +30,6 @@ public:
         if (_buffers.length == 0)
         {
             SelectionBuffer buf = new SelectionBuffer;
-            buf.initializeNew();
             _buffers ~= buf;
         }
         _bufferSelect = 0;
@@ -107,6 +105,8 @@ public:
             int charHeight = _font.charHeight();
 
             bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
+
+            _solutionPanel.updateState(_font, _buffers, _bufferSelect);
             _cmdlinePanel.updateState(_commandLineMode);
             
             _textArea.setState(_font, _buffers[_bufferSelect], drawCursors);

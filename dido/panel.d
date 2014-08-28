@@ -67,11 +67,14 @@ class MenuPanel : Panel
 
 class SolutionPanel : Panel
 {
+public:
     override void reflow(box2i availableSpace, int charWidth, int charHeight)
     {
         _position = availableSpace;
         int widthOfSolutionExplorer = (250 + availableSpace.width / 3) / 2;
         _position.max.x = widthOfSolutionExplorer;
+        _position.min.y = (8 + charHeight);
+        _position.max.y -= (8 + charHeight);
     }
 
     override void render(SDL2Renderer renderer)
@@ -80,9 +83,40 @@ class SolutionPanel : Panel
         renderer.setColor(34, 34, 34, 255);
         renderer.fillRect(0, 0, _position.width, _position.height);
 
+        int itemSpace = _font.charHeight() + 12;
+        int marginX = 16;
+        int marginY = 16;
+        
+        for(int i = 0; i < cast(int)_buffers.length; ++i)
+        {   
+            renderer.setColor(25, 25, 25, 255);
+            int rectMargin = 4;
+            renderer.fillRect(marginX - rectMargin, marginY - rectMargin + i * itemSpace, _position.width - 2 * (marginX - rectMargin), itemSpace - 4);
+        }
+
+        for(int i = 0; i < cast(int)_buffers.length; ++i)
+        {
+            if (i == _bufferSelect)
+                _font.setColor(255, 255, 255, 255);
+            else
+                _font.setColor(200, 200, 200, 255);
+            _font.renderString(_buffers[i].filePath(), marginX, marginY + i * itemSpace);
+        }
 
         renderer.setViewportFull();
     }
+
+    void updateState(Font font, SelectionBuffer[] buffers, int bufferSelect)
+    {
+        _buffers = buffers;
+        _font = font;
+        _bufferSelect = bufferSelect;
+    }
+
+private:
+    SelectionBuffer[] _buffers;
+    Font _font;
+    int _bufferSelect;
 }
 
 class CommandLinePanel : Panel
@@ -188,7 +222,7 @@ public:
         int editPosY = -_cameraY + marginEditor;
 
         int firstVisibleLine = max(0, _cameraY / _charHeight - 1);
-        int firstNonVisibleLine = min(_buffer.numLines() + 1, 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);
+        int firstNonVisibleLine = min(_buffer.numLines(), 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);
 
         for (int i = firstVisibleLine; i < firstNonVisibleLine; ++i)
         {
@@ -245,13 +279,16 @@ public:
                         break;
                 }
 
-                _font.renderChar(ch, posX, posY);
+                box2i visibleBox = box2i(0, 0, _position.width, _position.height);
+                box2i charBox = box2i(posX, posY, posX + _charWidth, posY + _charHeight);
+                if (visibleBox.intersects(charBox))
+                    _font.renderChar(ch, posX, posY);
                 posX += _charWidth;
             }
         }
 
         // draw cursors
-        SelectionSet selset = _buffer.selectionSet;
+        SelectionSet selset = _buffer.selectionSet();
         foreach(Selection sel; selset.selections)
         {
             renderSelection(renderer, editPosX, editPosY, sel, _drawCursors);

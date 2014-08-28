@@ -81,35 +81,65 @@ private:
 }
 
 
-// A buffer + cursors
+// A buffer + cursors + optional filename
 class SelectionBuffer
 {
 public:
-    Buffer buffer;
-    alias buffer this;
 
+    alias _buffer this;
+    Buffer _buffer;
+
+    // create new
     this()
     {
-        buffer = new Buffer();
-        selectionSet = new SelectionSet();
+        _buffer = new Buffer();
+        _buffer.initializeNew();
+        _selectionSet = new SelectionSet();
+        _filepath = null;
+    }
+
+    this(string filepath)
+    {
+        _buffer = new Buffer();
+        _buffer.loadFromFile(filepath);
+        _selectionSet = new SelectionSet();
+        _filepath = filepath;
+    }
+
+    bool isBoundToFileName()
+    {
+        return _filepath !is null;
     }
 
     void moveSelection(int dx, int dy)
     {
-        selectionSet.move(buffer, dx, dy);
+        _selectionSet.move(_buffer, dx, dy);
     }
 
     void moveToLineBegin()
     {
-        selectionSet.moveToLineBegin(buffer);
+        _selectionSet.moveToLineBegin(_buffer);
     }
 
     void moveToLineEnd()
     {
-        selectionSet.moveToLineEnd(buffer);
+        _selectionSet.moveToLineEnd(_buffer);
     }
 
-    SelectionSet selectionSet;
-private:
+    inout(SelectionSet) selectionSet() inout
+    {
+        return _selectionSet;
+    }
 
+    string filePath()
+    {
+        if (_filepath is null)
+            return "Untitled";
+        else
+            return _filepath;
+    }
+    
+private:
+    string _filepath;    
+    SelectionSet _selectionSet;
 }
