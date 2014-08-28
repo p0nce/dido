@@ -187,7 +187,10 @@ public:
         int editPosX = -_cameraX + widthOfLineNumberMargin + marginEditor;
         int editPosY = -_cameraY + marginEditor;
 
-        for (int i = 0; i < _buffer.numLines(); ++i)
+        int firstVisibleLine = max(0, _cameraY / _charHeight - 1);
+        int firstNonVisibleLine = min(_buffer.numLines() + 1, 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);
+
+        for (int i = firstVisibleLine; i < firstNonVisibleLine; ++i)
         {
             dstring line = _buffer.line(i);
             dstring lineNumber = to!dstring(i + 1) ~ " ";
