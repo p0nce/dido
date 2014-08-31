@@ -4,30 +4,45 @@ import dido.buffer;
 
 struct Cursor
 {
-    int line;
-    int column;
+    int line = 0;
+    int column = 0;
+
+    int opCmp(ref const(Cursor) other) pure const nothrow
+    {
+        if (line != other.line)
+            return line - other.line;
+        if (column != other.column)
+            return column - other.column;
+        return 0;
+    }
 }
 
 struct Selection
 {
-    Cursor start;
-    Cursor stop;
+    Cursor start = Cursor(0, 0);
+    Cursor stop = Cursor(0, 0);
 
-    this(int line, int column)
+    this(int line, int column) pure nothrow
     {
         start.line = line;
-        start.column= column;
+        start.column = column;
         stop = start;
+    }
+
+    this(Cursor start_, Cursor stop_) pure nothrow
+    {
+        start = start_;
+        stop = stop_;
     }
 
     // start == stop => no selected area
 
-    bool hasSelectedArea()
+    bool hasSelectedArea() pure const nothrow
     {
         return start != stop;
     }
 
-    int opCmp(ref const(Selection) other)
+    int opCmp(ref const(Selection) other) pure const nothrow
     {
         if (start.line != other.start.line)
             return start.line - other.start.line;
@@ -39,6 +54,14 @@ struct Selection
         if (stop.column != other.stop.column)
             return stop.column - other.stop.column;
         return 0;
+    }
+
+    Selection sorted() pure const nothrow
+    {
+        if (start <= stop)
+            return this;
+        else 
+            return Selection(stop, start);
     }
 }
 
@@ -99,7 +122,6 @@ class SelectionSet
         normalize(buffer);
     }
 
-
     void normalize(Buffer buffer)
     {
         foreach(ref sel; selections)
@@ -117,7 +139,16 @@ class SelectionSet
                 sel.start.column = 0;
 
             sel.stop = sel.start;
+        }        
+    }
+
+    void replaceSelectionsBy(Buffer buffer, dstring content)
+    {
+        buffer.enqueueBarrier();
+
+        foreach(ref sel; selections)
+        {
+            buffer.enqueueEdit(sel, content);
         }
-        
     }
 }

@@ -253,7 +253,7 @@ private:
                     _cmdlinePanel.currentCommandLine ~= cast(dchar)(command.ch);
                 else
                 {
-                    // TODO
+                    buffer.insertChar(command.ch);
                 }
                 break;
         }
