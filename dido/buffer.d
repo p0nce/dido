@@ -14,17 +14,31 @@ import dido.buffercommand;
 
 class Buffer
 {
+private:
+    string _filepath;    
+    SelectionSet _selectionSet;
+    dstring[] lines;
+    int _historyIndex; // where we are in history
+    BufferCommand[] _history;
+
 public:
+
+    // create new
     this()
     {
-    }
-
-    void initializeNew()
-    {
         lines = ["\n"d];
+        _selectionSet = new SelectionSet();
+        _filepath = null;
     }
 
-    // load file in buffer, non-conrofming utf-8 is lost
+    this(string filepath)
+    {
+        loadFromFile(filepath);
+        _selectionSet = new SelectionSet();
+        _filepath = filepath;
+    }   
+
+    // load file in buffer, non-conforming utf-8 is lost
     final void loadFromFile(string path)
     {
         string wholeFile = readText(path);
@@ -78,11 +92,6 @@ public:
         return lines[lineIndex];
     }
 
-   /* ref dstring line(int lineIndex)
-    {
-        return lines[lineIndex];
-    }*/
-
     void undo()
     {
         assert(_historyIndex > 0);
@@ -108,13 +117,61 @@ public:
         BufferCommand command = BufferCommand(BufferCommandType.CHANGE_CHARS, selection, oldContent, newContent);
         pushCommand(command);
         redo();
-    }    
+    }
+
+    bool isBoundToFileName()
+    {
+        return _filepath !is null;
+    }
+
+    void moveSelection(int dx, int dy)
+    {        
+        foreach(ref sel; _selectionSet.selections)
+        {
+            sel.start.column += dx;
+            sel.start.line += dy;
+        }
+        _selectionSet.normalize(this);
+    }
+
+    void moveToLineBegin()
+    {
+        foreach(ref sel; _selectionSet.selections)
+            sel.start.column = 0;
+        _selectionSet.normalize(this);
+    }
+
+    void moveToLineEnd()
+    {
+        foreach(ref sel; _selectionSet.selections)
+            sel.start.column = lastColumn(sel.start.line) - 1;
+        _selectionSet.normalize(this);
+    }
+
+    inout(SelectionSet) selectionSet() inout
+    {
+        return _selectionSet;
+    }
+
+    void insertChar(dchar ch)
+    {
+        dstring content = ""d ~ ch;
+        enqueueBarrier();
+
+        foreach(ref sel; _selectionSet.selections)
+            enqueueEdit(sel, content);
+    }
+
+    string filePath()
+    {
+        if (_filepath is null)
+            return "Untitled";
+        else
+            return _filepath;
+    }
 
 private:
-    dstring[] lines;
-    int _historyIndex; // where we are in history
-    BufferCommand[] _history;
-
+    
     void pushCommand(BufferCommand command)
     {
         // strip previous history, add command
@@ -216,73 +273,7 @@ private:
                 break;
         }
     }
+
+
 }
 
-
-// A buffer + cursors + optional filename
-class SelectionBuffer
-{
-public:
-
-    alias _buffer this;
-    Buffer _buffer;
-
-    // create new
-    this()
-    {
-        _buffer = new Buffer();
-        _buffer.initializeNew();
-        _selectionSet = new SelectionSet();
-        _filepath = null;
-    }
-
-    this(string filepath)
-    {
-        _buffer = new Buffer();
-        _buffer.loadFromFile(filepath);
-        _selectionSet = new SelectionSet();
-        _filepath = filepath;
-    }
-
-    bool isBoundToFileName()
-    {
-        return _filepath !is null;
-    }
-
-    void moveSelection(int dx, int dy)
-    {
-        _selectionSet.move(_buffer, dx, dy);
-    }
-
-    void moveToLineBegin()
-    {
-        _selectionSet.moveToLineBegin(_buffer);
-    }
-
-    void moveToLineEnd()
-    {
-        _selectionSet.moveToLineEnd(_buffer);
-    }
-
-    inout(SelectionSet) selectionSet() inout
-    {
-        return _selectionSet;
-    }
-
-    void insertChar(dchar ch)
-    {
-        _selectionSet.replaceSelectionsBy(_buffer, ""d ~ ch);
-    }
-
-    string filePath()
-    {
-        if (_filepath is null)
-            return "Untitled";
-        else
-            return _filepath;
-    }
-    
-private:
-    string _filepath;    
-    SelectionSet _selectionSet;
-}

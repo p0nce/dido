@@ -22,14 +22,14 @@ public:
     {
         foreach (ref path; paths)
         {
-            SelectionBuffer buf = new SelectionBuffer(path);
+            Buffer buf = new Buffer(path);
             _buffers ~= buf;
         }
 
         // create an empty buffer if no file provided
         if (_buffers.length == 0)
         {
-            SelectionBuffer buf = new SelectionBuffer;
+            Buffer buf = new Buffer;
             _buffers ~= buf;
         }
         _bufferSelect = 0;
@@ -128,7 +128,7 @@ private:
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
-    SelectionBuffer[] _buffers;
+    Buffer[] _buffers;
     int _bufferSelect;
     uint _timeSinceEvent;
 
@@ -159,7 +159,7 @@ private:
 
     void execute(Command command)
     {
-        SelectionBuffer buffer = _buffers[_bufferSelect];
+        Buffer buffer = _buffers[_bufferSelect];
         final switch (command.type) with (CommandType)
         {            
             case MOVE_UP:
@@ -237,7 +237,7 @@ private:
                 }
                 else
                 {
-                    // TODO
+                    buffer.insertChar('\n');
                     break;
                 }
 

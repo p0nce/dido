@@ -106,7 +106,7 @@ public:
         renderer.setViewportFull();
     }
 
-    void updateState(Font font, SelectionBuffer[] buffers, int bufferSelect)
+    void updateState(Font font, Buffer[] buffers, int bufferSelect)
     {
         _buffers = buffers;
         _font = font;
@@ -114,7 +114,7 @@ public:
     }
 
 private:
-    SelectionBuffer[] _buffers;
+    Buffer[] _buffers;
     Font _font;
     int _bufferSelect;
 }
@@ -297,7 +297,7 @@ public:
         renderer.setViewportFull();
     }
 
-    void setState(Font font, SelectionBuffer buffer, bool drawCursors)
+    void setState(Font font, Buffer buffer, bool drawCursors)
     {
         _buffer = buffer;
         _font = font;
@@ -330,7 +330,7 @@ private:
     int _cameraY = 0;
     int _charWidth;
     int _charHeight;
-    SelectionBuffer _buffer;    
+    Buffer _buffer;    
     Font _font;
     bool _drawCursors;
 

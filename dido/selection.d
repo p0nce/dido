@@ -94,34 +94,6 @@ class SelectionSet
         selections = selections[0..1];
     }
 
-    void move(Buffer buffer, int dx, int dy)
-    {
-        foreach(ref sel; selections)
-        {
-            sel.start.column += dx;
-            sel.start.line += dy;
-        }
-        normalize(buffer);
-    }
-
-    void moveToLineBegin(Buffer buffer)
-    {
-        foreach(ref sel; selections)
-        {
-            sel.start.column = 0;
-        }
-        normalize(buffer);
-    }
-
-    void moveToLineEnd(Buffer buffer)
-    {
-        foreach(ref sel; selections)
-        {
-            sel.start.column = buffer.lastColumn(sel.start.line) - 1;
-        }
-        normalize(buffer);
-    }
-
     void normalize(Buffer buffer)
     {
         foreach(ref sel; selections)
@@ -140,15 +112,5 @@ class SelectionSet
 
             sel.stop = sel.start;
         }        
-    }
-
-    void replaceSelectionsBy(Buffer buffer, dstring content)
-    {
-        buffer.enqueueBarrier();
-
-        foreach(ref sel; selections)
-        {
-            buffer.enqueueEdit(sel, content);
-        }
-    }
+    }   
 }
