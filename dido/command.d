@@ -30,6 +30,12 @@ struct Command
         type = type_;
     }
 
+    this(CommandType type_, bool shift_)
+    {
+        type = type_;
+        shift = shift_;
+    }
+
     this(CommandType type_, dchar ch_)
     {
         type = type_;
@@ -38,6 +44,7 @@ struct Command
 
     CommandType type;
     dchar ch;
+    bool shift = false;    
 }
 
 

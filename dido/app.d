@@ -163,26 +163,27 @@ private:
         final switch (command.type) with (CommandType)
         {            
             case MOVE_UP:
-                buffer.moveSelection(0, -1);                
+                buffer.moveSelectionVertical(-1, command.shift);
                 break;
+
             case MOVE_DOWN:
-                buffer.moveSelection(0, 1);
+                buffer.moveSelectionVertical(1, command.shift);
                 break;
 
             case MOVE_LEFT:
-                buffer.moveSelection(-1, 0);
+                buffer.moveSelectionHorizontal(-1, command.shift);
                 break;
 
             case MOVE_RIGHT:            
-                buffer.moveSelection(+1, 0);
+                buffer.moveSelectionHorizontal(+1, command.shift);
                 break;
 
             case MOVE_LINE_BEGIN:
-                buffer.moveToLineBegin();
+                buffer.moveToLineBegin(command.shift);
                 break;
 
             case MOVE_LINE_END:
-                buffer.moveToLineEnd();
+                buffer.moveToLineEnd(command.shift);
                 break;
 
             case TOGGLE_FULLSCREEN:

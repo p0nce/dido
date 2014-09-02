@@ -13,7 +13,7 @@ void main(string[] args)
     {
         string arg = args[argIndex];
         inputFiles ~= arg;
-    }  
+    }
 
     auto app = scoped!App(inputFiles);
     app.mainLoop();

@@ -104,13 +104,23 @@ class SelectionSet
             if (sel.start.line < 0)
                 sel.start.line = 0;
 
-            if (sel.start.column >= buffer.lastColumn(sel.start.line))
-                sel.start.column = buffer.lastColumn(sel.start.line) - 1;
+            if (sel.start.column >= buffer.lineLength(sel.start.line))
+                sel.start.column = buffer.lineLength(sel.start.line) - 1;
 
             if (sel.start.column < 0)
                 sel.start.column = 0;
 
-            sel.stop = sel.start;
+            if (sel.stop.line >= buffer.numLines())
+                sel.stop.line = buffer.numLines() - 1;
+
+            if (sel.stop.line < 0)
+                sel.stop.line = 0;
+
+            if (sel.stop.column >= buffer.lineLength(sel.stop.line))
+                sel.stop.column = buffer.lineLength(sel.stop.line) - 1;
+
+            if (sel.stop.column < 0)
+                sel.stop.column = 0;
         }        
     }   
 }

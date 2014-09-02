@@ -82,7 +82,7 @@ public:
         return cast(int)(lines.length);
     }
 
-    int lastColumn(int lineIndex) pure const nothrow
+    int lineLength(int lineIndex) pure const nothrow
     {
         return lines[lineIndex].length;
     }
@@ -124,27 +124,74 @@ public:
         return _filepath !is null;
     }
 
-    void moveSelection(int dx, int dy)
+    void moveSelectionHorizontal(int dx, bool shift)
     {        
         foreach(ref sel; _selectionSet.selections)
         {
-            sel.start.column += dx;
-            sel.start.line += dy;
+            Cursor* cursor = shift ? &sel.stop : &sel.start;
+            cursor.column += dx;
+
+            while (cursor.column < 0 && cursor.line > 0)
+            {
+                cursor.line -= 1;
+                cursor.column += lines[cursor.line].length;                
+            }
+            if (cursor.column < 0)
+                cursor.column = 0;
+
+            while (cursor.column >= lineLength(cursor.line) && cursor.line + 1 < numLines())
+            {
+                cursor.column -= lines[cursor.line].length;
+                cursor.line += 1;                
+            }
+
+            if (cursor.column >= lineLength(cursor.line))
+                cursor.column = cast(int)(lines[cursor.line].length) - 1;
+
+            if (!shift)            
+                sel.stop = sel.start;
+        }
+        _selectionSet.normalize(this);        
+    }
+
+    void moveSelectionVertical(int dy, bool shift)
+    {        
+        foreach(ref sel; _selectionSet.selections)
+        {
+            Cursor* cursor = shift ? &sel.stop : &sel.start;
+            cursor.line += dy;
+
+            if (!shift)
+                sel.stop = sel.start;
         }
         _selectionSet.normalize(this);
     }
 
-    void moveToLineBegin()
-    {
+    void moveToLineBegin(bool shift)
+    {        
         foreach(ref sel; _selectionSet.selections)
-            sel.start.column = 0;
+        {
+            Cursor* cursor = shift ? &sel.stop : &sel.start;
+            cursor.column = 0;
+
+            if (!shift)
+                sel.stop = sel.start;
+        }       
+
         _selectionSet.normalize(this);
     }
 
-    void moveToLineEnd()
+    void moveToLineEnd(bool shift)
     {
         foreach(ref sel; _selectionSet.selections)
-            sel.start.column = lastColumn(sel.start.line) - 1;
+        {
+            Cursor* cursor = shift ? &sel.stop : &sel.start;
+            cursor.column = lineLength(cursor.line) - 1;
+
+            if (!shift)
+                sel.stop = sel.start;
+        }
+
         _selectionSet.normalize(this);
     }
 
