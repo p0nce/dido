@@ -12,7 +12,7 @@ import dido.buffercommand;
 
 // text buffers
 
-class Buffer
+final class Buffer
 {
 private:
     string _filepath;    
@@ -39,7 +39,7 @@ public:
     }   
 
     // load file in buffer, non-conforming utf-8 is lost
-    final void loadFromFile(string path)
+    void loadFromFile(string path)
     {
         string wholeFile = readText(path);
         dstring wholeFileUTF32 = to!dstring(wholeFile);
@@ -52,7 +52,7 @@ public:
     }
 
     // save file using OS end-of-lines
-    final void saveToFile(string path)
+    void saveToFile(string path)
     {
         ubyte[] result;
         foreach(ref dstring dline; lines)
@@ -90,6 +90,20 @@ public:
     inout(dstring) line(int lineIndex) pure inout nothrow
     {
         return lines[lineIndex];
+    }
+
+    dchar charAtCursor(Cursor cursor) pure inout nothrow
+    {
+        assert(isValidCursor(cursor));
+        return lines[cursor.line][cursor.column];
+    }
+
+    bool isValidCursor(Cursor cursor) pure inout nothrow
+    {
+        return (cursor.line >= 0) 
+             && (cursor.line < lines.length)
+             && (cursor.column >= 0)
+             && (cursor.column < lines[cursor.line].length);
     }
 
     void undo()
@@ -207,6 +221,8 @@ public:
 
         foreach(ref sel; _selectionSet.selections)
             enqueueEdit(sel, content);
+
+        moveSelectionHorizontal(1, false);
     }
 
     string filePath()
@@ -258,8 +274,15 @@ private:
                 currentLine++;
         }
     }
+/*
+    Cursor deleteSelection(Selection selection)
+    {
+
+
+    }*/
 
     // replace a Selection content by a new content
+    // returns a cursor Selection just after the newly inserted part
     void replaceSelectionContent(Selection selection, dstring content)
     {
         Selection sel = selection.sorted();

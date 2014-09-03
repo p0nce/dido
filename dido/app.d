@@ -144,11 +144,48 @@ private:
         vec3i green = vec3i(0, 255, 0);
         vec3i yellow = vec3i(255, 255, 0);
         vec3i red = vec3i(255, 0, 0);
-        if (cmdline == "exit")
+        if (cmdline == "q" || cmdline == "exit")
         {
             _finished = true;
             _cmdlinePanel.statusLine = "OK";
             _cmdlinePanel.statusColor = green;
+        }
+        else if (cmdline == "new" || cmdline == "n")
+        {
+            _buffers ~= new Buffer;
+            _bufferSelect = _buffers.length - 1;
+            _cmdlinePanel.statusLine = "Created new file";
+            _cmdlinePanel.statusColor = green;
+        }
+        else if (cmdline == "save" || cmdline == "s")
+        {
+            if (_buffers[_bufferSelect].isBoundToFileName())
+            {
+                string filepath = _buffers[_bufferSelect].filePath();
+                _buffers[_bufferSelect].saveToFile(filepath);
+                _cmdlinePanel.statusLine = to!dstring(format("Saved to %s", filepath));
+                _cmdlinePanel.statusColor = green;
+            }
+            else
+            {
+                _cmdlinePanel.statusLine = "This buffer is unbounded, try :save <filename>";
+                _cmdlinePanel.statusColor = red;
+            }
+        }
+        else if (cmdline == "load" || cmdline == "l")
+        {
+            if (_buffers[_bufferSelect].isBoundToFileName())
+            {
+                string filepath = _buffers[_bufferSelect].filePath();
+                _buffers[_bufferSelect].loadFromFile(filepath);
+                _cmdlinePanel.statusLine = to!dstring(format("Loaded %s", filepath));
+                _cmdlinePanel.statusColor = green;
+            }
+            else
+            {
+                _cmdlinePanel.statusLine = "This buffer is unbounded, try :load <filename>";
+                _cmdlinePanel.statusColor = red;
+            }
         }
         else
         {
@@ -273,29 +310,33 @@ private:
                 case SDL_KEYDOWN:
                     {
                         auto key = event.key.keysym;
-                        if (key.sym == SDLK_RETURN && ((key.mod & KMOD_ALT) != 0))
+                        bool alt = (key.mod & KMOD_ALT) != 0;
+                        bool shift = (key.mod & KMOD_SHIFT) != 0;
+                        bool ctrl = (key.mod & KMOD_CTRL) != 0;
+
+                        if (key.sym == SDLK_RETURN && alt)
                             commands ~= Command(CommandType.TOGGLE_FULLSCREEN);                            
                         else if (key.sym == SDLK_ESCAPE)
                             commands ~= Command(CommandType.EXIT);
                         else if (key.sym == SDLK_RETURN)
                             commands ~= Command(CommandType.RETURN);
                         else if (key.sym == SDLK_LEFT)
-                            commands ~= Command(CommandType.MOVE_LEFT);
+                            commands ~= Command(CommandType.MOVE_LEFT, shift);
                         else if (key.sym == SDLK_RIGHT)
-                            commands ~= Command(CommandType.MOVE_RIGHT);
+                            commands ~= Command(CommandType.MOVE_RIGHT, shift);
                         else if (key.sym == SDLK_UP)
-                            commands ~= Command(CommandType.MOVE_UP);
+                            commands ~= Command(CommandType.MOVE_UP, shift);
                         else if (key.sym == SDLK_DOWN)
-                            commands ~= Command(CommandType.MOVE_DOWN);
+                            commands ~= Command(CommandType.MOVE_DOWN, shift);
                         else if (key.sym == SDLK_BACKSPACE)
                             commands ~= Command(CommandType.BACKSPACE);
                         else if (key.sym == SDLK_END)
-                            commands ~= Command(CommandType.MOVE_LINE_END);
+                            commands ~= Command(CommandType.MOVE_LINE_END, shift);
                         else if (key.sym == SDLK_HOME)
-                            commands ~= Command(CommandType.MOVE_LINE_BEGIN);
-                        else if (key.sym == SDLK_PAGEUP && ((key.mod & KMOD_CTRL) != 0))
+                            commands ~= Command(CommandType.MOVE_LINE_BEGIN, shift);
+                        else if (key.sym == SDLK_PAGEUP && ctrl)
                             commands ~= Command(CommandType.ROTATE_PREVIOUS_BUFFER);
-                        else if (key.sym == SDLK_PAGEDOWN && ((key.mod & KMOD_CTRL) != 0))
+                        else if (key.sym == SDLK_PAGEDOWN && ctrl)
                             commands ~= Command(CommandType.ROTATE_NEXT_BUFFER);
                         else if (key.sym == SDLK_PAGEUP)
                             commands ~= Command(CommandType.PAGE_UP);

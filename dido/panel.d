@@ -1,6 +1,7 @@
 module dido.panel;
 
 import std.conv;
+import std.path;
 
 import gfm.math;
 import gfm.sdl2;
@@ -100,7 +101,7 @@ public:
                 _font.setColor(255, 255, 255, 255);
             else
                 _font.setColor(200, 200, 200, 255);
-            _font.renderString(_buffers[i].filePath(), marginX, marginY + i * itemSpace);
+            _font.renderString(_prettyName[i], marginX, marginY + i * itemSpace);
         }
 
         renderer.setViewportFull();
@@ -109,11 +110,17 @@ public:
     void updateState(Font font, Buffer[] buffers, int bufferSelect)
     {
         _buffers = buffers;
+        _prettyName.length = buffers.length;
+        for(int i = 0; i < cast(int)buffers.length; ++i)
+        {
+            _prettyName[i] = baseName(buffers[i].filePath());
+        }
         _font = font;
         _bufferSelect = bufferSelect;
     }
 
 private:
+    string[] _prettyName;
     Buffer[] _buffers;
     Font _font;
     int _bufferSelect;
@@ -237,11 +244,12 @@ public:
             _font.renderString(lineNumber,  0,  0 -_cameraY + marginEditor + i * _charHeight);
 
 
-            int posX = editPosX;
+            int posXInChars = 0;
             int posY = editPosY + i * _charHeight;
-
+            
             foreach(dchar ch; line)
             {
+                int widthOfChar = 1;
                 switch (ch)
                 {
                     case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -269,6 +277,13 @@ public:
                         _font.setColor(40, 40, 40);
                         break;
 
+                    case '\t':
+                        ch = 0x2192;
+                        _font.setColor(80, 60, 70);
+                        int tabLength = 4;
+                        widthOfChar = tabLength - posXInChars % tabLength;
+                        break;
+
                     case ' ':
                         ch = 0x2D1;
                         _font.setColor(60, 60, 70);
@@ -280,10 +295,11 @@ public:
                 }
 
                 box2i visibleBox = box2i(0, 0, _position.width, _position.height);
+                int posX = editPosX + posXInChars * _charWidth;
                 box2i charBox = box2i(posX, posY, posX + _charWidth, posY + _charHeight);
                 if (visibleBox.intersects(charBox))
                     _font.renderChar(ch, posX, posY);
-                posX += _charWidth;
+                posXInChars += widthOfChar;
             }
         }
 
