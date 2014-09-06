@@ -100,17 +100,25 @@ public:
 
     void undo()
     {
-        if (_historyIndex > 0)
+        while (_historyIndex > 0)
         {
             _historyIndex--;
-            reverseCommand(_history[_historyIndex]);
+            if (reverseCommand(_history[_historyIndex]))
+                break;
         }
     }
 
     void redo()
     {
-        if (_historyIndex < _history.length)
+        int barrierFound = 0;
+        while (_historyIndex < _history.length)
         {
+            if (_history[_historyIndex].type == BufferCommandType.BARRIER)
+                barrierFound++;
+
+            if (barrierFound >= 2)
+                return;
+
             applyCommand(_history[_historyIndex]);
             _historyIndex++;
         }
@@ -311,6 +319,7 @@ private:
         }     
     }
 
+    // true if was a 
     void applyCommand(BufferCommand command)
     {
         final switch(command.type) with (BufferCommandType)
@@ -326,22 +335,22 @@ private:
         }
     }
 
-    void reverseCommand(BufferCommand command)
+    // returns true if it was a barrier
+    bool reverseCommand(BufferCommand command)
     {
         final switch(command.type) with (BufferCommandType)
         {
             case CHANGE_CHARS:
                 replaceSelectionContent(command.changeChars.newSel, command.changeChars.oldContent);
-                break;
+                return false;
 
             case SAVE_SELECTIONS:
                 // restore selections
                 _selectionSet.selections = command.saveSelections.selections.dup;
-                break;
+                return false;
 
             case BARRIER: 
-                // do nothing
-                break;
+                return true;
         }
     }
 

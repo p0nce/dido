@@ -249,6 +249,14 @@ private:
                 _textArea.moveCamera(0, _textArea.position().height);
                 break;
 
+            case UNDO:
+                buffer.undo();
+                break;
+
+            case REDO:
+                buffer.redo();
+                break;
+
             case ENTER_COMMANDLINE_MODE:
                 if (!_commandLineMode)
                 {
@@ -360,6 +368,10 @@ private:
                             commands ~= Command(CommandType.PAGE_UP);
                         else if (key.sym == SDLK_PAGEDOWN)
                             commands ~= Command(CommandType.PAGE_DOWN);
+                        else if (key.sym == SDLK_z && ctrl)
+                            commands ~= Command(CommandType.UNDO);
+                        else if (key.sym == SDLK_y && ctrl)
+                            commands ~= Command(CommandType.REDO);
                         else 
                         {
                         }

@@ -1,9 +1,9 @@
 {
-	"name": "dido",
+    "name": "dido",
 
-	"targetType": "executable",
-	"importPaths": ["."],
-	"sourcePaths": ["."],
+    "targetType": "executable",
+    "importPaths": ["."],
+    "sourcePaths": ["."],
 
     "dependencies": {
         "gfm:sdl2": "==1.2.1",

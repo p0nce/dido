@@ -21,7 +21,9 @@ enum CommandType
     DELETE,
     BACKSPACE,
     ROTATE_NEXT_BUFFER,
-    ROTATE_PREVIOUS_BUFFER
+    ROTATE_PREVIOUS_BUFFER,
+    UNDO,
+    REDO
 }
 
 struct Command
