@@ -392,7 +392,7 @@ private:
     {
         dstring oldContent = getSelectionContent(selection);
         Selection newSel = replaceSelectionContent(selection, newContent);
-        BufferCommand command = saveSelectionsCommand(selection, newSel, oldContent, newContent);        
+        BufferCommand command = changeCharsCommand(selection, newSel, oldContent, newContent);        
         pushCommand(command);
         return Selection(newSel.edge);
     }

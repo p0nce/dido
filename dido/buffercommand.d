@@ -48,18 +48,18 @@ BufferCommand barrierCommand()
 BufferCommand saveSelectionsCommand(Selection[] selectionToSave)
 {
     BufferCommand command;
-    command.type = BufferCommandType.BARRIER;
-    command.saveSelections.selections = selectionToSave;
+    command.type = BufferCommandType.SAVE_SELECTIONS;
+    command.saveSelections.selections = selectionToSave.dup;
     return command;
 }
 
-BufferCommand saveSelectionsCommand(Selection oldSel,
-                                    Selection newSel,
-                                    dstring oldContent,
-                                    dstring newContent)
+BufferCommand changeCharsCommand(Selection oldSel,
+                                 Selection newSel,
+                                 dstring oldContent,
+                                 dstring newContent)
 {
     BufferCommand command;
     command.type = BufferCommandType.CHANGE_CHARS;
-    command.changeChars = ChangeCharsCommand(oldSel, newSel, oldContent, newContent);
+    command.changeChars = ChangeCharsCommand(oldSel, newSel, oldContent.dup, newContent.dup);
     return command;
 }
