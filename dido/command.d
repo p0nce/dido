@@ -18,6 +18,7 @@ enum CommandType
     EXIT, 
     RETURN,
     INSERT_CHAR,
+    DELETE,
     BACKSPACE,
     ROTATE_NEXT_BUFFER,
     ROTATE_PREVIOUS_BUFFER

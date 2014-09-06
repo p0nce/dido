@@ -5,7 +5,7 @@
 	"importPaths": ["."],
 	"sourcePaths": ["."],
 
-	"dependencies": {
+    "dependencies": {
         "gfm:sdl2": "==1.2.1",
         "gfm:math": "==1.2.1",
         "libdparse": "==0.1.0"

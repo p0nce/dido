@@ -100,29 +100,20 @@ public:
 
     void undo()
     {
-        assert(_historyIndex > 0);
-        // TODO
+        if (_historyIndex > 0)
+        {
+            _historyIndex--;
+            reverseCommand(_history[_historyIndex]);
+        }
     }
 
     void redo()
     {
-        assert(_historyIndex < _history.length);
-        applyCommand(_history[_historyIndex]);
-        _historyIndex++;
-    }
-
-    void enqueueBarrier()
-    {
-        pushCommand(barrierCommand());
-        redo();
-    }
-
-    void enqueueEdit(Selection selection, dstring newContent)
-    {
-        dstring oldContent = getSelectionContent(selection);
-        BufferCommand command = BufferCommand(BufferCommandType.CHANGE_CHARS, selection, oldContent, newContent);
-        pushCommand(command);
-        redo();
+        if (_historyIndex < _history.length)
+        {
+            applyCommand(_history[_historyIndex]);
+            _historyIndex++;
+        }
     }
 
     bool isBoundToFileName()
@@ -134,11 +125,10 @@ public:
     {        
         foreach(ref sel; _selectionSet.selections)
         {
-            BufferIterator* iterator = shift ? &sel.stop : &sel.start;
-            iterator = iterator + dx;
+            sel.edge = sel.edge + dx;
 
             if (!shift)            
-                sel.stop = sel.start;
+                sel.anchor = sel.edge;
         }
     }
 
@@ -200,6 +190,30 @@ public:
         moveSelectionHorizontal(1, false);
     }
 
+    // selection with area => delete selection
+    // else delete character at cursor or before cursor
+    void deleteSelection(bool isBackspace)
+    {
+        enqueueBarrier();
+
+        foreach(ref selection; _selectionSet.selections)
+        {
+            Selection sel = selection.sorted;
+            if (sel.hasSelectedArea())
+                enqueueEdit(sel, ""d);
+            else
+            {              
+                Selection selOneChar = sel;
+                if (isBackspace)
+                    selOneChar.anchor--;
+                else
+                    selOneChar.edge++;
+
+                enqueueEdit(selOneChar, ""d);
+            }
+        }
+    }
+
     string filePath()
     {
         if (_filepath is null)
@@ -214,6 +228,7 @@ private:
     {
         // strip previous history, add command
         _history = _history[0.._historyIndex] ~ command;
+        _historyIndex = _history.length;
     }
 
     // replace a Selection content by a new content
@@ -221,9 +236,9 @@ private:
     Selection replaceSelectionContent(Selection selection, dstring content)
     {
         Selection sel = selection.sorted();
-        erase(sel.start, sel.stop);
-        BufferIterator after = insert(sel.start, content);
-        return Selection(sel.start, after);       
+        erase(sel.anchor, sel.edge);
+        BufferIterator after = insert(sel.anchor, content);
+        return Selection(sel.anchor, after);       
     }
 
     // Gets content of a selection
@@ -232,7 +247,7 @@ private:
         Selection sel = selection.sorted();
         dstring result;
 
-        for (BufferIterator it = sel.start; it != sel.stop; ++it)
+        for (BufferIterator it = sel.anchor; it != sel.edge; ++it)
             result ~= it.read();
 
         return result;
@@ -301,7 +316,27 @@ private:
         final switch(command.type) with (BufferCommandType)
         {
             case CHANGE_CHARS:
-                replaceSelectionContent(command.sel, command.newContent);
+                replaceSelectionContent(command.changeChars.oldSel, command.changeChars.newContent);
+                break;
+
+            case SAVE_SELECTIONS:
+            case BARRIER: 
+                // do nothing
+                break;
+        }
+    }
+
+    void reverseCommand(BufferCommand command)
+    {
+        final switch(command.type) with (BufferCommandType)
+        {
+            case CHANGE_CHARS:
+                replaceSelectionContent(command.changeChars.newSel, command.changeChars.oldContent);
+                break;
+
+            case SAVE_SELECTIONS:
+                // restore selections
+                _selectionSet.selections = command.saveSelections.selections.dup;
                 break;
 
             case BARRIER: 
@@ -310,6 +345,22 @@ private:
         }
     }
 
+    void enqueueBarrier()
+    {
+        pushCommand(barrierCommand());
+    }
 
+    void enqueueSaveSelections()
+    {
+        pushCommand(saveSelectionsCommand(_selectionSet.selections));
+    }
+
+    void enqueueEdit(Selection selection, dstring newContent)
+    {
+        dstring oldContent = getSelectionContent(selection);
+        Selection newSel = replaceSelectionContent(selection, newContent);
+        BufferCommand command = saveSelectionsCommand(selection, newSel, oldContent, newContent);        
+        pushCommand(command);
+    }
 }
 

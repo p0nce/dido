@@ -187,6 +187,10 @@ private:
                 _cmdlinePanel.statusColor = red;
             }
         }
+        else if (cmdline == "undo" || cmdline == "u")
+            _buffers[_bufferSelect].undo();
+        else if (cmdline == "redo" || cmdline == "r")
+            _buffers[_bufferSelect].redo();
         else
         {
             _cmdlinePanel.statusLine = to!dstring(format("Unknown command '%s'"d, cmdline));
@@ -265,6 +269,18 @@ private:
                     if (_cmdlinePanel.currentCommandLine.length > 0)
                         _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
                 }
+                else
+                    buffer.deleteSelection(true);
+                break;
+
+            case DELETE:
+                if (_commandLineMode)
+                {
+                    if (_cmdlinePanel.currentCommandLine.length > 0)
+                        _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
+                }
+                else
+                    buffer.deleteSelection(false);
                 break;
             
             case RETURN:
@@ -330,6 +346,8 @@ private:
                             commands ~= Command(CommandType.MOVE_DOWN, shift);
                         else if (key.sym == SDLK_BACKSPACE)
                             commands ~= Command(CommandType.BACKSPACE);
+                        else if (key.sym == SDLK_DELETE)
+                            commands ~= Command(CommandType.DELETE);
                         else if (key.sym == SDLK_END)
                             commands ~= Command(CommandType.MOVE_LINE_END, shift);
                         else if (key.sym == SDLK_HOME)

@@ -280,7 +280,7 @@ public:
                     case '\t':
                         ch = 0x2192;
                         _font.setColor(80, 60, 70);
-                        int tabLength = 4;
+                        int tabLength = 1;//4; not working yet
                         widthOfChar = tabLength - posXInChars % tabLength;
                         break;
 
@@ -355,8 +355,8 @@ private:
         // draw the cursor part
         if (drawCursors)
         {
-            int startX = offsetX + selection.start.cursor.column * _font.charWidth();
-            int startY = offsetY + selection.start.cursor.line * _font.charHeight();
+            int startX = offsetX + selection.anchor.cursor.column * _font.charWidth();
+            int startY = offsetY + selection.anchor.cursor.line * _font.charHeight();
 
             renderer.setColor(255, 255, 255, 255);
             renderer.fillRect(startX, startY, 1, _font.charHeight() - 1);
@@ -364,8 +364,8 @@ private:
 
         if (selection.hasSelectedArea)
         {
-            int stopX = offsetX + selection.stop.cursor.column * _font.charWidth();
-            int stopY = offsetY + selection.stop.cursor.line * _font.charHeight();
+            int stopX = offsetX + selection.edge.cursor.column * _font.charWidth();
+            int stopY = offsetY + selection.edge.cursor.line * _font.charHeight();
 
             // draw the cursor part
             renderer.setColor(128, 128, 128, 255);

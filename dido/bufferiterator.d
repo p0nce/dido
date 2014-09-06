@@ -92,7 +92,7 @@ public:
         return this;
     }
 
-    BufferIterator opOpAssign(string op)(int displacement) if (op == "+=")
+    BufferIterator opOpAssign(string op)(int displacement) if (op == "+")
     {
         while (displacement > 0)
         {
@@ -107,7 +107,7 @@ public:
         return this;
     }
 
-    BufferIterator opOpAssign(string op)(int displacement) if (op == "-=")
+    BufferIterator opOpAssign(string op)(int displacement) if (op == "-")
     {
         return opOpAssign!"+="(-displacement);
     }
@@ -115,8 +115,7 @@ public:
     BufferIterator opBinary(string op)(int displacement) if (op == "+")
     {
         BufferIterator result = this;
-        result += displacement;
-        return result;
+        return result += displacement;
     }
 
     BufferIterator opBinary(op)(int displacement) if (op == "-")

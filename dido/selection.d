@@ -6,27 +6,27 @@ import dido.bufferiterator;
 
 struct Selection
 {
-    BufferIterator start;
-    BufferIterator stop;
+    BufferIterator anchor; // selection start
+    BufferIterator edge;   // blinking cursor
 
     this(BufferIterator bothEnds) pure nothrow
     {
-        start = bothEnds;
-        stop = bothEnds;
+        anchor = bothEnds;
+        edge = bothEnds;
     }
 
-    this(BufferIterator start_, BufferIterator stop_) pure nothrow
+    this(BufferIterator anchor_, BufferIterator edge_) pure nothrow
     {
-        start = start_;
-        stop = stop_;
-        assert(start.buffer is stop.buffer);
+        edge = edge_;
+        anchor = anchor_;
+        assert(anchor.buffer is edge.buffer);
     }
 
     // start == stop => no selected area
 
     bool hasSelectedArea() pure const nothrow
     {
-        return start != stop;
+        return anchor != edge;
     }
 /*
     int opCmp(ref const(Selection) other) pure const nothrow
@@ -43,12 +43,13 @@ struct Selection
         return 0;
     }*/
 
+    // Returns a sleection with the anchor at the left and the edge at the right
     Selection sorted() pure nothrow
     {
-        if (start <= stop)
+        if (anchor <= edge)
             return this;
         else 
-            return Selection(stop, start);
+            return Selection(edge, anchor);
     }
 }
 
@@ -60,6 +61,11 @@ class SelectionSet
     {
         // always have a cursor
         selections ~= Selection(BufferIterator(buffer, Cursor(0, 0)));
+    }
+
+    this(Selection[] savedSelections)
+    {
+        selections = savedSelections;
     }
 
     void removeDuplicate()
