@@ -6,8 +6,8 @@
 	"sourcePaths": ["."],
 
 	"dependencies": {
-        "gfm:sdl2": "~>1.1.9",
-        "gfm:math": "~>1.1.9",
-        "libdparse": "~master"
+        "gfm:sdl2": "==1.2.1",
+        "gfm:math": "==1.2.1",
+        "libdparse": "==0.1.0"
     }
 }

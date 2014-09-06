@@ -8,6 +8,7 @@ import std.conv;
 
 import dido.selection;
 import dido.buffercommand;
+import dido.bufferiterator;
 
 
 // text buffers
@@ -26,17 +27,27 @@ public:
     // create new
     this()
     {
-        lines = ["\n"d];
-        _selectionSet = new SelectionSet();
+        lines = [""d];
+        _selectionSet = new SelectionSet(this);
         _filepath = null;
     }
 
     this(string filepath)
     {
         loadFromFile(filepath);
-        _selectionSet = new SelectionSet();
+        _selectionSet = new SelectionSet(this);
         _filepath = filepath;
     }   
+
+    BufferIterator begin()
+    {
+        return BufferIterator(this, Cursor(0, 0));
+    }
+
+    BufferIterator end()
+    {
+        return BufferIterator(this, Cursor(0, 0));
+    }
 
     // load file in buffer, non-conforming utf-8 is lost
     void loadFromFile(string path)
@@ -45,9 +56,9 @@ public:
         dstring wholeFileUTF32 = to!dstring(wholeFile);
         lines = splitLines!(dstring)( wholeFileUTF32 );
 
-        foreach(ref dstring line; lines)
+        for (int line = 0; line + 1 < cast(int)lines.length; ++line)
         {
-            line ~= 0x0A;
+            lines[line] ~= 0x0A;
         }
     }
 
@@ -72,11 +83,6 @@ public:
         std.file.write(path, result);
     }
 
-    bool isValidLine(int lineIndex) pure const nothrow
-    {
-        return ( 0 <= lineIndex && lineIndex < lines.length ); 
-    }
-
     int numLines() pure const nothrow
     {
         return cast(int)(lines.length);
@@ -90,20 +96,6 @@ public:
     inout(dstring) line(int lineIndex) pure inout nothrow
     {
         return lines[lineIndex];
-    }
-
-    dchar charAtCursor(Cursor cursor) pure inout nothrow
-    {
-        assert(isValidCursor(cursor));
-        return lines[cursor.line][cursor.column];
-    }
-
-    bool isValidCursor(Cursor cursor) pure inout nothrow
-    {
-        return (cursor.line >= 0) 
-             && (cursor.line < lines.length)
-             && (cursor.column >= 0)
-             && (cursor.column < lines[cursor.line].length);
     }
 
     void undo()
@@ -142,35 +134,17 @@ public:
     {        
         foreach(ref sel; _selectionSet.selections)
         {
-            Cursor* cursor = shift ? &sel.stop : &sel.start;
-            cursor.column += dx;
-
-            while (cursor.column < 0 && cursor.line > 0)
-            {
-                cursor.line -= 1;
-                cursor.column += lines[cursor.line].length;                
-            }
-            if (cursor.column < 0)
-                cursor.column = 0;
-
-            while (cursor.column >= lineLength(cursor.line) && cursor.line + 1 < numLines())
-            {
-                cursor.column -= lines[cursor.line].length;
-                cursor.line += 1;                
-            }
-
-            if (cursor.column >= lineLength(cursor.line))
-                cursor.column = cast(int)(lines[cursor.line].length) - 1;
+            BufferIterator* iterator = shift ? &sel.stop : &sel.start;
+            iterator = iterator + dx;
 
             if (!shift)            
                 sel.stop = sel.start;
         }
-        _selectionSet.normalize(this);        
     }
 
     void moveSelectionVertical(int dy, bool shift)
     {        
-        foreach(ref sel; _selectionSet.selections)
+        /*foreach(ref sel; _selectionSet.selections)
         {
             Cursor* cursor = shift ? &sel.stop : &sel.start;
             cursor.line += dy;
@@ -178,35 +152,36 @@ public:
             if (!shift)
                 sel.stop = sel.start;
         }
-        _selectionSet.normalize(this);
+        _selectionSet.normalize(this);*/
     }
 
     void moveToLineBegin(bool shift)
     {        
-        foreach(ref sel; _selectionSet.selections)
+      /*  foreach(ref sel; _selectionSet.selections)
         {
-            Cursor* cursor = shift ? &sel.stop : &sel.start;
-            cursor.column = 0;
+            BufferIterator* iterator = shift ? &sel.stop : &sel.start;
+            iterator.cursor.column = 0;
 
             if (!shift)
                 sel.stop = sel.start;
         }       
 
-        _selectionSet.normalize(this);
+        _selectionSet.normalize(this);*/
     }
 
     void moveToLineEnd(bool shift)
     {
-        foreach(ref sel; _selectionSet.selections)
+     /*   foreach(ref sel; _selectionSet.selections)
         {
-            Cursor* cursor = shift ? &sel.stop : &sel.start;
+            BufferIterator* iterator = shift ? &sel.stop : &sel.start;
+            iterator = iterator.endOfLine();
             cursor.column = lineLength(cursor.line) - 1;
 
             if (!shift)
                 sel.stop = sel.start;
         }
 
-        _selectionSet.normalize(this);
+        _selectionSet.normalize(this);*/
     }
 
     inout(SelectionSet) selectionSet() inout
@@ -241,93 +216,84 @@ private:
         _history = _history[0.._historyIndex] ~ command;
     }
 
-    // If we find \n in a line, split it
-    // Then: if a line doesn't end with \n, merge with next
-    void normalizeLineEndings()
-    {   
-        size_t currentLine = 0;        
-        while (currentLine < lines.length)
-        {            
-            dstring thisLine = lines[currentLine];
-            int idx = thisLine.indexOf('\n');
-
-            if (idx != -1 && idx + 1 != thisLine.length) // found a \n not in last position
-            {
-                lines.insertInPlace(currentLine, thisLine[0..idx+1].idup); // copy sub-part including \n to a new line
-                lines[currentLine + 1] = lines[currentLine + 1][idx+1..$]; // next line becomes everything after the \n
-            }
-
-            currentLine++;
-        }
-
-        // make sure every line end with \n
-        currentLine = 0;        
-        while (currentLine + 1 < lines.length)
-        {
-            if (lines[currentLine].length == 0 || lines[currentLine][$-1] != '\n')
-            {
-                // merge two lines
-                lines[currentLine] = lines[currentLine] ~ lines[currentLine + 1];
-                lines = lines[0..$-1];
-            }            
-            else
-                currentLine++;
-        }
-    }
-/*
-    Cursor deleteSelection(Selection selection)
-    {
-
-
-    }*/
-
     // replace a Selection content by a new content
     // returns a cursor Selection just after the newly inserted part
-    void replaceSelectionContent(Selection selection, dstring content)
+    Selection replaceSelectionContent(Selection selection, dstring content)
     {
         Selection sel = selection.sorted();
-
-        if (sel.start.line == sel.stop.line)
-        {
-            assert(sel.start.column <= sel.stop.column);
-            replaceInPlace(lines[sel.start.line], sel.start.column, sel.stop.column, content);
-        }
-        else
-        {
-            // multi-line case
-            assert(sel.stop.line > sel.start.line);
-
-            replaceInPlace(lines[sel.start.line], sel.start.column, lines[sel.start.line].length, content);
-            dstring result = lines[sel.start.line][sel.start.column..$];
-            for (int line = sel.start.line + 1; line <= sel.stop.line - 1; ++line)
-                lines[line] = ""d;
-
-            replaceInPlace(lines[sel.stop.line], 0, sel.stop.column, ""d);
-        }
-        normalizeLineEndings();
+        erase(sel.start, sel.stop);
+        BufferIterator after = insert(sel.start, content);
+        return Selection(sel.start, after);       
     }
 
     // Gets content of a selection
     dstring getSelectionContent(Selection selection)
     {
         Selection sel = selection.sorted();
+        dstring result;
 
-        if (sel.start.line == sel.stop.line)
+        for (BufferIterator it = sel.start; it != sel.stop; ++it)
+            result ~= it.read();
+
+        return result;
+    }
+
+    BufferIterator insert(BufferIterator pos, dstring content)
+    {
+        foreach(dchar ch ; content)
+            pos = insert(pos, ch);
+        return pos;
+    }
+
+    // return an iterator after the inserted char
+    BufferIterator insert(BufferIterator pos, dchar content)
+    {
+        assert(pos.isValid());
+
+        if (content == '\n')
         {
-            assert(sel.start.column <= sel.stop.column);
-            return lines[sel.start.line][sel.start.column .. sel.stop.column + 1];
+            int col = pos.cursor.column;
+            int line = pos.cursor.line;
+            dstring thisLine = lines[line];
+            lines.insertInPlace(line, thisLine[0..col+1].idup); // copy sub-part including \n to a new line
+            lines[line + 1] = lines[line + 1][col+1..$]; // next line becomes everything after the \n
+            return BufferIterator(pos.buffer, Cursor(line + 1, 0));
         }
         else
         {
-            // multi-line case
-            assert(sel.stop.line > sel.start.line);
+            int line = pos.cursor.line;
+            int column = pos.cursor.column;
+            dstring oneCh = (&content)[0..1].idup;
+            replaceInPlace(lines[line], column, column, oneCh);
+            return BufferIterator(pos.buffer, Cursor(line, column + 1));
+        }
+    }
 
-            dstring result = lines[sel.start.line][sel.start.column..$];
-            for (int line = sel.start.line + 1; line <= sel.stop.line - 1; ++line)
-                result ~= lines[line];
-            result ~= lines[sel.stop.line][0..sel.stop.column];
-            return result;
-        }        
+    void erase(BufferIterator pos)
+    {
+        dchar chErased = pos.read();
+        if (chErased == '\n')
+        {
+            int line = pos.cursor.line;
+            int column = pos.cursor.column;
+            dstring newLine = lines[line][0..$-1] ~ lines[line+1];
+            replaceInPlace(lines, line, line + 2, [ newLine ]);
+        }
+        else
+        {
+            int line = pos.cursor.line;
+            int column = pos.cursor.column;
+            replaceInPlace(lines[line], column, column + 1, ""d);
+        }
+    }
+
+    void erase(BufferIterator begin, BufferIterator end)
+    {
+        while (begin < end)
+        {
+            --end;
+            erase(end);            
+        }     
     }
 
     void applyCommand(BufferCommand command)

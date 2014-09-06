@@ -355,8 +355,8 @@ private:
         // draw the cursor part
         if (drawCursors)
         {
-            int startX = offsetX + selection.start.column * _font.charWidth();
-            int startY = offsetY + selection.start.line * _font.charHeight();
+            int startX = offsetX + selection.start.cursor.column * _font.charWidth();
+            int startY = offsetY + selection.start.cursor.line * _font.charHeight();
 
             renderer.setColor(255, 255, 255, 255);
             renderer.fillRect(startX, startY, 1, _font.charHeight() - 1);
@@ -364,8 +364,8 @@ private:
 
         if (selection.hasSelectedArea)
         {
-            int stopX = offsetX + selection.stop.column * _font.charWidth();
-            int stopY = offsetY + selection.stop.line * _font.charHeight();
+            int stopX = offsetX + selection.stop.cursor.column * _font.charWidth();
+            int stopY = offsetY + selection.stop.cursor.line * _font.charHeight();
 
             // draw the cursor part
             renderer.setColor(128, 128, 128, 255);
