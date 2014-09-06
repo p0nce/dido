@@ -143,44 +143,38 @@ public:
 
     void moveSelectionVertical(int dy, bool shift)
     {        
-        /*foreach(ref sel; _selectionSet.selections)
+        foreach(ref sel; _selectionSet.selections)
         {
-            Cursor* cursor = shift ? &sel.stop : &sel.start;
-            cursor.line += dy;
+            sel.edge.cursor.line += dy;
+            int len = lineLength(sel.edge.cursor.line);
+            if (sel.edge.cursor.column > len)
+                sel.edge.cursor.column = len;
 
             if (!shift)
-                sel.stop = sel.start;
+                sel.anchor = sel.edge;
         }
-        _selectionSet.normalize(this);*/
     }
 
     void moveToLineBegin(bool shift)
     {        
-      /*  foreach(ref sel; _selectionSet.selections)
+        foreach(ref sel; _selectionSet.selections)
         {
-            BufferIterator* iterator = shift ? &sel.stop : &sel.start;
-            iterator.cursor.column = 0;
+            sel.edge.cursor.column = 0;
 
             if (!shift)
-                sel.stop = sel.start;
-        }       
-
-        _selectionSet.normalize(this);*/
+                sel.anchor = sel.edge;
+        }
     }
 
     void moveToLineEnd(bool shift)
     {
-     /*   foreach(ref sel; _selectionSet.selections)
+        foreach(ref sel; _selectionSet.selections)
         {
-            BufferIterator* iterator = shift ? &sel.stop : &sel.start;
-            iterator = iterator.endOfLine();
-            cursor.column = lineLength(cursor.line) - 1;
+            sel.edge.cursor.column = lineLength(sel.edge.cursor.line);
 
             if (!shift)
-                sel.stop = sel.start;
+                sel.anchor = sel.edge;
         }
-
-        _selectionSet.normalize(this);*/
     }
 
     inout(SelectionSet) selectionSet() inout
@@ -397,4 +391,3 @@ private:
         return Selection(newSel.edge);
     }
 }
-

@@ -35,7 +35,7 @@ public:
         assert(_buffer !is null);
     }    
 
-    inout(Cursor) cursor() pure inout nothrow
+    ref inout(Cursor) cursor() pure inout nothrow
     {
         return _cursor;
     }
@@ -44,7 +44,6 @@ public:
     {
         return _buffer;
     }
-
 
     bool opEquals(ref const(BufferIterator) other) pure const nothrow
     {
