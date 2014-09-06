@@ -34,6 +34,7 @@ public:
 
     this(string filepath)
     {
+        lines = [""d];
         loadFromFile(filepath);
         _selectionSet = new SelectionSet(this);
         _filepath = filepath;
@@ -191,27 +192,26 @@ public:
     {
         dstring content = ""d ~ ch;
         enqueueBarrier();
+        enqueueSaveSelections();
 
         foreach(ref sel; _selectionSet.selections)
-            enqueueEdit(sel, content);
-
-        moveSelectionHorizontal(1, false);
-    }
+            sel = enqueueEdit(sel, content);
+        enqueueSaveSelections();    }
 
     // selection with area => delete selection
     // else delete character at cursor or before cursor
     void deleteSelection(bool isBackspace)
     {
         enqueueBarrier();
+        enqueueSaveSelections();
 
-        foreach(ref selection; _selectionSet.selections)
+        foreach(ref sel; _selectionSet.selections)
         {
-            Selection sel = selection.sorted;
             if (sel.hasSelectedArea())
                 enqueueEdit(sel, ""d);
             else
-            {              
-                Selection selOneChar = sel;
+            {
+                Selection selOneChar = sel.sorted;
                 if (isBackspace)
                     selOneChar.anchor--;
                 else
@@ -220,6 +220,8 @@ public:
                 enqueueEdit(selOneChar, ""d);
             }
         }
+        moveSelectionHorizontal(-1, false);
+        enqueueSaveSelections();
     }
 
     string filePath()
@@ -228,6 +230,25 @@ public:
             return "Untitled";
         else
             return _filepath;
+    }
+
+    invariant()
+    {
+        // at least one line
+        assert(lines.length > 0);
+        for(size_t i = 0; i < lines.length; ++i)
+        {
+            if( i == lines.length - 1)
+            {
+                if (lines[i].length > 0)
+                    assert(lines[i][$-1] != '\n');
+            }
+            else
+            {
+                assert(lines[i].length > 0);
+                assert(lines[i][$-1] == '\n');
+            }
+        }
     }
 
 private:
@@ -278,8 +299,8 @@ private:
             int col = pos.cursor.column;
             int line = pos.cursor.line;
             dstring thisLine = lines[line];
-            lines.insertInPlace(line, thisLine[0..col+1].idup); // copy sub-part including \n to a new line
-            lines[line + 1] = lines[line + 1][col+1..$]; // next line becomes everything after the \n
+            lines.insertInPlace(line, thisLine[0..col].idup ~ '\n'); // copy sub-part addind a \n
+            lines[line + 1] = lines[line + 1][col..$]; // next line becomes everything else
             return BufferIterator(pos.buffer, Cursor(line + 1, 0));
         }
         else
@@ -319,7 +340,6 @@ private:
         }     
     }
 
-    // true if was a 
     void applyCommand(BufferCommand command)
     {
         final switch(command.type) with (BufferCommandType)
@@ -329,6 +349,10 @@ private:
                 break;
 
             case SAVE_SELECTIONS:
+                // also restore them, useful in redo sequences
+                _selectionSet.selections = command.saveSelections.selections.dup;
+                break;
+
             case BARRIER: 
                 // do nothing
                 break;
@@ -364,12 +388,13 @@ private:
         pushCommand(saveSelectionsCommand(_selectionSet.selections));
     }
 
-    void enqueueEdit(Selection selection, dstring newContent)
+    Selection enqueueEdit(Selection selection, dstring newContent)
     {
         dstring oldContent = getSelectionContent(selection);
         Selection newSel = replaceSelectionContent(selection, newContent);
         BufferCommand command = saveSelectionsCommand(selection, newSel, oldContent, newContent);        
         pushCommand(command);
+        return Selection(newSel.edge);
     }
 }
 

@@ -82,6 +82,9 @@ public:
             {
                 _cursor.line--;
                 _cursor.column = _buffer.lineLength(cursor.line) - 1;
+
+                if (_cursor.column < 0)
+                    _cursor.column = 0;
             }
             else
             {
