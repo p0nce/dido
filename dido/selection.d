@@ -112,6 +112,12 @@ class SelectionSet
         selections = selections[0..1];
     }
 
+    void keepOnlyEdge()
+    {
+        foreach(ref sel; selections)
+            sel.anchor = sel.edge;
+    }
+
     invariant()
     {
         assert(selections.length >= 1);

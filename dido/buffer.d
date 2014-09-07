@@ -157,6 +157,26 @@ public:
         _selectionSet.normalize();
     }
 
+    // Add a new area-less selection
+    void extendSelectionVertical(int dy)
+    {
+        Selection sel;
+        if (dy > 0)
+            sel = _selectionSet.selections[$-1];
+        else
+            sel = _selectionSet.selections[0];
+
+        sel.edge.cursor.line += dy;
+        int len = lineLength(sel.edge.cursor.line);
+        if (sel.edge.cursor.column > len)
+            sel.edge.cursor.column = len;
+
+        sel.anchor = sel.edge;
+        _selectionSet.selections ~= sel;        
+        _selectionSet.normalize();
+    }
+
+
     void moveToLineBegin(bool shift)
     {        
         foreach(ref sel; _selectionSet.selections)
@@ -194,7 +214,8 @@ public:
 
         foreach(ref sel; _selectionSet.selections)
             sel = enqueueEdit(sel, content);
-        enqueueSaveSelections();    }
+        enqueueSaveSelections();    
+    }
 
     // selection with area => delete selection
     // else delete character at cursor or before cursor
@@ -218,7 +239,9 @@ public:
                 enqueueEdit(selOneChar, ""d);
             }
         }
-        moveSelectionHorizontal(-1, false);
+        _selectionSet.keepOnlyEdge();
+        //if (isBackspace)
+          //  moveSelectionHorizontal(-1, false);
         enqueueSaveSelections();
     }
 

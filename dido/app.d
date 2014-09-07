@@ -320,6 +320,19 @@ private:
                     buffer.insertChar(command.ch);
                 }
                 break;
+            case EXTEND_SELECTION_UP:
+                if (!_commandLineMode)
+                {
+                    buffer.extendSelectionVertical(-1);
+                }
+                break;
+
+            case EXTEND_SELECTION_DOWN:
+                if (!_commandLineMode)
+                {
+                    buffer.extendSelectionVertical(1);
+                }
+                break;
         }
     }
 
@@ -341,7 +354,11 @@ private:
                         bool ctrl = (key.mod & KMOD_CTRL) != 0;
 
                         if (key.sym == SDLK_RETURN && alt)
-                            commands ~= Command(CommandType.TOGGLE_FULLSCREEN);                            
+                            commands ~= Command(CommandType.TOGGLE_FULLSCREEN);     
+                        else if (key.sym == SDLK_UP && ctrl && alt)
+                            commands ~= Command(CommandType.EXTEND_SELECTION_UP);
+                        else if (key.sym == SDLK_DOWN && ctrl && alt)
+                            commands ~= Command(CommandType.EXTEND_SELECTION_DOWN);
                         else if (key.sym == SDLK_ESCAPE)
                             commands ~= Command(CommandType.ESCAPE);
                         else if (key.sym == SDLK_RETURN)
