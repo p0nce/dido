@@ -94,7 +94,17 @@ class SelectionSet
         import std.algorithm;
         sort!("a < b", SwapStrategy.stable)(selections);
 
-
+        for (int i  = 0; i < cast(int)(selections.length) - 1; ++i)
+        {
+            if (selections[i].overlaps(selections[i+1]))
+            {
+                Selection A = selections[i].sorted();
+                Selection B = selections[i+1].sorted();
+                BufferIterator anchor = A.anchor < B.anchor ? A.anchor : B.anchor;
+                BufferIterator edge = A.edge > B.edge ? A.edge : B.edge;
+                selections = selections[0..i] ~ Selection(anchor, edge) ~ selections[i+2..$];
+            }
+        }
     }
 
     void keepOnlyFirst()
