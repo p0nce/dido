@@ -295,7 +295,7 @@ private:
                 if (_commandLineMode)
                 {
                     executeCommandLine(_cmdlinePanel.currentCommandLine);
-                    goto case EXIT;
+                    goto case ESCAPE;
                 }
                 else
                 {
@@ -303,11 +303,13 @@ private:
                     break;
                 }
 
-            case EXIT:
+            case ESCAPE:
                 if (_commandLineMode)
                     _commandLineMode = false;
                 else
-                    _finished = true;
+                {
+                    buffer.selectionSet().keepOnlyFirst();
+                }
                 break;
 
             case INSERT_CHAR:
@@ -341,7 +343,7 @@ private:
                         if (key.sym == SDLK_RETURN && alt)
                             commands ~= Command(CommandType.TOGGLE_FULLSCREEN);                            
                         else if (key.sym == SDLK_ESCAPE)
-                            commands ~= Command(CommandType.EXIT);
+                            commands ~= Command(CommandType.ESCAPE);
                         else if (key.sym == SDLK_RETURN)
                             commands ~= Command(CommandType.RETURN);
                         else if (key.sym == SDLK_LEFT)

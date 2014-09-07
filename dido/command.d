@@ -15,7 +15,7 @@ enum CommandType
     MOVE_LINE_BEGIN,
     TOGGLE_FULLSCREEN,
     ENTER_COMMANDLINE_MODE, 
-    EXIT, 
+    ESCAPE, 
     RETURN,
     INSERT_CHAR,
     DELETE,

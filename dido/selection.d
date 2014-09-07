@@ -28,20 +28,33 @@ struct Selection
     {
         return anchor != edge;
     }
-/*
-    int opCmp(ref const(Selection) other) pure const nothrow
-    {
-        if (start.line != other.start.line)
-            return start.line - other.start.line;
-        if (start.column != other.start.column)
-            return stop.column - other.start.column;
 
-        if (stop.line != other.stop.line)
-            return stop.line - other.stop.line;
-        if (stop.column != other.stop.column)
-            return stop.column - other.stop.column;
+    bool overlaps(Selection other)
+    {
+        Selection tsorted = this.sorted();
+        Selection osorted = other.sorted();
+        if (osorted.anchor < tsorted.edge && osorted.edge >= tsorted.anchor)
+            return true;
+        if (tsorted.anchor < osorted.edge && tsorted.edge >= osorted.anchor)
+            return true;
+        return false;
+    }
+
+    int opCmp(ref Selection other) pure nothrow
+    {
+        Selection tsorted = this.sorted();
+        Selection osorted = other.sorted();
+        if (tsorted.anchor.cursor.line != osorted.anchor.cursor.line)
+            return tsorted.anchor.cursor.line - osorted.anchor.cursor.line;
+        if (tsorted.anchor.cursor.column != osorted.anchor.cursor.column)
+            return tsorted.anchor.cursor.column - osorted.anchor.cursor.column;
+
+        if (tsorted.edge.cursor.line != osorted.edge.cursor.line)
+            return tsorted.edge.cursor.line - osorted.edge.cursor.line;
+        if (tsorted.edge.cursor.column != osorted.edge.cursor.column)
+            return tsorted.edge.cursor.column - osorted.edge.cursor.column;
         return 0;
-    }*/
+    }
 
     // Returns a sleection with the anchor at the left and the edge at the right
     Selection sorted() pure nothrow
@@ -55,7 +68,7 @@ struct Selection
 
 class SelectionSet
 {
-    Selection[] selections;
+    Selection[] selections; // sorted by date
 
     this(Buffer buffer)
     {
@@ -75,15 +88,22 @@ class SelectionSet
         selections = selections.uniq.array;
     }
 
-    void sortCursors()
+    void normalize()
     {
-        // sort cursors
-        //import std.algorithm;
-        //sort!("a < b", SwapStrategy.stable)(selections);
+        // sort selections
+        import std.algorithm;
+        sort!("a < b", SwapStrategy.stable)(selections);
+
+
     }
 
     void keepOnlyFirst()
     {
         selections = selections[0..1];
-    }    
+    }
+
+    invariant()
+    {
+        assert(selections.length >= 1);
+    }
 }

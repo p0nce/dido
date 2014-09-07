@@ -139,6 +139,7 @@ public:
             if (!shift)            
                 sel.anchor = sel.edge;
         }
+        _selectionSet.normalize();
     }
 
     void moveSelectionVertical(int dy, bool shift)
@@ -153,6 +154,7 @@ public:
             if (!shift)
                 sel.anchor = sel.edge;
         }
+        _selectionSet.normalize();
     }
 
     void moveToLineBegin(bool shift)
@@ -164,6 +166,7 @@ public:
             if (!shift)
                 sel.anchor = sel.edge;
         }
+        _selectionSet.normalize();
     }
 
     void moveToLineEnd(bool shift)
@@ -175,6 +178,7 @@ public:
             if (!shift)
                 sel.anchor = sel.edge;
         }
+        _selectionSet.normalize();
     }
 
     inout(SelectionSet) selectionSet() inout
