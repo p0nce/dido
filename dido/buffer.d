@@ -6,6 +6,8 @@ import std.string;
 import std.array;
 import std.conv;
 
+import gfm.math;
+
 import dido.selection;
 import dido.buffercommand;
 import dido.bufferiterator;
@@ -94,6 +96,15 @@ public:
         return lines[lineIndex].length;
     }
 
+    // maximum column allowed for cursor on this line
+    int maxColumn(int lineIndex) pure const nothrow
+    {
+        if (lineIndex + 1 < lines.length)
+            return lines[lineIndex].length - 1;
+        else
+            return lines[lineIndex].length;
+    }
+
     inout(dstring) line(int lineIndex) pure inout nothrow
     {
         return lines[lineIndex];
@@ -146,10 +157,8 @@ public:
     {        
         foreach(ref sel; _selectionSet.selections)
         {
-            sel.edge.cursor.line += dy;
-            int len = lineLength(sel.edge.cursor.line);
-            if (sel.edge.cursor.column > len)
-                sel.edge.cursor.column = len;
+            sel.edge.cursor.line = clamp!int(sel.edge.cursor.line + dy, 0, numLines() - 1);
+            sel.edge.cursor.column = clamp!int(sel.edge.cursor.column, 0, maxColumn(sel.edge.cursor.line));
 
             if (!shift)
                 sel.anchor = sel.edge;
@@ -166,13 +175,11 @@ public:
         else
             sel = _selectionSet.selections[0];
 
-        sel.edge.cursor.line += dy;
-        int len = lineLength(sel.edge.cursor.line);
-        if (sel.edge.cursor.column > len)
-            sel.edge.cursor.column = len;
+        sel.edge.cursor.line = clamp!int(sel.edge.cursor.line + dy, 0, numLines() - 1);
+        sel.edge.cursor.column = clamp!int(sel.edge.cursor.column, 0, maxColumn(sel.edge.cursor.line));
 
         sel.anchor = sel.edge;
-        _selectionSet.selections ~= sel;        
+        _selectionSet.selections ~= sel;
         _selectionSet.normalize();
     }
 
@@ -193,7 +200,7 @@ public:
     {
         foreach(ref sel; _selectionSet.selections)
         {
-            sel.edge.cursor.column = lineLength(sel.edge.cursor.line);
+            sel.edge.cursor.column = maxColumn(sel.edge.cursor.line);
 
             if (!shift)
                 sel.anchor = sel.edge;
