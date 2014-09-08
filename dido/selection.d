@@ -110,6 +110,7 @@ class SelectionSet
     void keepOnlyFirst()
     {
         selections = selections[0..1];
+        selections[0].anchor = selections[0].edge;
     }
 
     void keepOnlyEdge()
