@@ -206,6 +206,15 @@ public:
         _charHeight = charHeight; 
     }
 
+    // Returns number of simultaneously visible lines
+    int numVisibleLines() pure const nothrow
+    {
+        int result = (_position.height - 16) / _charHeight;
+        if (result < 1)
+            result = 1;
+        return result;
+    }
+
     override void render(SDL2Renderer renderer)
     {
         renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);

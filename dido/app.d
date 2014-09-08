@@ -242,11 +242,13 @@ private:
                 break;
 
             case PAGE_UP:
-                _textArea.moveCamera(0, -_textArea.position().height);
+                buffer.moveSelectionVertical(-_textArea.numVisibleLines, command.shift);
+                //_textArea.moveCamera(0, -_textArea.position().height);
                 break;
 
             case PAGE_DOWN:
-                _textArea.moveCamera(0, _textArea.position().height);
+                buffer.moveSelectionVertical(_textArea.numVisibleLines, command.shift);
+                //_textArea.moveCamera(0, _textArea.position().height);
                 break;
 
             case UNDO:
@@ -384,9 +386,9 @@ private:
                         else if (key.sym == SDLK_PAGEDOWN && ctrl)
                             commands ~= Command(CommandType.ROTATE_NEXT_BUFFER);
                         else if (key.sym == SDLK_PAGEUP)
-                            commands ~= Command(CommandType.PAGE_UP);
+                            commands ~= Command(CommandType.PAGE_UP, shift);
                         else if (key.sym == SDLK_PAGEDOWN)
-                            commands ~= Command(CommandType.PAGE_DOWN);
+                            commands ~= Command(CommandType.PAGE_DOWN, shift);
                         else if (key.sym == SDLK_z && ctrl)
                             commands ~= Command(CommandType.UNDO);
                         else if (key.sym == SDLK_y && ctrl)
@@ -419,6 +421,10 @@ private:
                     break;
             }
         }
+
+        int mouseWheelDeltaY = _sdl2.mouse.wheelDeltaY();
+        int charHeight = _font.charHeight();
+        _textArea.moveCamera(0, -mouseWheelDeltaY * 3 * charHeight);
 
         foreach (cmd; commands)
         {
