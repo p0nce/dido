@@ -10,6 +10,7 @@ import dido.window;
 import dido.selection;
 import dido.buffer;
 import dido.font;
+import dido.bufferiterator;
 
 class Panel
 {
@@ -215,6 +216,8 @@ public:
         return result;
     }
 
+
+
     override void render(SDL2Renderer renderer)
     {
         renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
@@ -237,8 +240,15 @@ public:
         int editPosX = -_cameraX + widthOfLineNumberMargin + marginEditor;
         int editPosY = -_cameraY + marginEditor;
 
-        int firstVisibleLine = max(0, _cameraY / _charHeight - 1);
-        int firstNonVisibleLine = min(_buffer.numLines(), 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);
+        int firstVisibleLine = getFirstVisibleLine();
+        int firstNonVisibleLine = getFirstNonVisibleLine();
+
+        // draw selection background
+        SelectionSet selset = _buffer.selectionSet();
+        foreach(Selection sel; selset.selections)
+        {
+            renderSelectionBackground(renderer, editPosX, editPosY, sel);
+        }
 
         for (int i = firstVisibleLine; i < firstNonVisibleLine; ++i)
         {
@@ -312,11 +322,10 @@ public:
             }
         }
 
-        // draw cursors
-        SelectionSet selset = _buffer.selectionSet();
+        // draw selection foreground
         foreach(Selection sel; selset.selections)
         {
-            renderSelection(renderer, editPosX, editPosY, sel, _drawCursors);
+            renderSelectionForeground(renderer, editPosX, editPosY, sel, _drawCursors);
         }
 
         renderer.setViewportFull();
@@ -359,28 +368,63 @@ private:
     Font _font;
     bool _drawCursors;
 
-    void renderSelection(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection, bool drawCursors)
+    int getFirstVisibleLine() pure const nothrow
     {
-        // draw the cursor part
+        return max(0, _cameraY / _charHeight - 1);
+    }
+
+    int getFirstNonVisibleLine() pure const nothrow
+    {
+        return min(_buffer.numLines(), 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);        
+    }
+
+    void renderSelectionBackground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
+    {
+        Selection sorted = selection.sorted();
+
+        // don't draw invisible selections
+        if (sorted.edge.cursor.line < getFirstVisibleLine())
+            return;
+
+        if (sorted.anchor.cursor.line >= getFirstNonVisibleLine())
+            return;
+
+        int charWidth = _font.charWidth();
+        int charHeight = _font.charHeight();
+
+        // draw the selection part
+        BufferIterator it = sorted.anchor;
+        while (it < sorted.edge)
+        {
+            int startX = offsetX + it.cursor.column * _font.charWidth();
+            int startY = offsetY + it.cursor.line * _font.charHeight();
+            renderer.setColor(43, 54, 66, 255);
+            renderer.fillRect(startX, startY, charWidth, charHeight);
+            ++it;
+        }
+    }
+
+    void renderSelectionForeground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection, bool drawCursors)
+    {
+        Selection sorted = selection.sorted();
+
+        // don't draw invisible selections
+        if (sorted.edge.cursor.line < getFirstVisibleLine())
+            return;
+
+        if (sorted.anchor.cursor.line >= getFirstNonVisibleLine())
+            return;
+
+        int charWidth = _font.charWidth();
+        int charHeight = _font.charHeight();
+        
         if (drawCursors)
         {
-            int startX = offsetX + selection.anchor.cursor.column * _font.charWidth();
-            int startY = offsetY + selection.anchor.cursor.line * _font.charHeight();
+            int startX = offsetX + selection.edge.cursor.column * _font.charWidth();
+            int startY = offsetY + selection.edge.cursor.line * _font.charHeight();
 
             renderer.setColor(255, 255, 255, 255);
             renderer.fillRect(startX, startY, 1, _font.charHeight() - 1);
         }
-
-        if (selection.hasSelectedArea)
-        {
-            int stopX = offsetX + selection.edge.cursor.column * _font.charWidth();
-            int stopY = offsetY + selection.edge.cursor.line * _font.charHeight();
-
-            // draw the cursor part
-            renderer.setColor(128, 128, 128, 255);
-            renderer.fillRect(stopX, stopY, 1, _font.charHeight() - 1);
-        }
-
-        // TODO draw extent
     }
 }
