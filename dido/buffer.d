@@ -234,7 +234,7 @@ public:
         foreach(ref sel; _selectionSet.selections)
         {
             if (sel.hasSelectedArea())
-                enqueueEdit(sel, ""d);
+                sel = enqueueEdit(sel, ""d);
             else
             {
                 Selection selOneChar = sel.sorted;
@@ -243,12 +243,10 @@ public:
                 else
                     selOneChar.edge++;
 
-                enqueueEdit(selOneChar, ""d);
+                sel = enqueueEdit(selOneChar, ""d);
             }
         }
         _selectionSet.keepOnlyEdge();
-        //if (isBackspace)
-          //  moveSelectionHorizontal(-1, false);
         enqueueSaveSelections();
     }
 
