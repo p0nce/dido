@@ -40,7 +40,7 @@ public:
         loadFromFile(filepath);
         _selectionSet = new SelectionSet(this);
         _filepath = filepath;
-    }   
+    }
 
     BufferIterator begin()
     {
@@ -65,25 +65,26 @@ public:
         }
     }
 
-    // save file using OS end-of-lines
-    void saveToFile(string path)
+    ubyte[] toSource()
     {
         ubyte[] result;
         foreach(ref dstring dline; lines)
         {
             string line = to!string(dline);
-
             version(Windows)
             {
                 if (line.length > 0 && line[$-1] == '\n')
-                {
                     line = line[0..$-1] ~ "\r\n";
-                }
-
                 result ~= line;
             }
         }
-        std.file.write(path, result);
+        return result;
+    }
+
+    // save file using OS end-of-lines
+    void saveToFile(string path)
+    {        
+        std.file.write(path, toSource());
     }
 
     int numLines() pure const nothrow
@@ -183,7 +184,6 @@ public:
         _selectionSet.normalize();
     }
 
-
     void moveToLineBegin(bool shift)
     {        
         foreach(ref sel; _selectionSet.selections)
@@ -219,9 +219,15 @@ public:
         enqueueBarrier();
         enqueueSaveSelections();
 
+        int displacement = 0;
         foreach(ref sel; _selectionSet.selections)
-            sel = enqueueEdit(sel, content);
-        enqueueSaveSelections();    
+        {
+            Selection original = sel.sorted();
+            original += displacement;
+            sel = enqueueEdit(original, content).sorted();
+            displacement += cast(int)(content.length) - original.area();
+        }        
+        enqueueSaveSelections();
     }
 
     // selection with area => delete selection
@@ -231,20 +237,27 @@ public:
         enqueueBarrier();
         enqueueSaveSelections();
 
+        int displacement = 0;
         foreach(ref sel; _selectionSet.selections)
         {
-            if (sel.hasSelectedArea())
-                sel = enqueueEdit(sel, ""d);
+            Selection original = sel.sorted();
+            original += displacement;
+            if (original.hasSelectedArea())
+            {
+                sel = enqueueEdit(original, ""d);
+                displacement -= original.area();
+            }
             else
             {
-                Selection selOneChar = sel.sorted;
+                Selection selOneChar = original;
                 if (isBackspace)
                     selOneChar.anchor--;
                 else
                     selOneChar.edge++;
 
                 sel = enqueueEdit(selOneChar, ""d);
-            }
+                displacement -= selOneChar.area();
+            }            
         }
         _selectionSet.keepOnlyEdge();
         enqueueSaveSelections();

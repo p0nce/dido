@@ -56,6 +56,13 @@ struct Selection
         return 0;
     }
 
+    Selection opOpAssign(string op)(int displacement) if (op == "+")
+    {
+        anchor += displacement;
+        edge += displacement;
+        return this;
+    }
+
     // Returns a sleection with the anchor at the left and the edge at the right
     Selection sorted() pure nothrow
     {
@@ -63,6 +70,19 @@ struct Selection
             return this;
         else 
             return Selection(edge, anchor);
+    }
+
+    // lenght of selection in chars
+    int area()
+    {
+        Selection tsorted = this.sorted();
+        int result = 0;
+        while(tsorted.anchor < tsorted.edge)
+        {
+            ++tsorted.anchor;
+            result += 1;
+        }
+        return result;
     }
 }
 
@@ -94,16 +114,25 @@ class SelectionSet
         import std.algorithm;
         sort!("a < b", SwapStrategy.stable)(selections);
 
-        for (int i  = 0; i < cast(int)(selections.length) - 1; ++i)
+        int i = 0;
+        while (i < cast(int)(selections.length) - 1)
         {
             if (selections[i].overlaps(selections[i+1]))
             {
+                // merge overlapping selections
                 Selection A = selections[i].sorted();
                 Selection B = selections[i+1].sorted();
                 BufferIterator anchor = A.anchor < B.anchor ? A.anchor : B.anchor;
                 BufferIterator edge = A.edge > B.edge ? A.edge : B.edge;
                 selections = selections[0..i] ~ Selection(anchor, edge) ~ selections[i+2..$];
             }
+            else if (selections[i] == selections[i+1])
+            {
+                // drop one of two identical selections
+                selections = selections[0..i] ~ selections[i+1..$];
+            }
+            else
+                ++i;
         }
     }
 
