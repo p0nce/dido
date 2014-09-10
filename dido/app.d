@@ -191,6 +191,8 @@ private:
             _buffers[_bufferSelect].undo();
         else if (cmdline == "redo" || cmdline == "r")
             _buffers[_bufferSelect].redo();
+        else if (cmdline == "clean")
+            _buffers[_bufferSelect].cleanup();
         else
         {
             _cmdlinePanel.statusLine = to!dstring(format("Unknown command '%s'"d, cmdline));

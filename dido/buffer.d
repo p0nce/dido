@@ -18,7 +18,7 @@ import dido.bufferiterator;
 final class Buffer
 {
 private:
-    string _filepath;    
+    string _filepath;
     SelectionSet _selectionSet;
     dstring[] lines;
     int _historyIndex; // where we are in history
@@ -83,7 +83,7 @@ public:
 
     // save file using OS end-of-lines
     void saveToFile(string path)
-    {        
+    {
         std.file.write(path, toSource());
     }
 
@@ -143,19 +143,19 @@ public:
     }
 
     void moveSelectionHorizontal(int dx, bool shift)
-    {        
+    {
         foreach(ref sel; _selectionSet.selections)
         {
             sel.edge = sel.edge + dx;
 
-            if (!shift)            
+            if (!shift)
                 sel.anchor = sel.edge;
         }
         _selectionSet.normalize();
     }
 
     void moveSelectionVertical(int dy, bool shift)
-    {        
+    {
         foreach(ref sel; _selectionSet.selections)
         {
             sel.edge.cursor.line = clamp!int(sel.edge.cursor.line + dy, 0, numLines() - 1);
@@ -185,7 +185,7 @@ public:
     }
 
     void moveToLineBegin(bool shift)
-    {        
+    {
         foreach(ref sel; _selectionSet.selections)
         {
             sel.edge.cursor.column = 0;
@@ -226,7 +226,7 @@ public:
             original += displacement;
             sel = enqueueEdit(original, content).sorted();
             displacement += cast(int)(content.length) - original.area();
-        }        
+        }
         enqueueSaveSelections();
     }
 
@@ -257,7 +257,7 @@ public:
 
                 sel = enqueueEdit(selOneChar, ""d);
                 displacement -= selOneChar.area();
-            }            
+            }
         }
         _selectionSet.keepOnlyEdge();
         enqueueSaveSelections();
@@ -269,6 +269,28 @@ public:
             return "Untitled";
         else
             return _filepath;
+    }
+
+    void cleanup()
+    {
+        foreach(ref line; lines)
+        {
+            import std.string;
+
+            // remove tabs
+            line = detab(line, 4);
+
+            // remove trailing spaces
+            while(line.length >= 2 && line[$-2] == ' ')
+            {
+                line = line[0..$-2] ~ line[$-1];
+            }
+
+            while(line.length >= 1 && line[$-1] == ' ')
+            {
+                line = line[0..$-1];
+            }
+        }
     }
 
     invariant()
@@ -291,7 +313,7 @@ public:
     }
 
 private:
-    
+
     void pushCommand(BufferCommand command)
     {
         // strip previous history, add command
@@ -306,7 +328,7 @@ private:
         Selection sel = selection.sorted();
         erase(sel.anchor, sel.edge);
         BufferIterator after = insert(sel.anchor, content);
-        return Selection(sel.anchor, after);       
+        return Selection(sel.anchor, after);
     }
 
     // Gets content of a selection
@@ -375,8 +397,8 @@ private:
         while (begin < end)
         {
             --end;
-            erase(end);            
-        }     
+            erase(end);
+        }
     }
 
     void applyCommand(BufferCommand command)
@@ -392,7 +414,7 @@ private:
                 _selectionSet.selections = command.saveSelections.selections.dup;
                 break;
 
-            case BARRIER: 
+            case BARRIER:
                 // do nothing
                 break;
         }
@@ -412,7 +434,7 @@ private:
                 _selectionSet.selections = command.saveSelections.selections.dup;
                 return false;
 
-            case BARRIER: 
+            case BARRIER:
                 return true;
         }
     }
@@ -431,7 +453,7 @@ private:
     {
         dstring oldContent = getSelectionContent(selection);
         Selection newSel = replaceSelectionContent(selection, newContent);
-        BufferCommand command = changeCharsCommand(selection, newSel, oldContent, newContent);        
+        BufferCommand command = changeCharsCommand(selection, newSel, oldContent, newContent);
         pushCommand(command);
         return Selection(newSel.edge);
     }
