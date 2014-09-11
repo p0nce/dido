@@ -14,11 +14,12 @@ import dido.command;
 import dido.selection;
 import dido.panel;
 import dido.font;
+import dido.config;
 
 final class App
 {
 public:
-    this(string paths[])
+    this(DidoConfig config, string paths[])
     {
         foreach (ref path; paths)
         {
@@ -41,7 +42,7 @@ public:
         _sdlttf = new SDLTTF(_sdl2);
         _window = new Window(_sdl2, _sdlttf);
 
-        _font = new Font(_sdlttf, _window.renderer(), "fonts/consola.ttf", 14);
+        _font = new Font(_sdlttf, _window.renderer(), config.fontFace, config.fontSize);
 
         _sdl2.startTextInput();
 
@@ -207,58 +208,69 @@ private:
         {            
             case MOVE_UP:
                 buffer.moveSelectionVertical(-1, command.shift);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_DOWN:
                 buffer.moveSelectionVertical(1, command.shift);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_LEFT:
                 buffer.moveSelectionHorizontal(-1, command.shift);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_RIGHT:            
                 buffer.moveSelectionHorizontal(+1, command.shift);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_LINE_BEGIN:
                 buffer.moveToLineBegin(command.shift);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_LINE_END:
                 buffer.moveToLineEnd(command.shift);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case TOGGLE_FULLSCREEN:
                 _window.toggleFullscreen();
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case ROTATE_NEXT_BUFFER:
                 _bufferSelect = (_bufferSelect + 1) % _buffers.length;
                 _textArea.clearCamera();
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case ROTATE_PREVIOUS_BUFFER:
                 _bufferSelect = (_bufferSelect + _buffers.length - 1) % _buffers.length;
                 _textArea.clearCamera();
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case PAGE_UP:
                 buffer.moveSelectionVertical(-_textArea.numVisibleLines, command.shift);
-                //_textArea.moveCamera(0, -_textArea.position().height);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case PAGE_DOWN:
                 buffer.moveSelectionVertical(_textArea.numVisibleLines, command.shift);
-                //_textArea.moveCamera(0, _textArea.position().height);
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case UNDO:
                 buffer.undo();
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case REDO:
                 buffer.redo();
+                _textArea.ensureOneVisibleSelection();
                 break;
 
             case ENTER_COMMANDLINE_MODE:
@@ -282,7 +294,10 @@ private:
                         _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
                 }
                 else
+                {
                     buffer.deleteSelection(true);
+                	_textArea.ensureOneVisibleSelection();
+                }
                 break;
 
             case DELETE:
@@ -292,7 +307,10 @@ private:
                         _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
                 }
                 else
+                {
                     buffer.deleteSelection(false);
+                	_textArea.ensureOneVisibleSelection();
+                }
                 break;
             
             case RETURN:
@@ -304,6 +322,7 @@ private:
                 else
                 {
                     buffer.insertChar('\n');
+                    _textArea.ensureOneVisibleSelection();
                     break;
                 }
 
@@ -313,6 +332,7 @@ private:
                 else
                 {
                     buffer.selectionSet().keepOnlyFirst();
+                    _textArea.ensureOneVisibleSelection();
                 }
                 break;
 
@@ -322,12 +342,14 @@ private:
                 else
                 {
                     buffer.insertChar(command.ch);
+                    _textArea.ensureOneVisibleSelection();
                 }
                 break;
             case EXTEND_SELECTION_UP:
                 if (!_commandLineMode)
                 {
                     buffer.extendSelectionVertical(-1);
+                    _textArea.ensureOneVisibleSelection();
                 }
                 break;
 
@@ -335,6 +357,7 @@ private:
                 if (!_commandLineMode)
                 {
                     buffer.extendSelectionVertical(1);
+                    _textArea.ensureOneVisibleSelection();
                 }
                 break;
         }

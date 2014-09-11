@@ -8,6 +8,7 @@
     "dependencies": {
         "gfm:sdl2": "==1.2.1",
         "gfm:math": "==1.2.1",
-        "libdparse": "==0.1.0"
+        "libdparse": "==0.1.0",
+        "sdlang-d": "==0.8.4"
     }
 }

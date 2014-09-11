@@ -194,6 +194,8 @@ class TextArea : Panel
 {
 public:
 
+    int marginEditor = 16;
+
     override void reflow(box2i availableSpace, int charWidth, int charHeight)
     {
         _position = availableSpace;
@@ -234,8 +236,6 @@ public:
                           marginScrollbar, 
                           widthOfLeftScrollbar, 
                           _position.height - marginScrollbar * 2);
-
-        int marginEditor = 16;
 
         int editPosX = -_cameraX + widthOfLineNumberMargin + marginEditor;
         int editPosY = -_cameraY + marginEditor;
@@ -359,6 +359,30 @@ public:
             _cameraY = 0;
     }
 
+    box2i cameraBox() pure const nothrow
+    {
+        return box2i(_cameraX, _cameraY, _cameraX + _position.width, _cameraY + _position.height);
+    }
+
+    void ensureOneVisibleSelection()
+    {
+        double minDistance = double.infinity;
+        Selection bestSel;
+        SelectionSet selset = _buffer.selectionSet();
+        foreach(Selection sel; selset.selections)
+        {
+            double distance = selectionDistance(sel);
+            if (distance < minDistance)
+            {
+                bestSel = sel;
+                minDistance = distance;
+            }
+        }
+        if (minDistance == 0)
+            return;
+        ensureSelectionVisible(bestSel);
+    }
+
 private:
     int _cameraX = 0;
     int _cameraY = 0;
@@ -376,6 +400,34 @@ private:
     int getFirstNonVisibleLine() pure const nothrow
     {
         return min(_buffer.numLines(), 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);        
+    }
+
+    vec2i getPosEdge(Selection selection)
+    {
+        return vec2i(selection.edge.cursor.column * _charWidth + marginEditor, 
+                     selection.edge.cursor.line * _charHeight + marginEditor);
+
+    }
+
+    // 0 if visible
+    // more if not visible
+    double selectionDistance(Selection selection)
+    {
+        return cameraBox().distance(getPosEdge(selection));
+    }
+
+    void ensureSelectionVisible(Selection selection)
+    {
+        vec2i posEdge = getPosEdge(selection);
+        box2i camBox = cameraBox();
+        if (posEdge.x < camBox.min.x)
+            _cameraX += (posEdge.x - camBox.min.x);
+        if (posEdge.x > camBox.max.x)
+            _cameraX += (posEdge.x - camBox.max.x);
+        if (posEdge.y < camBox.min.y)
+            _cameraY += (posEdge.y - camBox.min.y) - 9;
+        if (posEdge.y + _charHeight > camBox.max.y)
+            _cameraY += (posEdge.y + _charHeight - camBox.max.y) - 9;
     }
 
     void renderSelectionBackground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
