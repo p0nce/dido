@@ -355,11 +355,14 @@ public:
     {
         if (_cameraX < 0)
             _cameraX = 0;
-        if (_cameraY < 0)
-            _cameraY = 0;
     }
 
     box2i cameraBox() pure const nothrow
+    {
+        return box2i(_cameraX, _cameraY, _cameraX + _position.width, _cameraY + _position.height);
+    }
+
+    box2i edgeBox(Selection sel)
     {
         return box2i(_cameraX, _cameraY, _cameraX + _position.width, _cameraY + _position.height);
     }
@@ -378,8 +381,6 @@ public:
                 minDistance = distance;
             }
         }
-        if (minDistance == 0)
-            return;
         ensureSelectionVisible(bestSel);
     }
 
@@ -402,32 +403,35 @@ private:
         return min(_buffer.numLines(), 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);        
     }
 
-    vec2i getPosEdge(Selection selection)
+    box2i getEdgeBox(Selection selection)
     {
-        return vec2i(selection.edge.cursor.column * _charWidth + marginEditor, 
-                     selection.edge.cursor.line * _charHeight + marginEditor);
-
+        vec2i edgePos = vec2i(selection.edge.cursor.column * _charWidth + marginEditor, 
+                              selection.edge.cursor.line * _charHeight + marginEditor);
+        return box2i(edgePos.x, edgePos.y, edgePos.x + _charWidth, edgePos.y + _charHeight);
     }
 
     // 0 if visible
     // more if not visible
     double selectionDistance(Selection selection)
     {
-        return cameraBox().distance(getPosEdge(selection));
+        return cameraBox().distance(getEdgeBox(selection));
     }
 
     void ensureSelectionVisible(Selection selection)
     {
-        vec2i posEdge = getPosEdge(selection);
+        int scrollMargin = 9;
+        box2i edgeBox = getEdgeBox(selection);
         box2i camBox = cameraBox();
-        if (posEdge.x < camBox.min.x)
-            _cameraX += (posEdge.x - camBox.min.x);
-        if (posEdge.x > camBox.max.x)
-            _cameraX += (posEdge.x - camBox.max.x);
-        if (posEdge.y < camBox.min.y)
-            _cameraY += (posEdge.y - camBox.min.y) - 9;
-        if (posEdge.y + _charHeight > camBox.max.y)
-            _cameraY += (posEdge.y + _charHeight - camBox.max.y) - 9;
+        if (edgeBox.min.x < camBox.min.x)
+            _cameraX += (edgeBox.min.x - camBox.min.x);
+        
+        if (edgeBox.max.x > camBox.max.x)
+            _cameraX += (edgeBox.max.x - camBox.max.x);
+
+        if (edgeBox.min.y < camBox.min.y + scrollMargin)
+            _cameraY += (edgeBox.min.y - camBox.min.y - scrollMargin);
+        if (edgeBox.max.y > camBox.max.y - scrollMargin)
+            _cameraY += (edgeBox.max.y - camBox.max.y + scrollMargin);
     }
 
     void renderSelectionBackground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
