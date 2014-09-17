@@ -13,8 +13,11 @@ public:
 
         _font = new SDLFont(_sdlttf, fontface, ptSize);
 
-        _charWidth = makeCharTexture('A').width();
-        _charHeight = makeCharTexture('A').height();
+        SDL2Texture tempTexture;
+        SDL2Surface tempSurface;
+        makeCharTexture('A', tempTexture, tempSurface);
+        _charWidth = tempTexture.width();
+        _charHeight = tempSurface.height();
 
         _initialized = true;
 
@@ -35,6 +38,8 @@ public:
         {
             foreach (tex; _glyphCache)
                 tex.close();
+            foreach (tex; _surfaceCache)
+                tex.close();
             _font.close();
             _initialized = false;
         }
@@ -42,16 +47,33 @@ public:
 
     SDL2Texture getCharTexture(dchar ch)
     {
-        if (! (ch in _glyphCache))
-            _glyphCache[ch] = makeCharTexture(ch);
+        try
+        {
+            if (! (ch in _glyphCache))
+            {
+                SDL2Texture tex;
+                SDL2Surface surf;
+                makeCharTexture(ch, tex, surf);
+                _glyphCache[ch] = tex;
+                _surfaceCache[ch] = surf;
+            }
 
-        return _glyphCache[ch];
+            return _glyphCache[ch];
+        }
+        catch(SDL2Exception e)
+        {
+            if (ch == 0xFFFD)
+                return null;
+
+            // invalid glyph, return replacement character glyph
+            return getCharTexture(0xFFFD);
+        }
     }
 
-    SDL2Texture makeCharTexture(dchar ch)
+    void makeCharTexture(dchar ch, out SDL2Texture texture, out SDL2Surface surface)
     {
-        SDL2Surface surface = _font.renderGlyphBlended(ch, SDL_Color(255, 255, 255, 255));
-        return new SDL2Texture(_renderer, surface);
+        surface = _font.renderGlyphBlended(ch, SDL_Color(255, 255, 255, 255));
+        texture = new SDL2Texture(_renderer, surface);
     }
 
     int charWidth() pure const nothrow
@@ -87,8 +109,11 @@ public:
     void renderChar(dchar ch, int x, int y)
     {
         SDL2Texture tex = getCharTexture(ch);
-        tex.setColorMod(_r, _g, _b);
-        _renderer.copy(tex, x, y);
+        if (tex !is null)
+        {
+            tex.setColorMod(_r, _g, _b);
+            _renderer.copy(tex, x, y);
+        }
     }
 
 
@@ -100,6 +125,7 @@ private:
     SDL2Renderer _renderer;
     SDLFont _font;
     SDL2Texture[dchar] _glyphCache;
+    SDL2Surface[dchar] _surfaceCache;
     int _charWidth;
     int _charHeight;
     bool _initialized;
