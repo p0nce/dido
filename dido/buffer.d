@@ -49,7 +49,7 @@ public:
 
     BufferIterator end()
     {
-        return BufferIterator(this, Cursor(0, 0));
+        return BufferIterator(this, Cursor(lines.length - 1, maxColumn(lines.length - 1)));
     }
 
     // load file in buffer, non-conforming utf-8 is lost
@@ -146,7 +146,7 @@ public:
     {
         foreach(ref sel; _selectionSet.selections)
         {
-            sel.edge = sel.edge + dx;
+            sel.edge = sel.edge + dx;            
 
             if (!shift)
                 sel.anchor = sel.edge;
@@ -220,13 +220,19 @@ public:
         enqueueSaveSelections();
 
         int displacement = 0;
-        foreach(ref sel; _selectionSet.selections)
+        for (int i = 0; i < _selectionSet.selections.length; ++i)
         {
-            Selection original = sel.sorted();
-            original += displacement;
-            sel = enqueueEdit(original, content).sorted();
-            displacement += cast(int)(content.length) - original.area();
+            Selection selectionBeforeEdit = _selectionSet.selections[i];
+            Selection selectionAfterEdit = enqueueEdit(selectionBeforeEdit, content).sorted();
+
+            // apply offset to all subsequent selections
+            for (int j = i + 1; j < _selectionSet.selections.length; ++j)
+            {
+                _selectionSet.selections[j].translateByEdit(selectionBeforeEdit.sorted.edge, selectionAfterEdit.sorted.edge);                
+            }
+            _selectionSet.selections[i] = selectionAfterEdit;
         }
+        _selectionSet.normalize();
         enqueueSaveSelections();
     }
 
@@ -237,29 +243,47 @@ public:
         enqueueBarrier();
         enqueueSaveSelections();
 
-        int displacement = 0;
-        foreach(ref sel; _selectionSet.selections)
+        for (int i = 0; i < _selectionSet.selections.length; ++i)
         {
-            Selection original = sel.sorted();
-            original += displacement;
-            if (original.hasSelectedArea())
+            Selection selectionBeforeEdit = _selectionSet.selections[i];
+            Selection selectionAfterEdit;
+            if (selectionBeforeEdit.hasSelectedArea())
             {
-                sel = enqueueEdit(original, ""d);
-                displacement -= original.area();
+                selectionAfterEdit = enqueueEdit(selectionBeforeEdit, ""d);
             }
             else
             {
-                Selection selOneChar = original;
-                if (isBackspace)
-                    selOneChar.anchor--;
-                else
-                    selOneChar.edge++;
+                Selection oneCharSel = selectionBeforeEdit;
+                if (isBackspace && oneCharSel.anchor.canBeDecremented)
+                    oneCharSel.anchor--;
+                else if (oneCharSel.edge.canBeIncremented)
+                    oneCharSel.edge++;
 
-                sel = enqueueEdit(selOneChar, ""d);
-                displacement -= selOneChar.area();
+                assert(oneCharSel.isValid());
+                if (oneCharSel.hasSelectedArea())
+                {
+                    selectionBeforeEdit = oneCharSel;
+                    selectionAfterEdit = enqueueEdit(oneCharSel, ""d);
+                }
+                else
+                    selectionAfterEdit = selectionBeforeEdit;
+            }
+
+            _selectionSet.selections[i] = selectionAfterEdit;
+
+            // apply offset to all subsequent selections
+            for (int j = i + 1; j < _selectionSet.selections.length; ++j)
+            {
+                _selectionSet.selections[j].translateByEdit(selectionBeforeEdit.sorted.edge, selectionAfterEdit.sorted.edge);                
+            }
+
+            for (int j = 0; j < _selectionSet.selections.length; ++j)
+            {
+                assert(_selectionSet.selections[j].isValid());
             }
         }
         _selectionSet.keepOnlyEdge();
+        _selectionSet.normalize();
         enqueueSaveSelections();
     }
 

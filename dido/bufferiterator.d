@@ -51,6 +51,18 @@ public:
         return _cursor == other._cursor;
     }
 
+    bool canBeDecremented()
+    {
+        BufferIterator begin = _buffer.begin();
+        return this > begin;
+    }
+
+    bool canBeIncremented()
+    {
+        BufferIterator end = _buffer.end();
+        return this < end;
+    }
+
     BufferIterator opUnary(string op)() if (op == "++")
     {
         _cursor.column += 1;
@@ -96,12 +108,12 @@ public:
 
     BufferIterator opOpAssign(string op)(int displacement) if (op == "+")
     {
-        while (displacement > 0)
+        while (displacement > 0 && canBeDecremented())
         {
             displacement--;
             opUnary!("++")();
         }
-        while (displacement < 0)
+        while (displacement < 0 && canBeIncremented())
         {
             displacement++;
             opUnary!("--")();

@@ -84,6 +84,44 @@ struct Selection
         }
         return result;
     }
+
+    bool isValid() pure const nothrow
+    {
+        return anchor.isValid() && edge.isValid();
+    }
+
+    void translateByEdit(BufferIterator before, BufferIterator after)
+    {
+        Selection tsorted = this.sorted();
+        assert(before <= tsorted.anchor);
+        
+        import std.stdio;
+        if (before.cursor.line != after.cursor.line)
+        {
+            anchor.cursor.line += after.cursor.line - before.cursor.line;
+            edge.cursor.line += after.cursor.line - before.cursor.line;
+            writefln("Moves selection by %s lines", after.cursor.line - before.cursor.line);
+
+            if (anchor.cursor.line == after.cursor.line)
+                anchor.cursor.column = after.cursor.column;
+            if (edge.cursor.line == after.cursor.line)
+                edge.cursor.column = after.cursor.column;
+        }
+
+        if (before.cursor.line == anchor.cursor.line)
+        {
+            int dispBefore = anchor.cursor.column - before.cursor.column;
+            anchor.cursor.column = after.cursor.column + dispBefore;
+            writefln("Moves selection anchor to %s", anchor.cursor.column);
+        }
+
+        if (before.cursor.line == edge.cursor.line)
+        {
+            int dispBefore = edge.cursor.column - before.cursor.column;
+            edge.cursor.column = after.cursor.column + dispBefore;
+            writefln("Moves selection edge to %s", anchor.cursor.column);
+        }
+    }
 }
 
 class SelectionSet
