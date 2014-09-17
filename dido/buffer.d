@@ -56,6 +56,11 @@ public:
     void loadFromFile(string path)
     {
         string wholeFile = readText(path);
+
+        // remove UTF-8 BOM
+        if (wholeFile.length > 3 && wholeFile[0] == '\xEF' && wholeFile[1] == '\xBB' && wholeFile[2] == '\xBF')
+            wholeFile = wholeFile[3..$];
+
         dstring wholeFileUTF32 = to!dstring(wholeFile);
         lines = splitLines!(dstring)( wholeFileUTF32 );
 
