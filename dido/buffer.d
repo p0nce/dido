@@ -55,19 +55,7 @@ public:
     // load file in buffer, non-conforming utf-8 is lost
     void loadFromFile(string path)
     {
-        string wholeFile = readText(path);
-
-        // remove UTF-8 BOM
-        if (wholeFile.length > 3 && wholeFile[0] == '\xEF' && wholeFile[1] == '\xBB' && wholeFile[2] == '\xBF')
-            wholeFile = wholeFile[3..$];
-
-        dstring wholeFileUTF32 = to!dstring(wholeFile);
-        lines = splitLines!(dstring)( wholeFileUTF32 );
-
-        for (int line = 0; line + 1 < cast(int)lines.length; ++line)
-        {
-            lines[line] ~= 0x0A;
-        }
+        lines = readTextFile(path);
     }
 
     ubyte[] toSource()
@@ -485,5 +473,51 @@ private:
         BufferCommand command = changeCharsCommand(selection, newSel, oldContent, newContent);
         pushCommand(command);
         return Selection(newSel.edge);
+    }
+}
+
+private
+{
+    // removes BOM, sanitize Unicode, and split on line endings
+    dstring[] readTextFile(string path)
+    {
+        string wholeFile = readText(path);
+
+        // remove UTF-8 BOM
+        if (wholeFile.length > 3 && wholeFile[0] == '\xEF' && wholeFile[1] == '\xBB' && wholeFile[2] == '\xBF')
+            wholeFile = wholeFile[3..$];
+
+        // sanitize non-UTF-8 sequences
+        import std.encoding : sanitize;
+        wholeFile = sanitize(wholeFile);
+
+        dstring wholeFileUTF32 = to!dstring(wholeFile);
+
+        dstring[] lines;
+        dstring currentLine;
+
+        for (size_t i = 0; i < wholeFileUTF32.length; ++i)
+        {
+            dchar ch = wholeFileUTF32[i];
+
+            if (ch == '\n')
+            {
+                currentLine ~= '\n';
+                lines ~= currentLine.dup;
+                currentLine.length = 0;
+            }
+            else if (ch == '\r')
+            {
+                // simply remove them
+            }
+            else
+            {
+                currentLine ~= ch;
+            }
+        }
+
+        // always add a line without line feed
+        lines ~= currentLine.dup;
+        return lines;
     }
 }
