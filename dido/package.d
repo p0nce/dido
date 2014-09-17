@@ -8,4 +8,5 @@ public import dido.font,
               dido.app,
               dido.command,
               dido.selection,
+              dido.analysis,
               dido.panel;
