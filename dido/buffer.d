@@ -160,6 +160,39 @@ public:
         _selectionSet.normalize();
     }
 
+
+    void moveSelectionToBufferStart(bool shift)
+    {
+        foreach(ref sel; _selectionSet.selections)
+        {
+            sel.edge = begin();
+            if (!shift)
+                sel.anchor = sel.edge;
+        }
+        _selectionSet.normalize();
+    }
+
+    void moveSelectionToBufferEnd(bool shift)
+    {
+        foreach(ref sel; _selectionSet.selections)
+        {
+            sel.edge = end();
+            if (!shift)
+                sel.anchor = sel.edge;
+        }
+        _selectionSet.normalize();
+    }
+
+    void selectAll()
+    {
+        foreach(ref sel; _selectionSet.selections)
+        {
+            sel.anchor = begin();
+            sel.edge = end();
+        }
+        _selectionSet.normalize();
+    }
+
     // Add a new area-less selection
     void extendSelectionVertical(int dy)
     {

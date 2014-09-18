@@ -363,6 +363,30 @@ private:
                     _textArea.ensureOneVisibleSelection();
                 }
                 break;
+
+            case GOTO_START_OF_BUFFER:
+                if (!_commandLineMode)
+                {
+                    buffer.moveSelectionToBufferStart(command.shift);
+                    _textArea.ensureOneVisibleSelection();
+                }
+                break;
+
+            case GOTO_END_OF_BUFFER:
+                if (!_commandLineMode)
+                {
+                    buffer.moveSelectionToBufferEnd(command.shift);
+                    _textArea.ensureOneVisibleSelection();
+                }
+                break;
+
+            case SELECT_ALL_BUFFER:
+                if (!_commandLineMode)
+                {
+                    buffer.selectAll();
+                    _textArea.ensureOneVisibleSelection();
+                }
+                break;
         }
     }
 
@@ -405,6 +429,12 @@ private:
                             commands ~= Command(CommandType.BACKSPACE);
                         else if (key.sym == SDLK_DELETE)
                             commands ~= Command(CommandType.DELETE);
+                        else if (key.sym == SDLK_HOME && ctrl)
+                            commands ~= Command(CommandType.GOTO_START_OF_BUFFER, shift);
+                        else if (key.sym == SDLK_END && ctrl)
+                            commands ~= Command(CommandType.GOTO_END_OF_BUFFER, shift);
+                        else if (key.sym == SDLK_a && ctrl)
+                            commands ~= Command(CommandType.SELECT_ALL_BUFFER);
                         else if (key.sym == SDLK_END)
                             commands ~= Command(CommandType.MOVE_LINE_END, shift);
                         else if (key.sym == SDLK_HOME)
