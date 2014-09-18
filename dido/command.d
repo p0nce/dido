@@ -28,7 +28,8 @@ enum CommandType
     ROTATE_NEXT_BUFFER,
     ROTATE_PREVIOUS_BUFFER,
     UNDO,
-    REDO
+    REDO,
+    SAVE
 }
 
 struct Command

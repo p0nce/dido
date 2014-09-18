@@ -16,6 +16,11 @@ import dido.panel;
 import dido.font;
 import dido.config;
 
+
+static immutable vec3i statusGreen = vec3i(0, 255, 0);
+static immutable vec3i statusYellow = vec3i(255, 255, 0);
+static immutable vec3i statusRed = vec3i(255, 0, 0);
+
 final class App
 {
 public:
@@ -143,38 +148,34 @@ private:
     TextArea _textArea;
     Font _font;
 
+    void greenMessage(dstring msg)
+    {
+        _cmdlinePanel.statusLine = msg;
+        _cmdlinePanel.statusColor = statusGreen;
+    }
+
+    void redMessage(dstring msg)
+    {
+        _cmdlinePanel.statusLine = msg;
+        _cmdlinePanel.statusColor = statusRed;
+    }
+
     void executeCommandLine(dstring cmdline)
     {
-        vec3i green = vec3i(0, 255, 0);
-        vec3i yellow = vec3i(255, 255, 0);
-        vec3i red = vec3i(255, 0, 0);
         if (cmdline == "q" || cmdline == "exit")
         {
             _finished = true;
-            _cmdlinePanel.statusLine = "OK";
-            _cmdlinePanel.statusColor = green;
+            greenMessage("OK");
         }
         else if (cmdline == "new" || cmdline == "n")
         {
             _buffers ~= new Buffer;
             _bufferSelect = _buffers.length - 1;
-            _cmdlinePanel.statusLine = "Created new file";
-            _cmdlinePanel.statusColor = green;
+            greenMessage("Created new file");
         }
         else if (cmdline == "save" || cmdline == "s")
         {
-            if (_buffers[_bufferSelect].isBoundToFileName())
-            {
-                string filepath = _buffers[_bufferSelect].filePath();
-                _buffers[_bufferSelect].saveToFile(filepath);
-                _cmdlinePanel.statusLine = to!dstring(format("Saved to %s", filepath));
-                _cmdlinePanel.statusColor = green;
-            }
-            else
-            {
-                _cmdlinePanel.statusLine = "This buffer is unbounded, try :save <filename>";
-                _cmdlinePanel.statusColor = red;
-            }
+            saveCurrentBuffer();
         }
         else if (cmdline == "load" || cmdline == "l")
         {
@@ -182,26 +183,22 @@ private:
             {
                 string filepath = _buffers[_bufferSelect].filePath();
                 _buffers[_bufferSelect].loadFromFile(filepath);
-                _cmdlinePanel.statusLine = to!dstring(format("Loaded %s", filepath));
-                _cmdlinePanel.statusColor = green;
+                greenMessage(to!dstring(format("Loaded %s", filepath)));
             }
             else
-            {
-                _cmdlinePanel.statusLine = "This buffer is unbounded, try :load <filename>";
-                _cmdlinePanel.statusColor = red;
-            }
+                redMessage("This buffer is unbounded, try :load <filename>");
         }
         else if (cmdline == "undo" || cmdline == "u")
             _buffers[_bufferSelect].undo();
         else if (cmdline == "redo" || cmdline == "r")
             _buffers[_bufferSelect].redo();
         else if (cmdline == "clean")
-            _buffers[_bufferSelect].cleanup();
-        else
         {
-            _cmdlinePanel.statusLine = to!dstring(format("Unknown command '%s'"d, cmdline));
-            _cmdlinePanel.statusColor = red;
+            _buffers[_bufferSelect].cleanup();
+            greenMessage("Buffer cleaned up"d);
         }
+        else
+            redMessage(to!dstring(format("Unknown command '%s'"d, cmdline)));
     }
 
     void execute(Command command)
@@ -286,7 +283,7 @@ private:
                 {
                     // pressing : in command-line mode leaves it and insert ":"
                     // TODO insert :
-                    _commandLineMode = false;                    
+                    _commandLineMode = false;
                 }
                 break;
 
@@ -387,6 +384,12 @@ private:
                     _textArea.ensureOneVisibleSelection();
                 }
                 break;
+
+            case SAVE:
+                if (!_commandLineMode)
+                    saveCurrentBuffer();
+                break;
+
         }
     }
 
@@ -451,6 +454,8 @@ private:
                             commands ~= Command(CommandType.UNDO);
                         else if (key.sym == SDLK_y && ctrl)
                             commands ~= Command(CommandType.REDO);
+                        else if (key.sym == SDLK_s && ctrl)
+                            commands ~= Command(CommandType.SAVE);
                         else 
                         {
                         }
@@ -491,5 +496,17 @@ private:
         }
     }    
 
-
+    void saveCurrentBuffer()
+    {
+        if (_buffers[_bufferSelect].isBoundToFileName())
+        {
+            string filepath = _buffers[_bufferSelect].filePath();
+            _buffers[_bufferSelect].saveToFile(filepath);
+            greenMessage(to!dstring(format("Saved to %s", filepath)));
+        }
+        else
+        {
+            redMessage("This buffer is unbounded, try :save <filename>");
+        }
+    }
 }
