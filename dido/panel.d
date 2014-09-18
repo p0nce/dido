@@ -36,20 +36,33 @@ public:
     {
         _position = availableSpace;
 
-        foreach(child; children)
-            child.reflow(availableSpace, charWidth, charHeight);
+        // reflow horizontal bars first
+        menuPanel.reflow(availableSpace, charWidth, charHeight);
+        availableSpace.min.y = menuPanel.position.max.y;
+
+        cmdlinePanel.reflow(availableSpace, charWidth, charHeight);
+        availableSpace.max.y = cmdlinePanel.position.min.y;
+
+        solutionPanel.reflow(availableSpace, charWidth, charHeight);
+        availableSpace.min.x = solutionPanel.position.max.x;
+
+        textArea.reflow(availableSpace, charWidth, charHeight);
     }
 
     override void render(SDL2Renderer renderer)
     {
         renderer.setViewportFull();
-        renderer.setColor(23, 23, 23, 255);
-        renderer.clear();
-        foreach(child; children)
-            child.render(renderer);
+
+        textArea.render(renderer);
+        solutionPanel.render(renderer);
+        menuPanel.render(renderer);
+        cmdlinePanel.render(renderer);
     }
 
-    Panel[] children;
+    Panel textArea;
+    Panel solutionPanel;
+    Panel menuPanel;
+    Panel cmdlinePanel;
 }
 
 class MenuPanel : Panel
@@ -75,8 +88,6 @@ public:
         _position = availableSpace;
         int widthOfSolutionExplorer = (250 + availableSpace.width / 3) / 2;
         _position.max.x = widthOfSolutionExplorer;
-        _position.min.y = (8 + charHeight);
-        _position.max.y -= (8 + charHeight);
     }
 
     override void render(SDL2Renderer renderer)
@@ -193,17 +204,24 @@ private:
 class TextArea : Panel
 {
 public:
-
     int marginEditor = 16;
+    LineNumberArea lineNumberArea;
+
+    this(bool haveLineNumbers)
+    {
+        if (haveLineNumbers)
+            lineNumberArea = new LineNumberArea;
+    }    
 
     override void reflow(box2i availableSpace, int charWidth, int charHeight)
     {
-        _position = availableSpace;
-        int widthOfSolutionExplorer = (250 + availableSpace.width / 3) / 2;
+        if (lineNumberArea !is null)
+        {
+            lineNumberArea.reflow(availableSpace, charWidth, charHeight);
+            availableSpace.min.x = lineNumberArea.position.max.x;
+        }
 
-        _position.min.x = widthOfSolutionExplorer;
-        _position.min.y = (8 + charHeight);
-        _position.max.y -= (8 + charHeight);
+        _position = availableSpace;
 
         _charWidth = charWidth;
         _charHeight = charHeight; 
@@ -218,26 +236,20 @@ public:
         return result;
     }
 
-
-
     override void render(SDL2Renderer renderer)
     {
         renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
-
-        int widthOfLineNumberMargin = _charWidth * 6;
+/*
         int widthOfLeftScrollbar = 12;
         int marginScrollbar = 4;
-
-        renderer.setColor(28, 28, 28, 255);
-        renderer.fillRect(0, 0, widthOfLineNumberMargin, _position.height);
 
         renderer.setColor(34, 34, 34, 128);
         renderer.fillRect(_position.width - marginScrollbar - widthOfLeftScrollbar, 
                           marginScrollbar, 
                           widthOfLeftScrollbar, 
-                          _position.height - marginScrollbar * 2);
+                          _position.height - marginScrollbar * 2);*/
 
-        int editPosX = -_cameraX + widthOfLineNumberMargin + marginEditor;
+        int editPosX = -_cameraX + marginEditor;
         int editPosY = -_cameraY + marginEditor;
 
         int firstVisibleLine = getFirstVisibleLine();
@@ -253,15 +265,6 @@ public:
         for (int i = firstVisibleLine; i < firstNonVisibleLine; ++i)
         {
             dstring line = _buffer.line(i);
-            dstring lineNumber = to!dstring(i + 1) ~ " ";
-            while (lineNumber.length < 6)
-            {
-                lineNumber = " "d ~ lineNumber;
-            }
-
-            _font.setColor(49, 97, 107, 160);
-            _font.renderString(lineNumber,  0,  0 -_cameraY + marginEditor + i * _charHeight);
-
 
             int posXInChars = 0;
             int posY = editPosY + i * _charHeight;
@@ -329,6 +332,12 @@ public:
         }
 
         renderer.setViewportFull();
+
+        if (lineNumberArea !is null)
+        {
+            lineNumberArea.setState(_font, _buffer, marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
+            lineNumberArea.render(renderer);
+        }
     }
 
     void setState(Font font, Buffer buffer, bool drawCursors)
@@ -355,6 +364,9 @@ public:
     {
         if (_cameraX < 0)
             _cameraX = 0;
+
+        if (_cameraY < 0)
+            _cameraY = 0;
     }
 
     box2i cameraBox() pure const nothrow
@@ -419,19 +431,20 @@ private:
 
     void ensureSelectionVisible(Selection selection)
     {
-        int scrollMargin = 9;
+        int scrollMargin = marginEditor;
         box2i edgeBox = getEdgeBox(selection);
         box2i camBox = cameraBox();
-        if (edgeBox.min.x < camBox.min.x)
-            _cameraX += (edgeBox.min.x - camBox.min.x);
+        if (edgeBox.min.x < camBox.min.x + scrollMargin)
+            _cameraX += (edgeBox.min.x - camBox.min.x - scrollMargin);
         
-        if (edgeBox.max.x > camBox.max.x)
-            _cameraX += (edgeBox.max.x - camBox.max.x);
+        if (edgeBox.max.x > camBox.max.x - scrollMargin)
+            _cameraX += (edgeBox.max.x - camBox.max.x + scrollMargin);
 
         if (edgeBox.min.y < camBox.min.y + scrollMargin)
             _cameraY += (edgeBox.min.y - camBox.min.y - scrollMargin);
         if (edgeBox.max.y > camBox.max.y - scrollMargin)
             _cameraY += (edgeBox.max.y - camBox.max.y + scrollMargin);
+        normalizeCamera();
     }
 
     void renderSelectionBackground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
@@ -483,4 +496,55 @@ private:
             renderer.fillRect(startX, startY, 1, _font.charHeight() - 1);
         }
     }
+}
+
+
+class LineNumberArea : Panel
+{
+public:
+    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+    {
+        _position = availableSpace;
+        _position.max.x = _position.min.x + 6 * charWidth;
+        _charHeight = charHeight; 
+    }
+
+    override void render(SDL2Renderer renderer)
+    {
+        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
+
+        renderer.setColor(28, 28, 28, 255);
+        renderer.fillRect(0, 0, _position.width, _position.height);
+
+        for (int i = _firstVisibleLine; i < _firstNonVisibleLine; ++i)
+        {
+            dstring lineNumber = to!dstring(i + 1) ~ " ";
+            while (lineNumber.length < 6)
+            {
+                lineNumber = " "d ~ lineNumber;
+            }
+
+            _font.setColor(49, 97, 107, 160);
+            _font.renderString(lineNumber,  0,  0 -_cameraY + _marginEditor + i * _charHeight);
+        }
+    }
+
+    void setState(Font font, Buffer buffer, int marginEditor, int firstVisibleLine, int firstNonVisibleLine, int cameraY)
+    {
+        _buffer = buffer;
+        _font = font;
+        _cameraY = cameraY;
+        _firstVisibleLine = firstVisibleLine;
+        _firstNonVisibleLine = firstNonVisibleLine;
+        _marginEditor = marginEditor;
+    }
+
+private:
+    int _charHeight;
+    Buffer _buffer;
+    Font _font;
+    int _cameraY;
+    int _marginEditor;
+    int _firstVisibleLine;
+    int _firstNonVisibleLine;
 }

@@ -50,9 +50,12 @@ public:
         _menuPanel = new MenuPanel;
         _cmdlinePanel = new CommandLinePanel(_font);
         _solutionPanel = new SolutionPanel;
-        _textArea = new TextArea;
+        _textArea = new TextArea(true);
 
-        _mainPanel.children ~= [ _textArea, _solutionPanel, _menuPanel, _cmdlinePanel];
+        _mainPanel.textArea = _textArea;
+        _mainPanel.solutionPanel = _solutionPanel;
+        _mainPanel.menuPanel =_menuPanel;
+        _mainPanel.cmdlinePanel = _cmdlinePanel;
     }
 
     ~this()
