@@ -16,6 +16,8 @@ public:
         SDL2Texture tempTexture;
         SDL2Surface tempSurface;
         makeCharTexture('A', tempTexture, tempSurface);
+        scope(exit) tempTexture.close();
+        scope(exit) tempSurface.close();
         _charWidth = tempTexture.width();
         _charHeight = tempSurface.height();
 
