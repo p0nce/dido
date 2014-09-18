@@ -1,4 +1,4 @@
-Dido is my personal and very specific attempt on a text editor.
+Dido is a specific text editor for the D language.
 
 Status: early garbage.
 
@@ -10,3 +10,4 @@ https://github.com/mawww/kakoune
 
 
 ![alt tag](https://raw.github.com/p0nce/dido/master/screenshots/dido.jpg)
+
