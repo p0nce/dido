@@ -5,14 +5,13 @@ import std.algorithm : min, max;
 
 import gfm.math.vector;
 
-import dido.panel.panel;
 import dido.selection;
-import dido.gui.font;
+import dido.gui;
 import dido.buffer;
 import dido.bufferiterator;
 import dido.panel.scrollbar;
 
-class TextArea : Panel
+class TextArea : UIElement
 {
 public:
     int marginEditor = 16;
@@ -20,25 +19,26 @@ public:
     ScrollBar verticalScrollbar;
     ScrollBar horizontalScrollbar;
 
-    this(bool haveLineNumbers)
+    this(UIContext context, bool haveLineNumbers)
     {
+        super(context);
         if (haveLineNumbers)
-            lineNumberArea = new LineNumberArea;
+            lineNumberArea = new LineNumberArea(context);
 
-        verticalScrollbar = new ScrollBar(true);
-        horizontalScrollbar = new ScrollBar(false);
+        verticalScrollbar = new ScrollBar(context, true);
+        horizontalScrollbar = new ScrollBar(context, false);
     }    
 
-    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+    override void reflow(box2i availableSpace)
     {
         if (lineNumberArea !is null)
         {
-            lineNumberArea.reflow(availableSpace, charWidth, charHeight);
+            lineNumberArea.reflow(availableSpace);
             availableSpace.min.x = lineNumberArea.position.max.x;
         }
 
-        verticalScrollbar.reflow(availableSpace, charWidth, charHeight);
-        horizontalScrollbar.reflow(availableSpace, charWidth, charHeight);
+        verticalScrollbar.reflow(availableSpace);
+        horizontalScrollbar.reflow(availableSpace);
 
         _position = availableSpace;
 
@@ -55,11 +55,8 @@ public:
         return result;
     }
 
-    override void render(SDL2Renderer renderer)
+    override void preRender(SDL2Renderer renderer)
     {
-        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
-
-
         int editPosX = -_cameraX + marginEditor;
         int editPosY = -_cameraY + marginEditor;
 
@@ -142,16 +139,14 @@ public:
             renderSelectionForeground(renderer, editPosX, editPosY, sel, _drawCursors);
         }
 
-        renderer.setViewportFull();
-
         if (lineNumberArea !is null)
         {
-            lineNumberArea.setState(_font, _buffer, marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
-            lineNumberArea.render(renderer);
+            lineNumberArea.setState(_buffer, marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
+            lineNumberArea.render();
         }
 
-        verticalScrollbar.render(renderer);
-        horizontalScrollbar.render(renderer);
+        verticalScrollbar.render();
+        horizontalScrollbar.render();
     }
 
     void setState(Font font, Buffer buffer, bool drawCursors)
@@ -332,20 +327,23 @@ private:
 }
 
 
-class LineNumberArea : Panel
+class LineNumberArea : UIElement
 {
 public:
-    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+
+    this(UIContext context)
+    {
+        super(context);
+    }
+
+    override void reflow(box2i availableSpace)
     {
         _position = availableSpace;
         _position.max.x = _position.min.x + 6 * charWidth;
-        _charHeight = charHeight; 
     }
 
-    override void render(SDL2Renderer renderer)
+    override void preRender(SDL2Renderer renderer)
     {
-        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
-
         renderer.setColor(28, 28, 28, 255);
         renderer.fillRect(0, 0, _position.width, _position.height);
 
@@ -357,15 +355,14 @@ public:
                 lineNumber = " "d ~ lineNumber;
             }
 
-            _font.setColor(49, 97, 107, 160);
-            _font.renderString(lineNumber,  0,  0 -_cameraY + _marginEditor + i * _charHeight);
+            font.setColor(49, 97, 107, 160);
+            font.renderString(lineNumber,  0,  0 -_cameraY + _marginEditor + i * charHeight);
         }
     }
 
-    void setState(Font font, Buffer buffer, int marginEditor, int firstVisibleLine, int firstNonVisibleLine, int cameraY)
+    void setState(Buffer buffer, int marginEditor, int firstVisibleLine, int firstNonVisibleLine, int cameraY)
     {
         _buffer = buffer;
-        _font = font;
         _cameraY = cameraY;
         _firstVisibleLine = firstVisibleLine;
         _firstNonVisibleLine = firstNonVisibleLine;
@@ -373,9 +370,7 @@ public:
     }
 
 private:
-    int _charHeight;
     Buffer _buffer;
-    Font _font;
     int _cameraY;
     int _marginEditor;
     int _firstVisibleLine;

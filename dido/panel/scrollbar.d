@@ -1,17 +1,19 @@
 module dido.panel.scrollbar;
 
 import gfm.math;
-import dido.panel.panel;
-class ScrollBar : Panel
+import dido.gui;
+
+class ScrollBar : UIElement
 {
 public:
 
-    this(bool vertical)
+    this(UIContext context, bool vertical)
     {
+        super(context);
         _vertical = vertical;
     }
 
-    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+    override void reflow(box2i availableSpace)
     {
         int width = 12;
         int margin = 4;
@@ -34,13 +36,10 @@ public:
         }
     }
 
-    override void render(SDL2Renderer renderer)
+    override void preRender(SDL2Renderer renderer)
     {
-        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
-
         renderer.setColor(34, 34, 34, 128);
         renderer.fillRect(0, 0, _position.width, _position.height);
-        renderer.setViewportFull();
     }
 
     void setState(float progressStart, float progressStop)

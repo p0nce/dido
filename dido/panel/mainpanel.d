@@ -1,39 +1,30 @@
 module dido.panel.mainpanel;
 
-import dido.panel.panel;
+import dido.gui;
 
-class MainPanel : Panel
+class MainPanel : UIElement
 {
-public:
-    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+public:    
+    this(UIContext context)
+    {
+        super(context);
+    }
+
+    override void reflow(box2i availableSpace)
     {
         _position = availableSpace;
 
         // reflow horizontal bars first
-        menuPanel.reflow(availableSpace, charWidth, charHeight);
-        availableSpace.min.y = menuPanel.position.max.y;
 
-        cmdlinePanel.reflow(availableSpace, charWidth, charHeight);
-        availableSpace.max.y = cmdlinePanel.position.min.y;
+        child(3).reflow(availableSpace);
+        availableSpace.min.y = child(3).position.max.y;
 
-        solutionPanel.reflow(availableSpace, charWidth, charHeight);
-        availableSpace.min.x = solutionPanel.position.max.x;
+        child(2).reflow(availableSpace);
+        availableSpace.max.y = child(2).position.min.y;
 
-        textArea.reflow(availableSpace, charWidth, charHeight);
+        child(1).reflow(availableSpace);
+        availableSpace.min.x = child(1).position.max.x;
+
+        child(0).reflow(availableSpace);
     }
-
-    override void render(SDL2Renderer renderer)
-    {
-        renderer.setViewportFull();
-
-        textArea.render(renderer);
-        solutionPanel.render(renderer);
-        menuPanel.render(renderer);
-        cmdlinePanel.render(renderer);
-    }
-
-    Panel textArea;
-    Panel solutionPanel;
-    Panel menuPanel;
-    Panel cmdlinePanel;
 }

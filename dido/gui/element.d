@@ -24,7 +24,7 @@ public:
     /// Meant to be overriden for custom behaviour.
     void reflow(box2i availableSpace)
     {
-        // default: span the entier available area, and do the same for children
+        // default: span the entire available area, and do the same for children
         _position = availableSpace;
 
         foreach(ref child; children)
@@ -56,6 +56,16 @@ public:
         return _context.font.charHeight();
     }
 
+    UIElement child(int n)
+    {
+        return _children[n];
+    }
+
+    void addChild(UIElement element)
+    {
+        _children ~= element;
+    }
+
 protected:
 
     /// Render this element before children.
@@ -72,10 +82,11 @@ protected:
         // defaults to nothing
     }
 
-private:
-    UIContext _context;
     box2i _position;
     UIElement[] _children;
+
+private:
+    UIContext _context;    
 
     void setViewportToElement()
     {

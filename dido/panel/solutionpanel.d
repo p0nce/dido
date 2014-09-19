@@ -2,27 +2,31 @@ module dido.panel.solutionpanel;
 
 import std.path : baseName;
 
-import dido.panel.panel;
 import dido.buffer;
-import dido.gui.font;
+import dido.gui;
 
-class SolutionPanel : Panel
+class SolutionPanel : UIElement
 {
 public:
-    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+
+    this(UIContext context)
+    {
+        super(context);
+    }
+
+    override void reflow(box2i availableSpace)
     {
         _position = availableSpace;
         int widthOfSolutionExplorer = (250 + availableSpace.width / 3) / 2;
         _position.max.x = widthOfSolutionExplorer;
     }
 
-    override void render(SDL2Renderer renderer)
+    override void preRender(SDL2Renderer renderer)
     {
-        renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
         renderer.setColor(34, 34, 34, 255);
         renderer.fillRect(0, 0, _position.width, _position.height);
 
-        int itemSpace = _font.charHeight() + 12;
+        int itemSpace = font.charHeight() + 12;
         int marginX = 16;
         int marginY = 16;
         
@@ -36,16 +40,14 @@ public:
         for(int i = 0; i < cast(int)_buffers.length; ++i)
         {
             if (i == _bufferSelect)
-                _font.setColor(255, 255, 255, 255);
+                font.setColor(255, 255, 255, 255);
             else
-                _font.setColor(200, 200, 200, 255);
-            _font.renderString(_prettyName[i], marginX, marginY + i * itemSpace);
+                font.setColor(200, 200, 200, 255);
+            font.renderString(_prettyName[i], marginX, marginY + i * itemSpace);
         }
-
-        renderer.setViewportFull();
     }
 
-    void updateState(Font font, Buffer[] buffers, int bufferSelect)
+    void updateState(Buffer[] buffers, int bufferSelect)
     {
         _buffers = buffers;
         _prettyName.length = buffers.length;
@@ -53,13 +55,11 @@ public:
         {
             _prettyName[i] = baseName(buffers[i].filePath());
         }
-        _font = font;
         _bufferSelect = bufferSelect;
     }
 
 private:
     string[] _prettyName;
     Buffer[] _buffers;
-    Font _font;
     int _bufferSelect;
 }

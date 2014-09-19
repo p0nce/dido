@@ -13,7 +13,7 @@ import dido.window;
 import dido.command;
 import dido.selection;
 import dido.panel;
-import dido.gui.font;
+import dido.gui;
 import dido.config;
 
 
@@ -51,16 +51,18 @@ public:
 
         _sdl2.startTextInput();
 
-        _mainPanel = new MainPanel;
-        _menuPanel = new MenuPanel;
-        _cmdlinePanel = new CommandLinePanel(_font);
-        _solutionPanel = new SolutionPanel;
-        _textArea = new TextArea(true);
+        _uiContext = new UIContext(_window.renderer(), _font);
 
-        _mainPanel.textArea = _textArea;
-        _mainPanel.solutionPanel = _solutionPanel;
-        _mainPanel.menuPanel =_menuPanel;
-        _mainPanel.cmdlinePanel = _cmdlinePanel;
+        _mainPanel = new MainPanel(_uiContext);
+        _menuPanel = new MenuPanel(_uiContext);
+        _cmdlinePanel = new CommandLinePanel(_uiContext);
+        _solutionPanel = new SolutionPanel(_uiContext);
+        _textArea = new TextArea(_uiContext, true);
+
+        _mainPanel.addChild(_textArea);
+        _mainPanel.addChild(_solutionPanel);
+        _mainPanel.addChild(_cmdlinePanel);
+        _mainPanel.addChild(_menuPanel);
     }
 
     ~this()
@@ -115,14 +117,14 @@ public:
 
             bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
 
-            _solutionPanel.updateState(_font, _buffers, _bufferSelect);
+            _solutionPanel.updateState(_buffers, _bufferSelect);
             _cmdlinePanel.updateState(_commandLineMode);
             
             _textArea.setState(_font, _buffers[_bufferSelect], drawCursors);
 
-            _mainPanel.reflow(box2i(0, 0, width, height), charWidth, charHeight);
+            _mainPanel.reflow(box2i(0, 0, width, height));
 
-            _mainPanel.render(renderer);
+            _mainPanel.render();
             
             renderer.present();
         }
@@ -147,6 +149,7 @@ private:
     SolutionPanel _solutionPanel;
     TextArea _textArea;
     Font _font;
+    UIContext _uiContext;
 
     void greenMessage(dstring msg)
     {

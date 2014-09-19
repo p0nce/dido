@@ -1,55 +1,50 @@
 module dido.panel.commandlinepanel;
 
 import gfm.math;
+import dido.gui;
 
-import dido.panel.panel;
-import dido.gui.font;
-
-class CommandLinePanel : Panel
+class CommandLinePanel : UIElement
 {
 public:
 
-    this(Font font)
+    this(UIContext context)
     {
-        _font = font;
+        super(context);
         currentCommandLine = "";
         statusLine = "";
     }
 
-    override void reflow(box2i availableSpace, int charWidth, int charHeight)
+    override void reflow(box2i availableSpace)
     {
         _position = availableSpace;
         _position.min.y = availableSpace.max.y - (8 + charHeight);
-
-        _charWidth = charWidth;
     }
 
-    override void render(SDL2Renderer renderer)
+    override void preRender(SDL2Renderer renderer)
     {
         renderer.setColor(14, 14, 14, 230);
-        renderer.fillRect(_position.min.x, _position.min.y,  _position.width, _position.height);
+        renderer.fillRect(0, 0, _position.width, _position.height);
 
         {
             // commandline bar at bottom
 
-            int textPosx = _position.min.x + 4 + _charWidth;
-            int textPosy = _position.min.y + 4;
+            int textPosx = 4 + charWidth;
+            int textPosy = 4;
 
             if (_commandLineMode)
             {
-                _font.setColor(255, 255, 0, 255);
-                _font.renderString(":", _position.min.x + 4, _position.min.y + 4);
-                _font.setColor(255, 255, 128, 255);
-                _font.renderString(currentCommandLine, textPosx, textPosy);
+                font.setColor(255, 255, 0, 255);
+                font.renderString(":", 4, 4);
+                font.setColor(255, 255, 128, 255);
+                font.renderString(currentCommandLine, textPosx, textPosy);
             }
             else
             {
                 // Write status line
-                _font.setColor(statusColor.r, statusColor.g, statusColor.b, 255);
-                _font.renderString(statusLine, textPosx, textPosy);
+                font.setColor(statusColor.r, statusColor.g, statusColor.b, 255);
+                font.renderString(statusLine, textPosx, textPosy);
             }
         }
-
     }
 
     void updateState(bool commandLineMode)
@@ -62,8 +57,5 @@ public:
     vec3i statusColor;
 
 private:
-    Font _font;
-    int _charWidth;
     bool _commandLineMode;
-
 }
