@@ -1,7 +1,7 @@
 module dido.window;
 
 import gfm.sdl2;
-import dido.font;
+import dido.gui.font;
 
 final class Window
 {

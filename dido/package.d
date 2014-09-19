@@ -1,7 +1,6 @@
 module dido;
 
-public import dido.font,
-              dido.scene,
+public import dido.scene,
               dido.colors,
               dido.window,
               dido.buffer,

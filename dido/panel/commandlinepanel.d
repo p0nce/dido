@@ -3,7 +3,7 @@ module dido.panel.commandlinepanel;
 import gfm.math;
 
 import dido.panel.panel;
-import dido.font;
+import dido.gui.font;
 
 class CommandLinePanel : Panel
 {

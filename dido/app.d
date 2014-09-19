@@ -13,7 +13,7 @@ import dido.window;
 import dido.command;
 import dido.selection;
 import dido.panel;
-import dido.font;
+import dido.gui.font;
 import dido.config;
 
 

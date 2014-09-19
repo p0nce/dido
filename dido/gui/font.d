@@ -1,4 +1,4 @@
-module dido.font;
+module dido.gui.font;
 
 import std.conv;
 import gfm.sdl2;

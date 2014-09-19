@@ -4,7 +4,7 @@ import std.path : baseName;
 
 import dido.panel.panel;
 import dido.buffer;
-import dido.font;
+import dido.gui.font;
 
 class SolutionPanel : Panel
 {

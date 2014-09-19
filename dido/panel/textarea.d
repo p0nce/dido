@@ -7,20 +7,26 @@ import gfm.math.vector;
 
 import dido.panel.panel;
 import dido.selection;
-import dido.font;
+import dido.gui.font;
 import dido.buffer;
 import dido.bufferiterator;
+import dido.panel.scrollbar;
 
 class TextArea : Panel
 {
 public:
     int marginEditor = 16;
     LineNumberArea lineNumberArea;
+    ScrollBar verticalScrollbar;
+    ScrollBar horizontalScrollbar;
 
     this(bool haveLineNumbers)
     {
         if (haveLineNumbers)
             lineNumberArea = new LineNumberArea;
+
+        verticalScrollbar = new ScrollBar(true);
+        horizontalScrollbar = new ScrollBar(false);
     }    
 
     override void reflow(box2i availableSpace, int charWidth, int charHeight)
@@ -30,6 +36,9 @@ public:
             lineNumberArea.reflow(availableSpace, charWidth, charHeight);
             availableSpace.min.x = lineNumberArea.position.max.x;
         }
+
+        verticalScrollbar.reflow(availableSpace, charWidth, charHeight);
+        horizontalScrollbar.reflow(availableSpace, charWidth, charHeight);
 
         _position = availableSpace;
 
@@ -49,15 +58,7 @@ public:
     override void render(SDL2Renderer renderer)
     {
         renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
-/*
-        int widthOfLeftScrollbar = 12;
-        int marginScrollbar = 4;
 
-        renderer.setColor(34, 34, 34, 128);
-        renderer.fillRect(_position.width - marginScrollbar - widthOfLeftScrollbar, 
-                          marginScrollbar, 
-                          widthOfLeftScrollbar, 
-                          _position.height - marginScrollbar * 2);*/
 
         int editPosX = -_cameraX + marginEditor;
         int editPosY = -_cameraY + marginEditor;
@@ -148,6 +149,9 @@ public:
             lineNumberArea.setState(_font, _buffer, marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
             lineNumberArea.render(renderer);
         }
+
+        verticalScrollbar.render(renderer);
+        horizontalScrollbar.render(renderer);
     }
 
     void setState(Font font, Buffer buffer, bool drawCursors)
@@ -165,9 +169,22 @@ public:
 
     void moveCamera(int dx, int dy)
     {
+        if (_buffer is null)
+            return;
+
         _cameraX += dx;
         _cameraY += dy;
         normalizeCamera();       
+    }
+
+    int maxCameraX()
+    {
+        return 92 * _charWidth; // maintain length of longest line in Buffer
+    }
+
+    int maxCameraY()
+    {
+        return _buffer.numLines() * _charHeight;
     }
 
     void normalizeCamera()
@@ -175,8 +192,14 @@ public:
         if (_cameraX < 0)
             _cameraX = 0;
 
+        if (_cameraX > maxCameraX())
+            _cameraX = maxCameraX();
+
         if (_cameraY < 0)
             _cameraY = 0;
+
+        if (_cameraY > maxCameraY())
+            _cameraY = maxCameraY();
     }
 
     box2i cameraBox() pure const nothrow
