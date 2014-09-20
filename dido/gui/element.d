@@ -168,6 +168,12 @@ protected:
 
     UIElement[] _children;
 
+
+    final bool isMouseOver() pure const nothrow
+    {
+        return _mouseOver;
+    }
+
 private:
     UIContext _context;
 

@@ -18,6 +18,8 @@ public:
         _window.setTitle("Dido v0.0.1");
         _renderer = new SDL2Renderer(_window, 0);
 
+        _renderer.setBlend(SDL_BLENDMODE_BLEND);
+
         _initialized = true;
     }
 

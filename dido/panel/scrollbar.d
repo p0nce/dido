@@ -7,6 +7,9 @@ class ScrollBar : UIElement
 {
 public:
 
+    int widthOfScrollbar = 8;
+    int padding = 4;
+
     this(UIContext context, bool vertical)
     {
         super(context);
@@ -14,13 +17,13 @@ public:
 
         _progressStart = 0.45f;
         _progressStop = 0.55f;
-        _alpha = 20;
+        _alpha = 128;
     }
 
     override void reflow(box2i availableSpace)
     {
-        int width = 10;
-        int margin = 2;
+        int width = 12;
+        int margin = 0;
 
         _position = availableSpace;
 
@@ -29,46 +32,55 @@ public:
             _position.min.y += margin;
             _position.max.y -= margin;
             _position.max.x -= margin;
-            _position.min.x = _position.max.x - width;
+            _position.min.x = _position.max.x - (widthOfScrollbar + 2 * padding);
         }
         else
         {
             _position.min.x += margin;
             _position.max.x -= margin;
             _position.max.y -= margin;
-            _position.min.y = _position.max.y - width;
+            _position.min.y = _position.max.y - (widthOfScrollbar + 2 * padding);
         }
     }
 
-    override void onMouseEnter()
+    box2i getFocusBox()
     {
-        _alpha = 48;
-    }
-
-    override void onMouseExit()
-    {
-        _alpha = 20;
-    }
-
-
-    override void preRender(SDL2Renderer renderer)
-    {
-        renderer.setColor(34, 34, 34, _alpha);
-        renderer.fillRect(0, 0, _position.width, _position.height);
-        
-        renderer.setColor(130, 130, 140, _alpha);
         if (_vertical)
         {
             int iprogressStart = cast(int)(0.5f + _progressStart * _position.height);
             int iprogressStop = cast(int)(0.5f + _progressStop * _position.height);
-            renderer.fillRect(1, iprogressStart, _position.width - 2, iprogressStop - iprogressStart);
+            int x = padding;
+            int y = iprogressStart;
+            return box2i(x, y, x + _position.width - 2 * padding, y + iprogressStop - iprogressStart);
         }
         else
         {
             int iprogressStart = cast(int)(0.5f + _progressStart * _position.width);
             int iprogressStop = cast(int)(0.5f + _progressStop * _position.width);
-            renderer.fillRect(iprogressStart, 1, iprogressStop - iprogressStart, _position.height - 2);
+            int x = iprogressStart;
+            int y = padding;
+            return box2i(x, y, x + iprogressStop - iprogressStart, y + _position.height - 2 * padding);
         }
+
+    }
+
+
+    override void preRender(SDL2Renderer renderer)
+    {
+        if (isMouseOver())
+            renderer.setColor(52, 52, 56, _alpha);
+        else
+            renderer.setColor(42, 42, 46, _alpha);
+
+        renderer.fillRect(0, 0, _position.width, _position.height);
+        
+        if (isMouseOver())
+            renderer.setColor(194, 194, 194, _alpha);
+        else
+            renderer.setColor(134, 134, 134, _alpha);
+
+        box2i focus = getFocusBox();
+        renderer.fillRect(focus.min.x, focus.min.y, focus.width, focus.height);
     }
 
     void setState(float progressStart, float progressStop)
@@ -84,5 +96,4 @@ private:
     float _progressStart;
     float _progressStop;
     ubyte _alpha;
-
 }
