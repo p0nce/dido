@@ -101,7 +101,8 @@ public:
 
         if (_position.contains(vec2i(x, y)))
         {
-            return onMouseClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick);
+            if(onMouseClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick))
+                return true;
         }
 
         return false;
@@ -118,7 +119,8 @@ public:
 
         if (_position.contains(vec2i(x, y)))
         {
-            return onMouseWheel(x - _position.min.x, y - _position.min.y, wheelDeltaX, wheelDeltaY);
+            if (onMouseWheel(x - _position.min.x, y - _position.min.y, wheelDeltaX, wheelDeltaY))
+                return true;
         }
 
         return false;

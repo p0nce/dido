@@ -14,6 +14,7 @@ public:
 
         _progressStart = 0.45f;
         _progressStop = 0.55f;
+        _alpha = 20;
     }
 
     override void reflow(box2i availableSpace)
@@ -39,13 +40,23 @@ public:
         }
     }
 
+    override void onMouseEnter()
+    {
+        _alpha = 48;
+    }
+
+    override void onMouseExit()
+    {
+        _alpha = 20;
+    }
+
+
     override void preRender(SDL2Renderer renderer)
     {
-        renderer.setColor(34, 34, 34, 32);
+        renderer.setColor(34, 34, 34, _alpha);
         renderer.fillRect(0, 0, _position.width, _position.height);
-
         
-        renderer.setColor(130, 130, 140, 32);
+        renderer.setColor(130, 130, 140, _alpha);
         if (_vertical)
         {
             int iprogressStart = cast(int)(0.5f + _progressStart * _position.height);
@@ -72,6 +83,6 @@ private:
     bool _vertical;
     float _progressStart;
     float _progressStop;
-    vec4i _color;
+    ubyte _alpha;
 
 }

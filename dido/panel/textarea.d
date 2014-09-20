@@ -15,18 +15,26 @@ class TextArea : UIElement
 {
 public:
     int marginEditor = 16;
+
     LineNumberArea lineNumberArea;
-    ScrollBar verticalScrollbar;
-    ScrollBar horizontalScrollbar;
+    UIElement verticalScrollbar;
+    UIElement horizontalScrollbar;
 
     this(UIContext context, bool haveLineNumbers)
     {
         super(context);
-        if (haveLineNumbers)
-            lineNumberArea = new LineNumberArea(context);
 
-        verticalScrollbar = new ScrollBar(context, true);
-        horizontalScrollbar = new ScrollBar(context, false);
+        addChild(new ScrollBar(context, true));
+        verticalScrollbar = child(0);
+
+        addChild(new ScrollBar(context, false));
+        horizontalScrollbar = child(1);
+
+        if (haveLineNumbers)
+        {
+            lineNumberArea = new LineNumberArea(context);
+            addChild(lineNumberArea);
+        }
     }    
 
     override void reflow(box2i availableSpace)
@@ -142,11 +150,7 @@ public:
         if (lineNumberArea !is null)
         {
             lineNumberArea.setState(_buffer, marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
-            lineNumberArea.render();
         }
-
-        verticalScrollbar.render();
-        horizontalScrollbar.render();
     }
 
     void setState(Font font, Buffer buffer, bool drawCursors)
@@ -169,7 +173,13 @@ public:
 
         _cameraX += dx;
         _cameraY += dy;
-        normalizeCamera();       
+        normalizeCamera();
+    }
+
+    override bool onMouseWheel(int x, int y, int wheelDeltaX, int wheelDeltaY)
+    {
+        moveCamera(-wheelDeltaX * 3 * _charWidth, -wheelDeltaY * 3 * _charHeight);
+        return true;
     }
 
     int maxCameraX()
