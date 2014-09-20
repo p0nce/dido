@@ -11,6 +11,12 @@ public:
         _context = context;
     }
 
+    void close()
+    {
+        foreach(child; children)
+            child.close();
+    }
+
     final void render()
     {
         setViewportToElement();

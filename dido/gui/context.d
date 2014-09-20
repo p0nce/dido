@@ -7,12 +7,14 @@ public import dido.gui.font;
 class UIContext
 {
 public:
-    this(SDL2Renderer renderer_, Font font_)
+    this(SDL2 sdl2_, SDL2Renderer renderer_, Font font_)
     {
         renderer = renderer_;
         font = font_;
+        sdl2 = sdl2_;
     }
 
+    SDL2 sdl2;
     SDL2Renderer renderer;
     Font font;
 }

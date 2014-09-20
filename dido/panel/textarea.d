@@ -3,6 +3,7 @@ module dido.panel.textarea;
 import std.conv : to;
 import std.algorithm : min, max;
 
+import gfm.sdl2;
 import gfm.math.vector;
 
 import dido.selection;
@@ -35,7 +36,18 @@ public:
             lineNumberArea = new LineNumberArea(context);
             addChild(lineNumberArea);
         }
-    }    
+
+        _editCursor = new SDL2Cursor(context.sdl2, SDL_SYSTEM_CURSOR_IBEAM);
+        _previousCursor = SDL2Cursor.getCurrent(context.sdl2);
+    }
+
+    override void close()
+    {
+        _editCursor.close();
+        _previousCursor.close();
+        foreach(ref child; children)
+            child.close();
+    }
 
     override void reflow(box2i availableSpace)
     {
@@ -234,6 +246,16 @@ public:
         ensureSelectionVisible(bestSel);
     }
 
+    override void onMouseEnter()
+    {
+        _editCursor.setCurrent();
+    }
+
+    override void onMouseExit()
+    {
+        _previousCursor.setCurrent();
+    }
+
 private:
     int _cameraX = 0;
     int _cameraY = 0;
@@ -242,6 +264,9 @@ private:
     Buffer _buffer;    
     Font _font;
     bool _drawCursors;
+
+    SDL2Cursor _editCursor;
+    SDL2Cursor _previousCursor;
 
     int getFirstVisibleLine() pure const nothrow
     {

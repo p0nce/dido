@@ -51,7 +51,7 @@ public:
 
         _sdl2.startTextInput();
 
-        _uiContext = new UIContext(_window.renderer(), _font);
+        _uiContext = new UIContext(_sdl2, _window.renderer(), _font);
 
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext);
@@ -72,13 +72,7 @@ public:
 
     void close()
     {
-        
-        destroy(_textArea);
-        destroy(_menuPanel);
-        destroy(_cmdlinePanel);
-        destroy(_solutionPanel);
-        destroy(_mainPanel);
-
+        _mainPanel.close();
         _sdl2.stopTextInput();
         _font.close();
         _window.close();
