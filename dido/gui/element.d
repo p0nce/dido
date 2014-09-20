@@ -31,39 +31,119 @@ public:
             child.reflow(availableSpace);
     }
 
-    box2i position()
+    final box2i position()
     {
         return _position;
     }
 
-    ref UIElement[] children()
+    final ref UIElement[] children()
     {
         return _children;
     }
 
-    Font font()
+    final Font font()
     {
         return _context.font;
     }
 
-    int charWidth()
+    final int charWidth()
     {
         return _context.font.charWidth();
     }
 
-    int charHeight()
+    final int charHeight()
     {
         return _context.font.charHeight();
     }
 
-    UIElement child(int n)
+    final UIElement child(int n)
     {
         return _children[n];
     }
 
-    void addChild(UIElement element)
+    final void addChild(UIElement element)
     {
         _children ~= element;
+    }
+
+    // This function is meant to be overriden.
+    // It should return true if the click is handled.
+    bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        return false;
+    }
+
+    // This function is meant to be overriden.
+    // It should return true if the wheel is handled.
+    bool onMouseWheel(int x, int y, int wheelDeltaX, int wheelDeltaY)
+    {
+        return false;
+    }
+
+    // Called when mouse enter this Element.
+    void onMouseEnter()
+    {
+    }
+
+    // Called when mouse enter this Element.
+    void onMouseExit()
+    {
+    }
+
+    // to be called when the mouse clicked
+    final bool mouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        foreach(child; _children)
+        {
+            if (child.mouseClick(x, y, button, isDoubleClick))
+                return true;
+        }
+
+        if (_position.contains(vec2i(x, y)))
+        {
+            return onMouseClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick);
+        }
+
+        return false;
+    }
+
+    // to be called when the mouse clicked
+    final bool mouseWheel(int x, int y, int wheelDeltaX, int wheelDeltaY)
+    {
+        foreach(child; _children)
+        {
+            if (child.mouseWheel(x, y, wheelDeltaX, wheelDeltaY))
+                return true;
+        }
+
+        if (_position.contains(vec2i(x, y)))
+        {
+            return onMouseWheel(x - _position.min.x, y - _position.min.y, wheelDeltaX, wheelDeltaY);
+        }
+
+        return false;
+    }
+
+    // to be called when the mouse moved
+    final void mouseMove(int x, int y, int dx, int dy)
+    {
+        foreach(child; _children)
+        {
+            child.mouseMove(x, y, dx, dy);
+        }
+        
+        if (_position.contains(vec2i(x, y)))
+        {
+            if (!_mouseOver)
+                onMouseEnter();
+            _mouseOver = true;
+        }
+        else
+        {
+            if (_mouseOver)
+                onMouseExit();
+            _mouseOver = false;
+        }
     }
 
 protected:
@@ -83,13 +163,16 @@ protected:
     }
 
     box2i _position;
+
     UIElement[] _children;
 
 private:
-    UIContext _context;    
+    UIContext _context;
 
-    void setViewportToElement()
+    bool _mouseOver = false;
+
+    final void setViewportToElement()
     {
         _context.renderer.setViewport(_position.min.x, _position.min.y, _position.width, _position.height);
-    }
+    }    
 }

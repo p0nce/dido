@@ -483,14 +483,30 @@ private:
                     }
                     break;
 
+
+                case SDL_MOUSEBUTTONDOWN:
+                {
+                    const (SDL_MouseButtonEvent*) mbEvent = &event.button;
+                    _mainPanel.mouseClick(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button, mbEvent.clicks > 1);
+                    break;
+                }
+
+                case SDL_MOUSEWHEEL:
+                {
+                    _mainPanel.mouseWheel(_sdl2.mouse.x, _sdl2.mouse.y, _sdl2.mouse.wheelDeltaX(), _sdl2.mouse.wheelDeltaY());
+                    break;
+                }
+
+                case SDL_MOUSEMOTION:
+                    _mainPanel.mouseMove(_sdl2.mouse.x, _sdl2.mouse.y, _sdl2.mouse.lastDeltaX(), _sdl2.mouse.lastDeltaY());
+                    break;
+
                 default:
                     break;
             }
         }
 
-        int mouseWheelDeltaY = _sdl2.mouse.wheelDeltaY();
-        int charHeight = _font.charHeight();
-        _textArea.moveCamera(0, -mouseWheelDeltaY * 3 * charHeight);
+
 
         foreach (cmd; commands)
         {
