@@ -6,10 +6,10 @@ import std.algorithm : min, max;
 import gfm.sdl2;
 import gfm.math.vector;
 
-import dido.selection;
+import dido.buffer.selection;
 import dido.gui;
-import dido.buffer;
-import dido.bufferiterator;
+import dido.buffer.buffer;
+import dido.buffer.bufferiterator;
 import dido.panel.scrollbar;
 
 class TextArea : UIElement

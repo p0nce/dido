@@ -2,7 +2,7 @@ module dido.panel.solutionpanel;
 
 import std.path : baseName;
 
-import dido.buffer;
+import dido.buffer.buffer;
 import dido.gui;
 
 class SolutionPanel : UIElement

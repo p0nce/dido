@@ -1,6 +1,6 @@
-module dido.buffercommand;
+module dido.buffer.buffercommand;
 
-import dido.selection;
+import dido.buffer.selection;
 
 enum BufferCommandType
 {

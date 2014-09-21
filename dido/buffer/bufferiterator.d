@@ -1,7 +1,7 @@
-module dido.bufferiterator;
+module dido.buffer.bufferiterator;
 
-import dido.buffer;
-import dido.selection;
+import dido.buffer.buffer;
+import dido.buffer.selection;
 
 
 struct Cursor

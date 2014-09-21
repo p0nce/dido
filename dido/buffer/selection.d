@@ -1,7 +1,7 @@
-module dido.selection;
+module dido.buffer.selection;
 
-import dido.buffer;
-import dido.bufferiterator;
+import dido.buffer.buffer;
+import dido.buffer.bufferiterator;
 
 
 struct Selection

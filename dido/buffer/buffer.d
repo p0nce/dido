@@ -1,4 +1,4 @@
-module dido.buffer;
+module dido.buffer.buffer;
 
 
 import std.file;
@@ -8,9 +8,9 @@ import std.conv;
 
 import gfm.math;
 
-import dido.selection;
-import dido.buffercommand;
-import dido.bufferiterator;
+import dido.buffer.selection;
+import dido.buffer.buffercommand;
+import dido.buffer.bufferiterator;
 
 
 // text buffers

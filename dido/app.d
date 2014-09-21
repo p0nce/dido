@@ -9,10 +9,10 @@ import gfm.math;
 import gfm.core;
 
 
-import dido.buffer;
+import dido.buffer.buffer;
 import dido.window;
 import dido.command;
-import dido.selection;
+import dido.buffer.selection;
 import dido.panel;
 import dido.gui;
 import dido.config;

@@ -8,7 +8,7 @@ import std.string;
 import std.file;
 import std.json;
 
-import dido;
+import dido.app;
 import dido.config;
 import sdlang;
 
