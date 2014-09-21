@@ -481,7 +481,14 @@ private:
                 case SDL_MOUSEBUTTONDOWN:
                 {
                     const (SDL_MouseButtonEvent*) mbEvent = &event.button;
-                    _mainPanel.mouseClick(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button, mbEvent.clicks > 1);
+
+                    // undo
+                    if (mbEvent.button == SDL_BUTTON_X1)
+                        commands ~= Command(CommandType.UNDO);
+                    else if (mbEvent.button == SDL_BUTTON_X2)
+                        commands ~= Command(CommandType.REDO);
+                    else
+                        _mainPanel.mouseClick(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button, mbEvent.clicks > 1);
                     break;
                 }
 
