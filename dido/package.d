@@ -7,5 +7,4 @@ public import dido.scene,
               dido.app,
               dido.command,
               dido.selection,
-              dido.analysis,
               dido.panel;
