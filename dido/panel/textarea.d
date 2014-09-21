@@ -256,6 +256,26 @@ public:
         _previousCursor.setCurrent();
     }
 
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        if (_buffer is null)
+            return false;
+
+        // implement click on buffer and CTRL + click
+        if (button == SDL_BUTTON_LEFT || button == SDL_BUTTON_RIGHT)
+        {
+            bool ctrl = context.sdl2.keyboard.isPressed(SDLK_LCTRL) || context.sdl2.keyboard.isPressed(SDLK_RCTRL);
+
+            int line = (y - marginEditor + _cameraY) / charHeight;
+            int column = (x - marginEditor + _cameraX + (charWidth / 2)) / charWidth;
+
+            _buffer.addNewSelection(line, column, ctrl);
+            return true;
+        }
+
+        return false;
+    }
+
 private:
     int _cameraX = 0;
     int _cameraY = 0;

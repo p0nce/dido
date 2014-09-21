@@ -42,15 +42,7 @@ public:
         _filepath = filepath;
     }
 
-    BufferIterator begin()
-    {
-        return BufferIterator(this, Cursor(0, 0));
-    }
 
-    BufferIterator end()
-    {
-        return BufferIterator(this, Cursor(lines.length - 1, maxColumn(lines.length - 1)));
-    }
 
     // load file in buffer, non-conforming utf-8 is lost
     void loadFromFile(string path)
@@ -193,6 +185,14 @@ public:
         _selectionSet.normalize();
     }
 
+    Cursor clampCursor(Cursor cursor)
+    {
+        Cursor result;
+        result.line = clamp!int(cursor.line, 0, numLines() - 1);
+        result.column = clamp!int(cursor.column, 0, maxColumn(result.line));
+        return result;
+    }
+
     // Add a new area-less selection
     void extendSelectionVertical(int dy)
     {
@@ -202,11 +202,23 @@ public:
         else
             sel = _selectionSet.selections[0];
 
-        sel.edge.cursor.line = clamp!int(sel.edge.cursor.line + dy, 0, numLines() - 1);
-        sel.edge.cursor.column = clamp!int(sel.edge.cursor.column, 0, maxColumn(sel.edge.cursor.line));
+        sel.edge.cursor = clampCursor(sel.edge.cursor);
 
         sel.anchor = sel.edge;
         _selectionSet.selections ~= sel;
+        _selectionSet.normalize();
+    }
+
+    void addNewSelection(int line, int column, bool keepExistingSelections)
+    {
+        BufferIterator it = BufferIterator(this, clampCursor(Cursor(line, column)));
+        Selection newSel = Selection(it, it);        
+        assert(newSel.isValid);
+
+        if (keepExistingSelections)
+            _selectionSet.selections ~= newSel;
+        else
+            _selectionSet.selections = [ newSel ];
         _selectionSet.normalize();
     }
 
@@ -362,6 +374,18 @@ public:
         }
     }
 
+package:
+
+    BufferIterator begin()
+    {
+        return BufferIterator(this, Cursor(0, 0));
+    }
+
+    BufferIterator end()
+    {
+        return BufferIterator(this, Cursor(lines.length - 1, maxColumn(lines.length - 1)));
+    }
+
 private:
 
     void pushCommand(BufferCommand command)
@@ -511,6 +535,8 @@ private:
 
 private
 {
+  
+
     // removes BOM, sanitize Unicode, and split on line endings
     dstring[] readTextFile(string path)
     {

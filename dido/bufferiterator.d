@@ -26,14 +26,14 @@ struct BufferIterator
 private:
     Buffer _buffer = null;
     Cursor _cursor = Cursor(0, 0);
-public:    
+public:
 
     this(Buffer buffer, Cursor cursor)
     {
         _buffer = buffer;
         _cursor = cursor;
         assert(_buffer !is null);
-    }    
+    }
 
     ref inout(Cursor) cursor() pure inout nothrow
     {

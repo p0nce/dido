@@ -154,6 +154,11 @@ public:
         }
     }
 
+    UIContext context()
+    {
+        return _context;
+    }
+
 protected:
 
     /// Render this element before children.
