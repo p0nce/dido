@@ -2,6 +2,7 @@ module dido.app;
 
 import std.file;
 import std.conv;
+import std.process : execute;
 
 import gfm.sdl2;
 import gfm.math;
@@ -198,7 +199,7 @@ private:
             redMessage(to!dstring(format("Unknown command '%s'"d, cmdline)));
     }
 
-    void execute(Command command)
+    void executeCommand(Command command)
     {
         Buffer buffer = _buffers[_bufferSelect];
         final switch (command.type) with (CommandType)
@@ -392,6 +393,18 @@ private:
                 }
                 break;
 
+            case BUILD:
+                auto dubResult = execute(["dub", "build"]);
+                if (dubResult.status != 0)
+                    throw new Exception(format("dub returned %s", dubResult.status));
+                break;
+
+            case RUN:
+                auto dubResult = execute(["dub", "run"]);
+                if (dubResult.status != 0)
+                    throw new Exception(format("dub returned %s", dubResult.status));
+                break;
+
             case SAVE:
                 if (!_commandLineMode)
                     saveCurrentBuffer();
@@ -467,6 +480,10 @@ private:
                             commands ~= Command(CommandType.REDO);
                         else if (key.sym == SDLK_s && ctrl)
                             commands ~= Command(CommandType.SAVE);
+                        else if (key.sym == SDLK_F4)
+                            commands ~= Command(CommandType.BUILD);
+                        else if (key.sym == SDLK_F5)
+                            commands ~= Command(CommandType.RUN);
                         else 
                         {
                         }
@@ -526,7 +543,7 @@ private:
         foreach (cmd; commands)
         {
             _timeSinceEvent = 0;
-            execute(cmd);
+            executeCommand(cmd);
         }
     }    
 

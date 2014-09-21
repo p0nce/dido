@@ -31,7 +31,9 @@ enum CommandType
     REDO,
     SAVE,
     SCROLL_ONE_LINE_UP,
-    SCROLL_ONE_LINE_DOWN
+    SCROLL_ONE_LINE_DOWN,
+    BUILD,
+    RUN
 }
 
 struct Command
