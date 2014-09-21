@@ -63,6 +63,15 @@ public:
         return this < end;
     }
 
+    bool canGoInDirection(int dx)
+    {
+        assert(dx == -1 || dx == 1);
+        if (dx == 1)
+            return canBeIncremented();
+        else
+            return canBeDecremented();
+    }
+
     BufferIterator opUnary(string op)() if (op == "++")
     {
         _cursor.column += 1;
@@ -108,12 +117,12 @@ public:
 
     BufferIterator opOpAssign(string op)(int displacement) if (op == "+")
     {
-        while (displacement > 0 && canBeDecremented())
+        while (displacement > 0 && canBeIncremented())
         {
             displacement--;
             opUnary!("++")();
         }
-        while (displacement < 0 && canBeIncremented())
+        while (displacement < 0 && canBeDecremented())
         {
             displacement++;
             opUnary!("--")();

@@ -224,6 +224,16 @@ private:
                 _textArea.ensureOneVisibleSelection();
                 break;
 
+            case MOVE_WORD_LEFT:
+                buffer.moveSelectionWord(-1, command.shift);
+                _textArea.ensureOneVisibleSelection();
+                break;
+
+            case MOVE_WORD_RIGHT:
+                buffer.moveSelectionWord(+1, command.shift);
+                _textArea.ensureOneVisibleSelection();
+                break;
+
             case MOVE_LINE_BEGIN:
                 buffer.moveToLineBegin(command.shift);
                 _textArea.ensureOneVisibleSelection();
@@ -440,6 +450,10 @@ private:
                             commands ~= Command(CommandType.SCROLL_ONE_LINE_UP);
                         else if (key.sym == SDLK_DOWN && ctrl)
                             commands ~= Command(CommandType.SCROLL_ONE_LINE_DOWN);
+                        else if (key.sym == SDLK_LEFT && ctrl)
+                            commands ~= Command(CommandType.MOVE_WORD_LEFT);
+                        else if (key.sym == SDLK_RIGHT && ctrl)
+                            commands ~= Command(CommandType.MOVE_WORD_RIGHT);
                         else if (key.sym == SDLK_ESCAPE)
                             commands ~= Command(CommandType.ESCAPE);
                         else if (key.sym == SDLK_RETURN)

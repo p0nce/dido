@@ -143,13 +143,83 @@ public:
     {
         foreach(ref sel; _selectionSet.selections)
         {
-            sel.edge.cursor.line = clamp!int(sel.edge.cursor.line + dy, 0, numLines() - 1);
-            sel.edge.cursor.column = clamp!int(sel.edge.cursor.column, 0, maxColumn(sel.edge.cursor.line));
+            sel.edge.cursor = clampCursor(Cursor(sel.edge.cursor.line + dy, sel.edge.cursor.column));
 
             if (!shift)
                 sel.anchor = sel.edge;
         }
         _selectionSet.normalize();
+    }
+
+    // move by words
+    void moveSelectionWord(int dx, bool shift)
+    {   
+        assert(dx == -1 || dx == 1);
+        foreach(ref sel; _selectionSet.selections)
+        {
+            BufferIterator edge = sel.edge;
+
+            if (dx == -1 && edge.canBeDecremented)
+                --edge;
+
+            static bool isSpace(dchar ch)
+            {
+                static immutable dstring spaces = " \n\t\r"d;
+                for (size_t i = 0; i < spaces.length; ++i)
+                    if (ch == spaces[i])
+                        return true;
+                return false;
+            }
+
+            static bool isOperator(dchar ch)
+            {
+                static immutable dstring operators = "+-=><^,$|&`/@.\"[]?:\'\\"d;
+                for (size_t i = 0; i < operators.length; ++i)
+                    if (ch == operators[i])
+                        return true;
+                return false;
+            }
+
+            static bool isAlnum(dchar ch)
+            {
+                return !(isSpace(ch) || isOperator(ch));
+            }
+
+            bool wentThroughLineBreak = false;
+
+            while(true)
+            {
+                dchar ch = edge.read();
+                if (ch == '\n')
+                    wentThroughLineBreak = true;
+                if (! (isSpace(ch) && edge.canGoInDirection(dx)) )
+                    break;
+                edge += dx;
+            }
+
+            if (!wentThroughLineBreak)
+            {
+                bool isOp = isOperator(edge.read);
+                if (isOp)
+                {
+                    while( isOperator(edge.read) && edge.canGoInDirection(dx) )
+                        edge += dx;
+                }
+                else
+                {
+                    while( isAlnum(edge.read) && edge.canGoInDirection(dx) )
+                        edge += dx;
+                }
+            }
+
+            if (dx == -1 && edge.canBeIncremented)
+                ++edge;
+
+            sel.edge = edge;
+            if (!shift)
+                sel.anchor = sel.edge;
+            _selectionSet.normalize();
+        }
     }
 
 

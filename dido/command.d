@@ -7,6 +7,8 @@ enum CommandType
 {
     MOVE_LEFT,
     MOVE_RIGHT,
+    MOVE_WORD_LEFT,
+    MOVE_WORD_RIGHT,
     MOVE_UP,
     MOVE_DOWN,
     PAGE_UP,
