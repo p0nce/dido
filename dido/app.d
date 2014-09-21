@@ -451,9 +451,9 @@ private:
                         else if (key.sym == SDLK_DOWN && ctrl)
                             commands ~= Command(CommandType.SCROLL_ONE_LINE_DOWN);
                         else if (key.sym == SDLK_LEFT && ctrl)
-                            commands ~= Command(CommandType.MOVE_WORD_LEFT);
+                            commands ~= Command(CommandType.MOVE_WORD_LEFT, shift);
                         else if (key.sym == SDLK_RIGHT && ctrl)
-                            commands ~= Command(CommandType.MOVE_WORD_RIGHT);
+                            commands ~= Command(CommandType.MOVE_WORD_RIGHT, shift);
                         else if (key.sym == SDLK_ESCAPE)
                             commands ~= Command(CommandType.ESCAPE);
                         else if (key.sym == SDLK_RETURN)

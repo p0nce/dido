@@ -173,7 +173,7 @@ public:
 
             static bool isOperator(dchar ch)
             {
-                static immutable dstring operators = "+-=><^,$|&`/@.\"[]?:\'\\"d;
+                static immutable dstring operators = "+-=><^,$|&`/@.\"[](){}?:\'\\"d;
                 for (size_t i = 0; i < operators.length; ++i)
                     if (ch == operators[i])
                         return true;
