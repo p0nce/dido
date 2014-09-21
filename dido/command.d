@@ -29,7 +29,9 @@ enum CommandType
     ROTATE_PREVIOUS_BUFFER,
     UNDO,
     REDO,
-    SAVE
+    SAVE,
+    SCROLL_ONE_LINE_UP,
+    SCROLL_ONE_LINE_DOWN
 }
 
 struct Command

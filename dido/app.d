@@ -358,6 +358,16 @@ private:
                 }
                 break;
 
+            case SCROLL_ONE_LINE_UP:
+                if (!_commandLineMode)
+                    _textArea.moveCamera(0, -_font.charHeight);
+                break;
+
+            case SCROLL_ONE_LINE_DOWN:
+                if (!_commandLineMode)
+                    _textArea.moveCamera(0, +_font.charHeight);
+                break;
+
             case GOTO_START_OF_BUFFER:
                 if (!_commandLineMode)
                 {
@@ -413,6 +423,10 @@ private:
                             commands ~= Command(CommandType.EXTEND_SELECTION_UP);
                         else if (key.sym == SDLK_DOWN && ctrl && alt)
                             commands ~= Command(CommandType.EXTEND_SELECTION_DOWN);
+                        else if (key.sym == SDLK_UP && ctrl)
+                            commands ~= Command(CommandType.SCROLL_ONE_LINE_UP);
+                        else if (key.sym == SDLK_DOWN && ctrl)
+                            commands ~= Command(CommandType.SCROLL_ONE_LINE_DOWN);
                         else if (key.sym == SDLK_ESCAPE)
                             commands ~= Command(CommandType.ESCAPE);
                         else if (key.sym == SDLK_RETURN)
