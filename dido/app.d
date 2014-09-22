@@ -39,7 +39,8 @@ public:
             Buffer buf = new Buffer;
             _buffers ~= buf;
         }
-        _bufferSelect = 0;
+
+        setCurrentBufferEdit(0);
 
         _finished = false;
         _commandLineMode = false;
@@ -135,6 +136,8 @@ private:
     SDLTTF _sdlttf;
     Window _window;
     Buffer[] _buffers;
+    //Buffer _currentBuffer;  // current buffer
+    Buffer _bufferEdit; // current buffer in edit area
     int _bufferSelect;
     uint _timeSinceEvent;
 
@@ -168,7 +171,7 @@ private:
         else if (cmdline == "new" || cmdline == "n")
         {
             _buffers ~= new Buffer;
-            _bufferSelect = _buffers.length - 1;
+            setCurrentBufferEdit(_buffers.length - 1);
             greenMessage("Created new file");
         }
         else if (cmdline == "save" || cmdline == "s")
@@ -177,31 +180,38 @@ private:
         }
         else if (cmdline == "load" || cmdline == "l")
         {
-            if (_buffers[_bufferSelect].isBoundToFileName())
+            if (_bufferEdit.isBoundToFileName())
             {
-                string filepath = _buffers[_bufferSelect].filePath();
-                _buffers[_bufferSelect].loadFromFile(filepath);
+                string filepath = _bufferEdit.filePath();
+                _bufferEdit.loadFromFile(filepath);
                 greenMessage(to!dstring(format("Loaded %s", filepath)));
             }
             else
                 redMessage("This buffer is unbounded, try :load <filename>");
         }
         else if (cmdline == "undo" || cmdline == "u")
-            _buffers[_bufferSelect].undo();
+            _bufferEdit.undo();
         else if (cmdline == "redo" || cmdline == "r")
-            _buffers[_bufferSelect].redo();
+            _bufferEdit.redo();
         else if (cmdline == "clean")
         {
-            _buffers[_bufferSelect].cleanup();
+            _bufferEdit.cleanup();
             greenMessage("Buffer cleaned up"d);
         }
         else
             redMessage(to!dstring(format("Unknown command '%s'"d, cmdline)));
     }
 
+    void setCurrentBufferEdit(int bufferSelect)
+    {
+        _bufferSelect = bufferSelect;
+        _bufferEdit = _buffers[_bufferSelect];
+        _bufferEdit.ensureLoaded();
+    }
+
     void executeCommand(Command command)
     {
-        Buffer buffer = _buffers[_bufferSelect];
+        Buffer buffer = _bufferEdit;
         final switch (command.type) with (CommandType)
         {            
             case MOVE_UP:
@@ -250,13 +260,13 @@ private:
                 break;
 
             case ROTATE_NEXT_BUFFER:
-                _bufferSelect = (_bufferSelect + 1) % _buffers.length;
+                setCurrentBufferEdit( (_bufferSelect + 1) % _buffers.length );
                 _textArea.clearCamera();
                 _textArea.ensureOneVisibleSelection();
                 break;
 
             case ROTATE_PREVIOUS_BUFFER:
-                _bufferSelect = (_bufferSelect + _buffers.length - 1) % _buffers.length;
+                setCurrentBufferEdit( (_bufferSelect + _buffers.length - 1) % _buffers.length );
                 _textArea.clearCamera();
                 _textArea.ensureOneVisibleSelection();
                 break;
@@ -563,10 +573,10 @@ private:
 
     void saveCurrentBuffer()
     {
-        if (_buffers[_bufferSelect].isBoundToFileName())
+        if (_bufferEdit.isBoundToFileName())
         {
-            string filepath = _buffers[_bufferSelect].filePath();
-            _buffers[_bufferSelect].saveToFile(filepath);
+            string filepath = _bufferEdit.filePath();
+            _bufferEdit.saveToFile(filepath);
             greenMessage(to!dstring(format("Saved to %s", filepath)));
         }
         else

@@ -23,6 +23,7 @@ private:
     dstring[] lines;
     int _historyIndex; // where we are in history
     BufferCommand[] _history;
+    bool _hasBeenLoaded;
 
 public:
 
@@ -32,17 +33,27 @@ public:
         lines = [""d];
         _selectionSet = new SelectionSet(this);
         _filepath = null;
+        _hasBeenLoaded = true;
     }
 
     this(string filepath)
     {
         lines = [""d];
-        loadFromFile(filepath);
         _selectionSet = new SelectionSet(this);
         _filepath = filepath;
+        _hasBeenLoaded = false;
     }
 
 
+    void ensureLoaded()
+    {
+        if (!_hasBeenLoaded)
+        {
+            assert(_filepath !is null);
+            loadFromFile(_filepath);
+            _hasBeenLoaded = true;
+        }
+    }
 
     // load file in buffer, non-conforming utf-8 is lost
     void loadFromFile(string path)
