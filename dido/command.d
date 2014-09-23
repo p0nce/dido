@@ -35,7 +35,10 @@ enum CommandType
     SCROLL_ONE_LINE_UP,
     SCROLL_ONE_LINE_DOWN,
     BUILD,
-    RUN
+    RUN,
+    COPY,
+    CUT,
+    PASTE
 }
 
 struct Command

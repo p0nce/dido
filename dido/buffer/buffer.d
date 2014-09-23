@@ -120,6 +120,55 @@ public:
         return lines[lineIndex];
     }
 
+    dstring cut()
+    {
+        dstring result = copy();
+        deleteSelection(false);
+        return result;
+    }
+
+    dstring copy()
+    {
+        dstring result = ""d;
+        int sellen = cast(int)_selectionSet.selections.length;
+        for (int i = 0; i < sellen; ++i)
+        {
+            if (i > 0)
+                result ~= '\n';
+            result ~= getSelectionContent(_selectionSet.selections[i]);
+        }
+        return result;
+    }
+
+    void paste(dstring clipboardContent)
+    {
+        // removes \r from clipboard string (system might add it for interop reasons)
+        dstring clearedClipBoard;
+        int l = 0;
+        for (int i = 0; i < cast(int)(clipboardContent.length); ++i)
+            if (clipboardContent[i] != '\r')
+                clearedClipBoard ~= clipboardContent[i];
+
+        if (_selectionSet.selections.length > 1)
+        {
+            dstring[] byLineContent = splitLines(clearedClipBoard);
+            bySelectionEdit( (int i) 
+                            {
+                                if (i < byLineContent.length)
+                                    return byLineContent[i];
+                                else
+                                    return ""d;
+                            } );
+        }
+        else
+        {
+            bySelectionEdit( (int i) 
+                            {
+                                return clearedClipBoard;
+                            } );
+        }
+    }
+
     void undo()
     {
         while (_historyIndex > 0)
@@ -348,24 +397,10 @@ public:
     void insertChar(dchar ch)
     {
         dstring content = ""d ~ ch;
-        enqueueBarrier();
-        enqueueSaveSelections();
-
-        int displacement = 0;
-        for (int i = 0; i < _selectionSet.selections.length; ++i)
-        {
-            Selection selectionBeforeEdit = _selectionSet.selections[i];
-            Selection selectionAfterEdit = enqueueEdit(selectionBeforeEdit, content).sorted();
-
-            // apply offset to all subsequent selections
-            for (int j = i + 1; j < _selectionSet.selections.length; ++j)
-            {
-                _selectionSet.selections[j].translateByEdit(selectionBeforeEdit.sorted.edge, selectionAfterEdit.sorted.edge);                
-            }
-            _selectionSet.selections[i] = selectionAfterEdit;
-        }
-        _selectionSet.normalize();
-        enqueueSaveSelections();
+        bySelectionEdit( (int i) 
+                         { 
+                             return content; 
+                         } );
     }
 
     // selection with area => delete selection
@@ -624,6 +659,28 @@ private:
         BufferCommand command = changeCharsCommand(selection, newSel, oldContent, newContent);
         pushCommand(command);
         return Selection(newSel.edge);
+    }
+
+    void bySelectionEdit(dstring delegate(int i) selectionContent)
+    {
+        enqueueBarrier();
+        enqueueSaveSelections();
+
+        int displacement = 0;
+        for (int i = 0; i < _selectionSet.selections.length; ++i)
+        {
+            Selection selectionBeforeEdit = _selectionSet.selections[i];
+            Selection selectionAfterEdit = enqueueEdit(selectionBeforeEdit, selectionContent(i)).sorted();
+
+            // apply offset to all subsequent selections
+            for (int j = i + 1; j < _selectionSet.selections.length; ++j)
+            {
+                _selectionSet.selections[j].translateByEdit(selectionBeforeEdit.sorted.edge, selectionAfterEdit.sorted.edge);                
+            }
+            _selectionSet.selections[i] = selectionAfterEdit;
+        }
+        _selectionSet.normalize();
+        enqueueSaveSelections();
     }
 }
 

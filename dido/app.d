@@ -408,6 +408,21 @@ private:
                     saveCurrentBuffer();
                 break;
 
+            case COPY:
+                _sdl2.setClipboard(to!string(buffer.copy()));
+                textArea.ensureOneVisibleSelection();
+                break;
+
+            case CUT:
+                _sdl2.setClipboard(to!string(buffer.cut()));
+                textArea.ensureOneVisibleSelection();
+                break;
+
+            case PASTE:
+                dstring clipboard = to!dstring(_sdl2.getClipboard());
+                buffer.paste(clipboard);
+                textArea.ensureOneVisibleSelection();
+                break;
         }
     }
 
@@ -446,6 +461,28 @@ private:
                             commands ~= Command(CommandType.ESCAPE);
                         else if (key.sym == SDLK_RETURN)
                             commands ~= Command(CommandType.RETURN);
+
+                        // copy/cut/paste
+                        else if (key.sym == SDLK_c && ctrl)
+                            commands ~= Command(CommandType.COPY);
+                        else if (key.sym == SDLK_x && ctrl)
+                            commands ~= Command(CommandType.CUT);
+                        else if (key.sym == SDLK_v && ctrl)
+                            commands ~= Command(CommandType.PASTE);
+                        else if (key.sym == SDLK_COPY)
+                            commands ~= Command(CommandType.COPY);
+                        else if (key.sym == SDLK_CUT)
+                            commands ~= Command(CommandType.CUT);
+                        else if (key.sym == SDLK_PASTE)
+                            commands ~= Command(CommandType.PASTE);
+                        else if (key.sym == SDLK_DELETE && shift)
+                            commands ~= Command(CommandType.CUT);
+                        else if (key.sym == SDLK_INSERT && ctrl)
+                            commands ~= Command(CommandType.COPY);
+                        else if (key.sym == SDLK_INSERT && shift)
+                            commands ~= Command(CommandType.PASTE);
+
+
                         else if (key.sym == SDLK_LEFT)
                             commands ~= Command(CommandType.MOVE_LEFT, shift);
                         else if (key.sym == SDLK_RIGHT)
