@@ -80,7 +80,14 @@ public:
             renderer.setColor(134, 134, 134, _alpha);
 
         box2i focus = getFocusBox();
-        renderer.fillRect(focus.min.x, focus.min.y, focus.width, focus.height);
+        if (focus.height > 2 && focus.width > 2)
+        {
+            renderer.fillRect(focus.min.x + 1, focus.min.y    , focus.width - 2, 1);
+            renderer.fillRect(focus.min.x    , focus.min.y + 1, focus.width    , focus.height - 2);
+            renderer.fillRect(focus.min.x + 1, focus.max.y - 1, focus.width - 2, 1);
+        }
+        else
+            renderer.fillRect(focus.min.x, focus.min.y, focus.width, focus.height);
     }
 
     void setState(float progressStart, float progressStop)
