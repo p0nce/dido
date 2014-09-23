@@ -1,6 +1,6 @@
 Dido is a specific text editor for the D language.
 
-Status: early garbage.
+Status: early.
 
 - Parses `dub.json` in the current directory and opens all related files.
 - No syntax coloration
