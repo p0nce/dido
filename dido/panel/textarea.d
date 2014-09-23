@@ -10,26 +10,30 @@ import dido.buffer.selection;
 import dido.gui;
 import dido.buffer.buffer;
 import dido.buffer.bufferiterator;
-import dido.panel.scrollbar;
 
 class TextArea : UIElement
 {
 public:
-    int marginEditor = 16;
+    int _marginEditor;
 
     LineNumberArea lineNumberArea;
     UIElement verticalScrollbar;
     UIElement horizontalScrollbar;
 
-    this(UIContext context, bool haveLineNumbers)
+    this(UIContext context, int marginEditor, bool haveLineNumbers, bool hasScrollbars)
     {
         super(context);
 
-        addChild(new ScrollBar(context, true));
-        verticalScrollbar = child(0);
+        _marginEditor = marginEditor;
 
-        addChild(new ScrollBar(context, false));
-        horizontalScrollbar = child(1);
+        if (hasScrollbars)
+        {
+            addChild(new ScrollBar(context, true));
+            verticalScrollbar = child(0);
+
+            addChild(new ScrollBar(context, false));
+            horizontalScrollbar = child(1);
+        }
 
         if (haveLineNumbers)
         {
@@ -57,19 +61,16 @@ public:
             availableSpace.min.x = lineNumberArea.position.max.x;
         }
 
-        verticalScrollbar.reflow(availableSpace);
-        horizontalScrollbar.reflow(availableSpace);
+        if (verticalScrollbar !is null) verticalScrollbar.reflow(availableSpace);
+        if (horizontalScrollbar !is null) horizontalScrollbar.reflow(availableSpace);
 
         _position = availableSpace;
-
-        _charWidth = charWidth;
-        _charHeight = charHeight; 
     }
 
     // Returns number of simultaneously visible lines
     int numVisibleLines() pure const nothrow
     {
-        int result = (_position.height - 16) / _charHeight;
+        int result = (_position.height - 16) / charHeight;
         if (result < 1)
             result = 1;
         return result;
@@ -77,8 +78,8 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
-        int editPosX = -_cameraX + marginEditor;
-        int editPosY = -_cameraY + marginEditor;
+        int editPosX = -_cameraX + _marginEditor;
+        int editPosY = -_cameraY + _marginEditor;
 
         int firstVisibleLine = getFirstVisibleLine();
         int firstNonVisibleLine = getFirstNonVisibleLine();
@@ -95,7 +96,7 @@ public:
             dstring line = _buffer.line(i);
 
             int posXInChars = 0;
-            int posY = editPosY + i * _charHeight;
+            int posY = editPosY + i * charHeight;
             
             foreach(dchar ch; line)
             {
@@ -103,52 +104,52 @@ public:
                 switch (ch)
                 {
                     case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-                        _font.setColor(255, 200, 200);
+                        font.setColor(255, 200, 200);
                         break;
 
                     case '+', '-', '=', '>', '<', '^', ',', '$', '|', '&', '`', '/', '@', '.', '"', '[', ']', '?', ':', '\'', '\\':
-                        _font.setColor(255, 255, 106);
+                        font.setColor(255, 255, 106);
                         break;
 
                     case '(', ')', ';':
-                        _font.setColor(255, 255, 150);
+                        font.setColor(255, 255, 150);
                         break;
 
                     case '{':
-                        _font.setColor(108, 108, 128);
+                        font.setColor(108, 108, 128);
                         break;
 
                     case '}':
-                        _font.setColor(108, 108, 138);
+                        font.setColor(108, 108, 138);
                         break;
 
                     case '\n':
                         ch = ' '; //0x2193; // down arrow
-                        _font.setColor(40, 40, 40);
+                        font.setColor(40, 40, 40);
                         break;
 
                     case '\t':
                         ch = 0x2192;
-                        _font.setColor(80, 60, 70);
+                        font.setColor(80, 60, 70);
                         int tabLength = 1;//4; not working yet
                         widthOfChar = tabLength - posXInChars % tabLength;
                         break;
 
                     case ' ':
                         ch = 0x2D1;
-                        _font.setColor(60, 60, 70);
+                        font.setColor(60, 60, 70);
                         break;
 
                     default:
-                        _font.setColor(250, 250, 250);
+                        font.setColor(250, 250, 250);
                         break;
                 }
 
                 box2i visibleBox = box2i(0, 0, _position.width, _position.height);
-                int posX = editPosX + posXInChars * _charWidth;
-                box2i charBox = box2i(posX, posY, posX + _charWidth, posY + _charHeight);
+                int posX = editPosX + posXInChars * charWidth;
+                box2i charBox = box2i(posX, posY, posX + charWidth, posY + charHeight);
                 if (visibleBox.intersects(charBox))
-                    _font.renderChar(ch, posX, posY);
+                    font.renderChar(ch, posX, posY);
                 posXInChars += widthOfChar;
             }
         }
@@ -161,14 +162,13 @@ public:
 
         if (lineNumberArea !is null)
         {
-            lineNumberArea.setState(_buffer, marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
+            lineNumberArea.setState(_buffer, _marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
         }
     }
 
-    void setState(Font font, Buffer buffer, bool drawCursors)
+    void setState(Buffer buffer, bool drawCursors)
     {
         _buffer = buffer;
-        _font = font;
         _drawCursors = drawCursors;
     }
 
@@ -190,18 +190,18 @@ public:
 
     override bool onMouseWheel(int x, int y, int wheelDeltaX, int wheelDeltaY)
     {
-        moveCamera(-wheelDeltaX * 3 * _charWidth, -wheelDeltaY * 3 * _charHeight);
+        moveCamera(-wheelDeltaX * 3 * charWidth, -wheelDeltaY * 3 * charHeight);
         return true;
     }
 
     int maxCameraX()
     {
-        return 92 * _charWidth; // maintain length of longest line in Buffer
+        return 92 * charWidth; // TODO maintain length of longest line in Buffer
     }
 
     int maxCameraY()
     {
-        return _buffer.numLines() * _charHeight;
+        return _buffer.numLines() * charHeight;
     }
 
     void normalizeCamera()
@@ -266,8 +266,8 @@ public:
         {
             bool ctrl = context.sdl2.keyboard.isPressed(SDLK_LCTRL) || context.sdl2.keyboard.isPressed(SDLK_RCTRL);
 
-            int line = (y - marginEditor + _cameraY) / charHeight;
-            int column = (x - marginEditor + _cameraX + (charWidth / 2)) / charWidth;
+            int line = (y - _marginEditor + _cameraY) / charHeight;
+            int column = (x - _marginEditor + _cameraX + (charWidth / 2)) / charWidth;
 
             _buffer.addNewSelection(line, column, ctrl);
             return true;
@@ -279,10 +279,7 @@ public:
 private:
     int _cameraX = 0;
     int _cameraY = 0;
-    int _charWidth;
-    int _charHeight;
     Buffer _buffer;    
-    Font _font;
     bool _drawCursors;
 
     SDL2Cursor _editCursor;
@@ -290,19 +287,19 @@ private:
 
     int getFirstVisibleLine() pure const nothrow
     {
-        return max(0, _cameraY / _charHeight - 1);
+        return max(0, _cameraY / charHeight - 1);
     }
 
     int getFirstNonVisibleLine() pure const nothrow
     {
-        return min(_buffer.numLines(), 1 + (_cameraY + _position.height + _charHeight - 1) / _charHeight);        
+        return min(_buffer.numLines(), 1 + (_cameraY + _position.height + charHeight - 1) / charHeight);        
     }
 
     box2i getEdgeBox(Selection selection)
     {
-        vec2i edgePos = vec2i(selection.edge.cursor.column * _charWidth + marginEditor, 
-                              selection.edge.cursor.line * _charHeight + marginEditor);
-        return box2i(edgePos.x, edgePos.y, edgePos.x + _charWidth, edgePos.y + _charHeight);
+        vec2i edgePos = vec2i(selection.edge.cursor.column * charWidth + _marginEditor, 
+                              selection.edge.cursor.line * charHeight + _marginEditor);
+        return box2i(edgePos.x, edgePos.y, edgePos.x + charWidth, edgePos.y + charHeight);
     }
 
     // 0 if visible
@@ -314,7 +311,7 @@ private:
 
     void ensureSelectionVisible(Selection selection)
     {
-        int scrollMargin = marginEditor;
+        int scrollMargin = _marginEditor;
         box2i edgeBox = getEdgeBox(selection);
         box2i camBox = cameraBox();
         if (edgeBox.min.x < camBox.min.x + scrollMargin)
@@ -341,15 +338,13 @@ private:
         if (sorted.anchor.cursor.line >= getFirstNonVisibleLine())
             return;
 
-        int charWidth = _font.charWidth();
-        int charHeight = _font.charHeight();
-
+        
         // draw the selection part
         BufferIterator it = sorted.anchor;
         while (it < sorted.edge)
         {
-            int startX = offsetX + it.cursor.column * _font.charWidth();
-            int startY = offsetY + it.cursor.line * _font.charHeight();
+            int startX = offsetX + it.cursor.column * charWidth;
+            int startY = offsetY + it.cursor.line * charHeight;
             renderer.setColor(43, 54, 66, 255);
             renderer.fillRect(startX, startY, charWidth, charHeight);
             ++it;
@@ -367,16 +362,14 @@ private:
         if (sorted.anchor.cursor.line >= getFirstNonVisibleLine())
             return;
 
-        int charWidth = _font.charWidth();
-        int charHeight = _font.charHeight();
         
         if (drawCursors)
         {
-            int startX = offsetX + selection.edge.cursor.column * _font.charWidth();
-            int startY = offsetY + selection.edge.cursor.line * _font.charHeight();
+            int startX = offsetX + selection.edge.cursor.column * charWidth;
+            int startY = offsetY + selection.edge.cursor.line * charHeight;
 
             renderer.setColor(255, 255, 255, 255);
-            renderer.fillRect(startX, startY, 1, _font.charHeight() - 1);
+            renderer.fillRect(startX, startY, 1, charHeight - 1);
         }
     }
 }

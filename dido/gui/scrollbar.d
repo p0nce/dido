@@ -1,4 +1,4 @@
-module dido.panel.scrollbar;
+module dido.gui.scrollbar;
 
 import gfm.math;
 import dido.gui;

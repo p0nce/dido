@@ -44,6 +44,14 @@ public:
         _hasBeenLoaded = false;
     }
 
+    void clearContent()
+    {
+        lines = [""d];
+        _selectionSet = new SelectionSet(this);
+        _filepath = null;
+        _hasBeenLoaded = true;
+    }
+
 
     void ensureLoaded()
     {
@@ -75,6 +83,11 @@ public:
             }
         }
         return result;
+    } 
+    
+    dstring getContent()
+    {        
+        return getSelectionContent(Selection(begin(), end()));               
     }
 
     // save file using OS end-of-lines

@@ -18,10 +18,6 @@ import dido.gui;
 import dido.config;
 
 
-static immutable vec3i statusGreen = vec3i(0, 255, 0);
-static immutable vec3i statusYellow = vec3i(255, 255, 0);
-static immutable vec3i statusRed = vec3i(255, 0, 0);
-
 final class App
 {
 public:
@@ -59,7 +55,7 @@ public:
         _menuPanel = new MenuPanel(_uiContext);
         _cmdlinePanel = new CommandLinePanel(_uiContext);
         _solutionPanel = new SolutionPanel(_uiContext);
-        _textArea = new TextArea(_uiContext, true);
+        _textArea = new TextArea(_uiContext, 16, true, true);
 
         _mainPanel.addChild(_textArea);
         _mainPanel.addChild(_solutionPanel);
@@ -114,9 +110,9 @@ public:
             bool drawCursors = (_timeSinceEvent % caretCycleTime) < caretBlinkTime;
 
             _solutionPanel.updateState(_buffers, _bufferSelect);
-            _cmdlinePanel.updateState(_commandLineMode);
+            _cmdlinePanel.updateState(_commandLineMode, drawCursors);
             
-            _textArea.setState(_font, _buffers[_bufferSelect], drawCursors);
+            _textArea.setState(_buffers[_bufferSelect], drawCursors);
 
             _mainPanel.reflow(box2i(0, 0, width, height));
 
@@ -136,7 +132,6 @@ private:
     SDLTTF _sdlttf;
     Window _window;
     Buffer[] _buffers;
-    //Buffer _currentBuffer;  // current buffer
     Buffer _bufferEdit; // current buffer in edit area
     int _bufferSelect;
     uint _timeSinceEvent;
@@ -151,34 +146,37 @@ private:
 
     void greenMessage(dstring msg)
     {
-        _cmdlinePanel.statusLine = msg;
-        _cmdlinePanel.statusColor = statusGreen;
+        _cmdlinePanel.greenMessage(msg);
     }
 
     void redMessage(dstring msg)
     {
-        _cmdlinePanel.statusLine = msg;
-        _cmdlinePanel.statusColor = statusRed;
+        _cmdlinePanel.redMessage(msg);
     }
 
     void executeCommandLine(dstring cmdline)
     {
-        if (cmdline == "q" || cmdline == "exit")
+        if (cmdline == ""d)
+        {
+            _bufferEdit.insertChar(':');
+        }
+
+        if (cmdline == "q"d || cmdline == "exit"d)
         {
             _finished = true;
-            greenMessage("OK");
+            greenMessage("OK"d);
         }
-        else if (cmdline == "new" || cmdline == "n")
+        else if (cmdline == "new"d || cmdline == "n"d)
         {
             _buffers ~= new Buffer;
             setCurrentBufferEdit(_buffers.length - 1);
-            greenMessage("Created new file");
+            greenMessage("Created new file"d);
         }
-        else if (cmdline == "save" || cmdline == "s")
+        else if (cmdline == "save"d || cmdline == "s"d)
         {
             saveCurrentBuffer();
         }
-        else if (cmdline == "load" || cmdline == "l")
+        else if (cmdline == "load"d || cmdline == "l"d)
         {
             if (_bufferEdit.isBoundToFileName())
             {
@@ -209,138 +207,139 @@ private:
         _bufferEdit.ensureLoaded();
     }
 
+    Buffer currentBuffer()
+    {
+        if (_commandLineMode)
+            return _cmdlinePanel.buffer();
+        else
+            return _bufferEdit;
+    }
+
+    TextArea currentTextArea()
+    {
+        if (_commandLineMode)
+            return _cmdlinePanel.textArea();
+        else
+            return _textArea;
+    }
+
     void executeCommand(Command command)
     {
-        Buffer buffer = _bufferEdit;
+        Buffer buffer = currentBuffer();
+        TextArea textArea = currentTextArea();
         final switch (command.type) with (CommandType)
         {            
             case MOVE_UP:
                 buffer.moveSelectionVertical(-1, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_DOWN:
                 buffer.moveSelectionVertical(1, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_LEFT:
                 buffer.moveSelectionHorizontal(-1, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_RIGHT:            
                 buffer.moveSelectionHorizontal(+1, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_WORD_LEFT:
                 buffer.moveSelectionWord(-1, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_WORD_RIGHT:
                 buffer.moveSelectionWord(+1, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_LINE_BEGIN:
                 buffer.moveToLineBegin(command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case MOVE_LINE_END:
                 buffer.moveToLineEnd(command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case TOGGLE_FULLSCREEN:
                 _window.toggleFullscreen();
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case ROTATE_NEXT_BUFFER:
                 setCurrentBufferEdit( (_bufferSelect + 1) % _buffers.length );
-                _textArea.clearCamera();
-                _textArea.ensureOneVisibleSelection();
+                currentTextArea().clearCamera();
+                currentTextArea().ensureOneVisibleSelection();
                 break;
 
             case ROTATE_PREVIOUS_BUFFER:
                 setCurrentBufferEdit( (_bufferSelect + _buffers.length - 1) % _buffers.length );
-                _textArea.clearCamera();
-                _textArea.ensureOneVisibleSelection();
+                currentTextArea().clearCamera();
+                currentTextArea().ensureOneVisibleSelection();
                 break;
 
             case PAGE_UP:
                 buffer.moveSelectionVertical(-_textArea.numVisibleLines, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case PAGE_DOWN:
                 buffer.moveSelectionVertical(_textArea.numVisibleLines, command.shift);
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case UNDO:
                 buffer.undo();
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case REDO:
                 buffer.redo();
-                _textArea.ensureOneVisibleSelection();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case ENTER_COMMANDLINE_MODE:
                 if (!_commandLineMode)
                 {
-                    _cmdlinePanel.currentCommandLine = "";
                     _commandLineMode = true;
+                    currentBuffer().clearContent();                    
                 }
                 else
                 {
-                    // pressing : in command-line mode leaves it and insert ":"
-                    // TODO insert :
                     _commandLineMode = false;
+                    currentBuffer().insertChar(':');
+                    currentTextArea().ensureOneVisibleSelection();                    
                 }
                 break;
 
             case BACKSPACE:
-                if (_commandLineMode)
-                {
-                    if (_cmdlinePanel.currentCommandLine.length > 0)
-                        _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
-                }
-                else
-                {
-                    buffer.deleteSelection(true);
-                	_textArea.ensureOneVisibleSelection();
-                }
+                buffer.deleteSelection(true);
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case DELETE:
-                if (_commandLineMode)
-                {
-                    if (_cmdlinePanel.currentCommandLine.length > 0)
-                        _cmdlinePanel.currentCommandLine = _cmdlinePanel.currentCommandLine[0..$-1];
-                }
-                else
-                {
-                    buffer.deleteSelection(false);
-                	_textArea.ensureOneVisibleSelection();
-                }
+                buffer.deleteSelection(false);
+                textArea.ensureOneVisibleSelection();
                 break;
             
             case RETURN:
                 if (_commandLineMode)
                 {
-                    executeCommandLine(_cmdlinePanel.currentCommandLine);
+                    executeCommandLine(_cmdlinePanel.getCommandLine());
                     goto case ESCAPE;
                 }
                 else
                 {
                     buffer.insertChar('\n');
-                    _textArea.ensureOneVisibleSelection();
+                    textArea.ensureOneVisibleSelection();
                     break;
                 }
 
@@ -350,67 +349,46 @@ private:
                 else
                 {
                     buffer.selectionSet().keepOnlyFirst();
-                    _textArea.ensureOneVisibleSelection();
+                    textArea.ensureOneVisibleSelection();
                 }
                 break;
 
             case INSERT_CHAR:
-                if (_commandLineMode)
-                    _cmdlinePanel.currentCommandLine ~= cast(dchar)(command.ch);
-                else
-                {
-                    buffer.insertChar(command.ch);
-                    _textArea.ensureOneVisibleSelection();
-                }
+                buffer.insertChar(command.ch);
+                textArea.ensureOneVisibleSelection();
                 break;
+
             case EXTEND_SELECTION_UP:
-                if (!_commandLineMode)
-                {
-                    buffer.extendSelectionVertical(-1);
-                    _textArea.ensureOneVisibleSelection();
-                }
+                buffer.extendSelectionVertical(-1);
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case EXTEND_SELECTION_DOWN:
-                if (!_commandLineMode)
-                {
-                    buffer.extendSelectionVertical(1);
-                    _textArea.ensureOneVisibleSelection();
-                }
+                buffer.extendSelectionVertical(1);
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case SCROLL_ONE_LINE_UP:
-                if (!_commandLineMode)
-                    _textArea.moveCamera(0, -_font.charHeight);
+                textArea.moveCamera(0, -_font.charHeight);
                 break;
 
             case SCROLL_ONE_LINE_DOWN:
-                if (!_commandLineMode)
-                    _textArea.moveCamera(0, +_font.charHeight);
+                textArea.moveCamera(0, +_font.charHeight);
                 break;
 
             case GOTO_START_OF_BUFFER:
-                if (!_commandLineMode)
-                {
-                    buffer.moveSelectionToBufferStart(command.shift);
-                    _textArea.ensureOneVisibleSelection();
-                }
+                buffer.moveSelectionToBufferStart(command.shift);
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case GOTO_END_OF_BUFFER:
-                if (!_commandLineMode)
-                {
-                    buffer.moveSelectionToBufferEnd(command.shift);
-                    _textArea.ensureOneVisibleSelection();
-                }
+                buffer.moveSelectionToBufferEnd(command.shift);
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case SELECT_ALL_BUFFER:
-                if (!_commandLineMode)
-                {
-                    buffer.selectAll();
-                    _textArea.ensureOneVisibleSelection();
-                }
+                buffer.selectAll();
+                textArea.ensureOneVisibleSelection();
                 break;
 
             case BUILD:

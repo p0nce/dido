@@ -19,6 +19,9 @@ public:
 
     final void render()
     {
+        if (!_visible)
+            return;
+
         setViewportToElement();
         preRender(_context.renderer);
         foreach(ref child; children)
@@ -52,12 +55,12 @@ public:
         return _context.font;
     }
 
-    final int charWidth()
+    final int charWidth() pure const nothrow
     {
         return _context.font.charWidth();
     }
 
-    final int charHeight()
+    final int charHeight() pure const nothrow
     {
         return _context.font.charHeight();
     }
@@ -154,9 +157,19 @@ public:
         }
     }
 
-    UIContext context()
+    final UIContext context()
     {
         return _context;
+    }
+
+    final bool isVisible()
+    {
+        return _visible;
+    }
+
+    final void setVisible(bool visible)
+    {
+        _visible = visible;
     }
 
 protected:
@@ -178,6 +191,8 @@ protected:
     box2i _position;
 
     UIElement[] _children;
+
+    bool _visible = true;
 
 
     final bool isMouseOver() pure const nothrow
