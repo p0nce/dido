@@ -23,10 +23,10 @@ public:
 
         if (hasScrollbars)
         {
-            addChild(new ScrollBar(context, 8, 4, true));
+            addChild(new VertScrollBar(context, 8, 4, true));
             verticalScrollbar = cast(ScrollBar) child(0);
 
-            addChild(new ScrollBar(context, 8, 4, false));
+            addChild(new HorzScrollBar(context, 8, 4, false));
             horizontalScrollbar = cast(ScrollBar) child(1);
         }
 
@@ -304,6 +304,34 @@ public:
         }
 
         return false;
+    }
+
+    class VertScrollBar : ScrollBar
+    {
+    public:
+        this(UIContext context, int widthOfFocusBar, int padding, bool vertical)
+        {
+            super(context, widthOfFocusBar, padding, vertical);
+        }
+
+        override void onScrollChangeButton(bool up)
+        {
+            moveCamera(0, (up ? -charHeight : charHeight) );
+        }
+    }
+
+    class HorzScrollBar : ScrollBar
+    {
+    public:
+        this(UIContext context, int widthOfFocusBar, int padding, bool vertical)
+        {
+            super(context, widthOfFocusBar, padding, vertical);
+        }
+
+        override void onScrollChangeButton(bool up)
+        {
+            moveCamera( (up ? -charHeight : charHeight) , 0); // in VS, horizontal bar also scroll by char height
+        }
     }
 
 private:
