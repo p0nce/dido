@@ -15,8 +15,7 @@ public:
         super(context);
         _vertical = vertical;
 
-        _progressStart = 0.45f;
-        _progressStop = 0.55f;
+        setState(0.45f, 0.55f);
         _alpha = 128;
     }
 
@@ -42,28 +41,6 @@ public:
             _position.min.y = _position.max.y - (widthOfScrollbar + 2 * padding);
         }
     }
-
-    box2i getFocusBox()
-    {
-        if (_vertical)
-        {
-            int iprogressStart = cast(int)(0.5f + _progressStart * _position.height);
-            int iprogressStop = cast(int)(0.5f + _progressStop * _position.height);
-            int x = padding;
-            int y = iprogressStart;
-            return box2i(x, y, x + _position.width - 2 * padding, y + iprogressStop - iprogressStart);
-        }
-        else
-        {
-            int iprogressStart = cast(int)(0.5f + _progressStart * _position.width);
-            int iprogressStop = cast(int)(0.5f + _progressStop * _position.width);
-            int x = iprogressStart;
-            int y = padding;
-            return box2i(x, y, x + iprogressStop - iprogressStart, y + _position.height - 2 * padding);
-        }
-
-    }
-
 
     override void preRender(SDL2Renderer renderer)
     {
@@ -103,4 +80,24 @@ private:
     float _progressStart;
     float _progressStop;
     ubyte _alpha;
+
+    box2i getFocusBox()
+    {
+        if (_vertical)
+        {
+            int iprogressStart = cast(int)(0.5f + _progressStart * _position.height);
+            int iprogressStop = cast(int)(0.5f + _progressStop * _position.height);
+            int x = padding;
+            int y = iprogressStart;
+            return box2i(x, y, x + _position.width - 2 * padding, y + iprogressStop - iprogressStart);
+        }
+        else
+        {
+            int iprogressStart = cast(int)(0.5f + _progressStart * _position.width);
+            int iprogressStop = cast(int)(0.5f + _progressStop * _position.width);
+            int x = iprogressStart;
+            int y = padding;
+            return box2i(x, y, x + iprogressStop - iprogressStart, y + _position.height - 2 * padding);
+        }
+    }
 }

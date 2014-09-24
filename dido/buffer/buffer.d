@@ -492,7 +492,7 @@ public:
             }
         }
     }
-
+/*
     invariant()
     {
         // at least one line
@@ -510,7 +510,7 @@ public:
                 assert(lines[i][$-1] == '\n');
             }
         }
-    }
+    }*/
 
 package:
 

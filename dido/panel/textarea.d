@@ -14,11 +14,6 @@ import dido.buffer.bufferiterator;
 class TextArea : UIElement
 {
 public:
-    int _marginEditor;
-
-    LineNumberArea lineNumberArea;
-    UIElement verticalScrollbar;
-    UIElement horizontalScrollbar;
 
     this(UIContext context, int marginEditor, bool haveLineNumbers, bool hasScrollbars)
     {
@@ -29,10 +24,10 @@ public:
         if (hasScrollbars)
         {
             addChild(new ScrollBar(context, true));
-            verticalScrollbar = child(0);
+            verticalScrollbar = cast(ScrollBar) child(0);
 
             addChild(new ScrollBar(context, false));
-            horizontalScrollbar = child(1);
+            horizontalScrollbar = cast(ScrollBar) child(1);
         }
 
         if (haveLineNumbers)
@@ -84,6 +79,12 @@ public:
         int firstVisibleLine = getFirstVisibleLine();
         int firstNonVisibleLine = getFirstNonVisibleLine();
 
+        int firstVisibleColumn = getFirstVisibleColumn();
+        int firstNonVisibleColumn = getFirstNonVisibleColumn();
+        int longestLineLength = _buffer.getLongestLineLength();
+        if (longestLineLength == 0)
+            longestLineLength = 1; // for scrollbar purpose, avoid division by 0
+
         // draw selection background
         SelectionSet selset = _buffer.selectionSet();
         foreach(Selection sel; selset.selections)
@@ -98,8 +99,10 @@ public:
             int posXInChars = 0;
             int posY = editPosY + i * charHeight;
             
-            foreach(dchar ch; line)
+            int maxCol =  min(line.length, firstNonVisibleColumn);
+            for(int j = firstVisibleColumn; j < maxCol; ++j)
             {
+                dchar ch = line[j];
                 int widthOfChar = 1;
                 switch (ch)
                 {
@@ -163,6 +166,20 @@ public:
         if (lineNumberArea !is null)
         {
             lineNumberArea.setState(_buffer, _marginEditor, firstVisibleLine, firstNonVisibleLine, _cameraY);
+        }
+
+        if (verticalScrollbar !is null)
+        {
+            float topProgress = cast(float)firstVisibleLine / _buffer.numLines();
+            float bottomProgress = cast(float)firstNonVisibleLine / _buffer.numLines();
+            verticalScrollbar.setState(topProgress, bottomProgress);
+        }
+
+        if (horizontalScrollbar !is null)
+        {
+            float leftProgress = cast(float)firstVisibleColumn / longestLineLength;
+            float rightProgress = cast(float)firstNonVisibleColumn / longestLineLength;
+            horizontalScrollbar.setState(leftProgress, rightProgress);
         }
     }
 
@@ -285,14 +302,30 @@ private:
     SDL2Cursor _editCursor;
     SDL2Cursor _previousCursor;
 
+    int _marginEditor;
+
+    LineNumberArea lineNumberArea;
+    ScrollBar verticalScrollbar;
+    ScrollBar horizontalScrollbar;
+
     int getFirstVisibleLine() pure const nothrow
     {
         return max(0, _cameraY / charHeight - 1);
     }
 
+    int getFirstVisibleColumn() pure const nothrow
+    {
+        return max(0, _cameraX / charWidth - 1);
+    }
+
     int getFirstNonVisibleLine() pure const nothrow
     {
-        return min(_buffer.numLines(), 1 + (_cameraY + _position.height + charHeight - 1) / charHeight);        
+        return min(_buffer.numLines(), 1 + (_cameraY + _position.height + charHeight - 1) / charHeight);
+    }
+
+    int getFirstNonVisibleColumn() pure const nothrow
+    {
+        return min(_buffer.getLongestLineLength(), 1 + (_cameraX + _position.width + charWidth - 1) / charWidth);
     }
 
     box2i getEdgeBox(Selection selection)
