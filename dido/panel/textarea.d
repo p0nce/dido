@@ -316,7 +316,15 @@ public:
 
         override void onScrollChangeButton(bool up)
         {
-            moveCamera(0, (up ? -charHeight : charHeight) );
+            int delta = this.outer.position.height / 4;
+            moveCamera(0, (up ? -delta : delta) );
+        }
+
+        override void onScrollChangeMouse(float newProgressStart)
+        {
+            int actualRange = maxCameraY() + _position.height;
+            _cameraY = cast(int)(0.5f + newProgressStart * actualRange);
+            normalizeCamera();
         }
     }
 
@@ -330,7 +338,15 @@ public:
 
         override void onScrollChangeButton(bool up)
         {
-            moveCamera( (up ? -charHeight : charHeight) , 0); // in VS, horizontal bar also scroll by char height
+            int delta = this.outer.position.width / 4;
+            moveCamera( (up ? -delta : delta) , 0);
+        }
+
+        override void onScrollChangeMouse(float newProgressStart)
+        {
+            int actualRange = maxCameraX() + 3 * charWidth;
+            _cameraX = cast(int)(0.5f + newProgressStart * actualRange);
+            normalizeCamera();
         }
     }
 

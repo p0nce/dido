@@ -112,6 +112,7 @@ public:
 
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
     {
+        // clicking on a button
         if (getButtonBoxA().contains(vec2i(x, y)))
         {
             onScrollChangeButton(true);
@@ -121,8 +122,27 @@ public:
         {
             onScrollChangeButton(false);
             return true;
+        }        
+        else
+        {
+            float clickProgress;
+            if (_vertical)
+            {
+                int heightWithoutButton = _position.height - 2 * _buttonSize;
+                clickProgress = cast(float)(y - _buttonSize) / heightWithoutButton;
+            }
+            else
+            {
+                int widthWithoutButton = _position.width - 2 * _buttonSize;
+                clickProgress = cast(float)(x - _buttonSize) / widthWithoutButton;
+            }                
+
+            // now this clickProgress should move the _center_ of the scrollbar to it
+            float newStartProgress = clickProgress - (_progressStop - _progressStart) * 0.5f;
+            
+            onScrollChangeMouse(newStartProgress);
         }
-        return false;
+        return false;        
     }
 
 private:
@@ -140,7 +160,7 @@ private:
     enum State
     {
         initial,
-        clicked, // dragging the scrollbar
+        clicked, // dragging the scrollbar                
     }
 
     box2i getButtonBoxA()
