@@ -71,6 +71,7 @@ public:
     void close()
     {
         _mainPanel.close();
+        _uiContext.close();
         _sdl2.stopTextInput();
         _font.close();
         _window.close();
@@ -164,7 +165,7 @@ private:
         if (cmdline == "q"d || cmdline == "exit"d)
         {
             _finished = true;
-            greenMessage("OK"d);
+            greenMessage("Bye"d);
         }
         else if (cmdline == "new"d || cmdline == "n"d)
         {

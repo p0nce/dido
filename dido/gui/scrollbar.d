@@ -7,37 +7,40 @@ class ScrollBar : UIElement
 {
 public:
 
-    int widthOfScrollbar = 8;
-    int padding = 4;
+    
 
-    this(UIContext context, bool vertical)
+    this(UIContext context, int widthOfFocusBar, int padding, bool vertical)
     {
         super(context);
         _vertical = vertical;
-
+        _widthOfFocusBar = widthOfFocusBar;
+        _padding = padding;
         setState(0.45f, 0.55f);
+    }
+
+    // Called whenever a scrollbar move is done. Designed to be overriden.
+    void onScrollChange(float newProgressStart)
+    {
+        // do nothing
+    }
+
+    int thickness() pure const nothrow
+    {
+        return _widthOfFocusBar + 2 * _padding;
     }
 
     override void reflow(box2i availableSpace)
     {
-        int margin = 0;
-
         _position = availableSpace;
-        _buttonSize = (widthOfScrollbar + 2 * padding);
+        _buttonSize = thickness();
 
         if (_vertical)
         {
-            _position.min.y += margin;
-            _position.max.y -= margin;
-            _position.max.x -= margin;
-            _position.min.x = _position.max.x - (widthOfScrollbar + 2 * padding);
+            _position.min.x = _position.max.x - thickness();
         }
         else
         {
-            _position.min.x += margin;
-            _position.max.x -= margin;
-            _position.max.y -= margin;
-            _position.min.y = _position.max.y - (widthOfScrollbar + 2 * padding);
+            _position.min.y = _position.max.y - thickness();
         }
     }
 
@@ -61,6 +64,17 @@ public:
 
         box2i focus = getFocusBox();
         roundedRect(renderer, focus);
+
+        if (_vertical)
+        {
+            renderer.copy(context.image(UIImage.scrollbarN), 0, 0);
+            renderer.copy(context.image(UIImage.scrollbarS), 0, _position.height - _buttonSize);
+        }
+        else
+        {
+            renderer.copy(context.image(UIImage.scrollbarW), 0, 0);
+            renderer.copy(context.image(UIImage.scrollbarE), _position.width - _buttonSize, 0);
+        }
     }
 
     void roundedRect(SDL2Renderer renderer, box2i b)
@@ -81,36 +95,47 @@ public:
         _progressStop = clamp!float(progressStop, 0.0f, 1.0f);
         if (_progressStop < _progressStart)
             _progressStop = _progressStart;
-    }   
+    }
+
+    int buttonSize() pure const nothrow
+    {
+        return _buttonSize;
+    }
 
 private:
+
+    int _widthOfFocusBar;
+    int _padding;
+
     bool _vertical;
     float _progressStart;
     float _progressStop;
     int _buttonSize;
 
+    enum State
+    {
+        clicked, // dragging the scrollbar
+        
+    }
+
     box2i getFocusBox()
     {
         if (_vertical)
         {
-            int iprogressStart = cast(int)(0.5f + _progressStart * (_position.height - 2 * _buttonSize));
-            int iprogressStop = cast(int)(0.5f + _progressStop * (_position.height - 2 * _buttonSize));
-            int x = padding;
-            int y = iprogressStart + _buttonSize;
-            return box2i(x, y, x + _position.width - 2 * padding, y + iprogressStop - iprogressStart);
+            int iprogressStart = cast(int)(0.5f + _progressStart * (_position.height - 2 * _buttonSize - 2 * _padding));
+            int iprogressStop = cast(int)(0.5f + _progressStop * (_position.height - 2 * _buttonSize - 2 * _padding));
+            int x = _padding;
+            int y = iprogressStart + _buttonSize + _padding;
+            return box2i(x, y, x + _position.width - 2 * _padding, y + iprogressStop - iprogressStart);
         }
         else
         {
-            int iprogressStart = cast(int)(0.5f + _progressStart * (_position.width - 2 * _buttonSize));
-            int iprogressStop = cast(int)(0.5f + _progressStop * (_position.width - 2 * _buttonSize));
-            int x = iprogressStart + _buttonSize;
-            int y = padding;
-            return box2i(x, y, x + iprogressStop - iprogressStart, y + _position.height - 2 * padding);
+            int iprogressStart = cast(int)(0.5f + _progressStart * (_position.width - 2 * _buttonSize - 2 * _padding));
+            int iprogressStop = cast(int)(0.5f + _progressStop * (_position.width - 2 * _buttonSize - 2 * _padding));
+            int x = iprogressStart + _buttonSize + _padding;
+            int y = _padding;
+            return box2i(x, y, x + iprogressStop - iprogressStart, y + _position.height - 2 * _padding);
         }
     }
-
-    void drawExtremity(int x, int y, int width)
-    {
-
-    }
+    
 }

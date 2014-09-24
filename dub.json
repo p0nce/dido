@@ -4,10 +4,12 @@
     "targetType": "executable",
     "importPaths": ["."],
     "sourcePaths": ["."],
+    "stringImportPaths": ["resources"],
 
     "dependencies": {
         "gfm:sdl2": "==1.3.0",
         "gfm:math": "==1.3.0",
+        "gfm:image": "==1.3.0",
         "libdparse": "==0.1.1",
         "sdlang-d": "==0.8.4"
     }

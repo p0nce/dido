@@ -23,10 +23,10 @@ public:
 
         if (hasScrollbars)
         {
-            addChild(new ScrollBar(context, true));
+            addChild(new ScrollBar(context, 8, 4, true));
             verticalScrollbar = cast(ScrollBar) child(0);
 
-            addChild(new ScrollBar(context, false));
+            addChild(new ScrollBar(context, 8, 4, false));
             horizontalScrollbar = cast(ScrollBar) child(1);
         }
 
@@ -56,9 +56,19 @@ public:
             availableSpace.min.x = lineNumberArea.position.max.x;
         }
 
-        if (verticalScrollbar !is null) verticalScrollbar.reflow(availableSpace);
-        if (horizontalScrollbar !is null) horizontalScrollbar.reflow(availableSpace);
+        if (verticalScrollbar !is null) 
+        {
+            box2i availableForVert = availableSpace;
+            availableForVert.max.y -= verticalScrollbar.buttonSize();
+            verticalScrollbar.reflow(availableForVert);
+            availableSpace.max.x = verticalScrollbar.position.min.x;
+        }
 
+        if (horizontalScrollbar !is null) 
+        {
+            horizontalScrollbar.reflow(availableSpace);
+            availableSpace.max.y = horizontalScrollbar.position.min.y;
+        }
         _position = availableSpace;
     }
 
