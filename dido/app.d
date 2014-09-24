@@ -424,6 +424,10 @@ private:
                 buffer.paste(clipboard);
                 textArea.ensureOneVisibleSelection();
                 break;
+
+            case TAB:
+                buffer.insertTab();
+                textArea.ensureOneVisibleSelection();
         }
     }
 
@@ -524,6 +528,8 @@ private:
                             commands ~= Command(CommandType.BUILD);
                         else if (key.sym == SDLK_F5)
                             commands ~= Command(CommandType.RUN);
+                        else if (key.sym == SDLK_TAB)
+                            commands ~= Command(CommandType.TAB);
                         else 
                         {
                         }

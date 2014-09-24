@@ -38,7 +38,8 @@ enum CommandType
     RUN,
     COPY,
     CUT,
-    PASTE
+    PASTE,
+    TAB,
 }
 
 struct Command

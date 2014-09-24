@@ -410,6 +410,15 @@ public:
                          } );
     }
 
+    void insertTab()
+    {
+        dstring content = "    "d;
+        bySelectionEdit( (int i) 
+                        { 
+                            return content; 
+                        } );
+    }
+
     // selection with area => delete selection
     // else delete character at cursor or before cursor
     void deleteSelection(bool isBackspace)
