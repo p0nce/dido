@@ -352,7 +352,7 @@ public:
         else
             sel = _selectionSet.selections[0];
 
-        sel.edge.cursor = clampCursor(sel.edge.cursor);
+        sel.edge.cursor = clampCursor(Cursor(sel.edge.cursor.line + dy, sel.edge.cursor.column));
 
         sel.anchor = sel.edge;
         _selectionSet.selections ~= sel;
