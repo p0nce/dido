@@ -24,6 +24,7 @@ private:
     int _historyIndex; // where we are in history
     BufferCommand[] _history;
     bool _hasBeenLoaded;
+    int _longestLine;
 
 public:
 
@@ -34,6 +35,7 @@ public:
         _selectionSet = new SelectionSet(this);
         _filepath = null;
         _hasBeenLoaded = true;
+        updateLongestLine();
     }
 
     this(string filepath)
@@ -42,6 +44,7 @@ public:
         _selectionSet = new SelectionSet(this);
         _filepath = filepath;
         _hasBeenLoaded = false;
+        updateLongestLine();
     }
 
     void clearContent()
@@ -50,6 +53,7 @@ public:
         _selectionSet = new SelectionSet(this);
         _filepath = null;
         _hasBeenLoaded = true;
+        updateLongestLine();
     }
 
 
@@ -66,7 +70,7 @@ public:
     // load file in buffer, non-conforming utf-8 is lost
     void loadFromFile(string path)
     {
-        lines = readTextFile(path);
+        lines = readTextFile(path, _longestLine);
     }
 
     ubyte[] toSource()
@@ -86,8 +90,8 @@ public:
     } 
     
     dstring getContent()
-    {        
-        return getSelectionContent(Selection(begin(), end()));               
+    {
+        return getSelectionContent(Selection(begin(), end()));
     }
 
     // save file using OS end-of-lines
@@ -104,6 +108,11 @@ public:
     int lineLength(int lineIndex) pure const nothrow
     {
         return lines[lineIndex].length;
+    }
+
+    int getLongestLineLength() pure const nothrow
+    {
+        return lineLength(_longestLine);
     }
 
     // maximum column allowed for cursor on this line
@@ -517,6 +526,21 @@ package:
 
 private:
 
+    void updateLongestLine() pure const nothrow
+    {
+        int maxLength = 0;
+        int _longestLine = 0;
+
+        for (int i = 0; i < cast(int)lines.length; ++i)
+        {
+            if (lines[i].length > maxLength)
+            {
+                maxLength = lines[i].length;
+                _longestLine = i;
+            }
+        }
+    }
+
     void pushCommand(BufferCommand command)
     {
         // strip previous history, add command
@@ -540,6 +564,7 @@ private:
         Selection sel = selection.sorted();
         dstring result;
 
+        // TODO PERF this could be faster by appending larger chunks
         for (BufferIterator it = sel.anchor; it != sel.edge; ++it)
             result ~= it.read();
 
@@ -553,6 +578,7 @@ private:
         return pos;
     }
 
+    // insert a single char
     // return an iterator after the inserted char
     BufferIterator insert(BufferIterator pos, dchar content)
     {
@@ -562,9 +588,15 @@ private:
         {
             int col = pos.cursor.column;
             int line = pos.cursor.line;
+            bool shouldUpdateLongestLine = (line == _longestLine);                
             dstring thisLine = lines[line];
             lines.insertInPlace(line, thisLine[0..col].idup ~ '\n'); // copy sub-part addind a \n
             lines[line + 1] = lines[line + 1][col..$]; // next line becomes everything else
+
+            // in case we broke the longest line, linear search of longest line
+            if (shouldUpdateLongestLine)
+                updateLongestLine();
+
             return BufferIterator(pos.buffer, Cursor(line + 1, 0));
         }
         else
@@ -573,10 +605,16 @@ private:
             int column = pos.cursor.column;
             dstring oneCh = (&content)[0..1].idup;
             replaceInPlace(lines[line], column, column, oneCh);
+
+            // check that longest line has changed
+            if (lines[line].length > getLongestLineLength())
+                _longestLine = line;
+
             return BufferIterator(pos.buffer, Cursor(line, column + 1));
         }
     }
 
+    // delete a single char
     void erase(BufferIterator pos)
     {
         dchar chErased = pos.read();
@@ -586,12 +624,17 @@ private:
             int column = pos.cursor.column;
             dstring newLine = lines[line][0..$-1] ~ lines[line+1];
             replaceInPlace(lines, line, line + 2, [ newLine ]);
+            updateLongestLine();
         }
         else
         {
             int line = pos.cursor.line;
             int column = pos.cursor.column;
             replaceInPlace(lines[line], column, column + 1, ""d);
+
+            // check that it's still the longest line
+            if (_longestLine == line)
+                updateLongestLine();
         }
     }
 
@@ -673,6 +716,7 @@ private:
             Selection selectionAfterEdit = enqueueEdit(selectionBeforeEdit, selectionContent(i)).sorted();
 
             // apply offset to all subsequent selections
+            // TODO PERF this is quadratic behaviour
             for (int j = i + 1; j < _selectionSet.selections.length; ++j)
             {
                 _selectionSet.selections[j].translateByEdit(selectionBeforeEdit.sorted.edge, selectionAfterEdit.sorted.edge);                
@@ -689,7 +733,7 @@ private
   
 
     // removes BOM, sanitize Unicode, and split on line endings
-    dstring[] readTextFile(string path)
+    dstring[] readTextFile(string path, out int longestLine)
     {
         string wholeFile = readText(path);
 
@@ -705,6 +749,9 @@ private
 
         dstring[] lines;
         dstring currentLine;
+        longestLine = 0;
+        int maxLength = 0;
+        int numLine = 0;
 
         for (size_t i = 0; i < wholeFileUTF32.length; ++i)
         {
@@ -713,7 +760,13 @@ private
             if (ch == '\n')
             {
                 currentLine ~= '\n';
+                if (currentLine.length > maxLength)
+                {
+                    longestLine = numLine;
+                    maxLength = currentLine.length;
+                }
                 lines ~= currentLine.dup;
+                numLine++;
                 currentLine.length = 0;
             }
             else if (ch == '\r')
@@ -728,6 +781,7 @@ private
 
         // always add a line without line feed
         lines ~= currentLine.dup;
+        numLine++;
         return lines;
     }
 }
