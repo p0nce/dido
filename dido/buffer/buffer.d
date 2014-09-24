@@ -735,7 +735,7 @@ private
     // removes BOM, sanitize Unicode, and split on line endings
     dstring[] readTextFile(string path, out int longestLine)
     {
-        string wholeFile = readText(path);
+        string wholeFile = cast(string) std.file.read(path);
 
         // remove UTF-8 BOM
         if (wholeFile.length > 3 && wholeFile[0] == '\xEF' && wholeFile[1] == '\xBB' && wholeFile[2] == '\xBF')
