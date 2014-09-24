@@ -181,7 +181,7 @@ public:
             int actualRange = maxCameraY() + _position.height;
             float start = _cameraY / cast(float)(actualRange);
             float stop = (_cameraY + _position.height) / cast(float)(actualRange);
-            verticalScrollbar.setState(start, stop);
+            verticalScrollbar.setProgress(start, stop);
         }
 
         if (horizontalScrollbar !is null)
@@ -189,7 +189,7 @@ public:
             int actualRange = maxCameraX() + 3 * charWidth;
             float start = _cameraX / cast(float)(actualRange);
             float stop = (_cameraX + _position.width) / cast(float)(actualRange);
-            horizontalScrollbar.setState(start, stop);
+            horizontalScrollbar.setProgress(start, stop);
         }
     }
 

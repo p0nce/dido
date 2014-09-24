@@ -1,12 +1,10 @@
 module dido.buffer.buffer;
 
-
 import std.file;
 import std.string;
 import std.array;
 import std.conv;
-
-import gfm.math;
+import std.algorithm;
 
 import dido.buffer.selection;
 import dido.buffer.buffercommand;
@@ -340,8 +338,8 @@ public:
     Cursor clampCursor(Cursor cursor)
     {
         Cursor result;
-        result.line = clamp!int(cursor.line, 0, numLines() - 1);
-        result.column = clamp!int(cursor.column, 0, maxColumn(result.line));
+        result.line = min(max(cursor.line, 0), numLines() - 1);
+        result.column = min(max(cursor.column, 0), maxColumn(result.line));
         return result;
     }
 

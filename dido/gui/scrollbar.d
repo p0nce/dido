@@ -1,13 +1,13 @@
 module dido.gui.scrollbar;
 
+import std.algorithm;
+
 import gfm.math;
 import dido.gui;
 
 class ScrollBar : UIElement
 {
-public:
-
-    
+public:    
 
     this(UIContext context, int widthOfFocusBar, int padding, bool vertical)
     {
@@ -15,11 +15,19 @@ public:
         _vertical = vertical;
         _widthOfFocusBar = widthOfFocusBar;
         _padding = padding;
-        setState(0.45f, 0.55f);
+        setProgress(0.45f, 0.55f);
+
+        _state = State.initial;
     }
 
-    // Called whenever a scrollbar move is done. Designed to be overriden.
-    void onScrollChange(float newProgressStart)
+    // Called whenever a scrollbar move is done. Override it to change behaviour.
+    void onScrollChangeMouse(float newProgressStart)
+    {
+        // do nothing
+    }
+
+    // Called whenever a scrollbar button is clicked. Override it to change behaviour.
+    void onScrollChangeButton(bool up)
     {
         // do nothing
     }
@@ -89,7 +97,7 @@ public:
             renderer.fillRect(b.min.x, b.min.y, b.width, b.height);
     }
 
-    void setState(float progressStart, float progressStop)
+    void setProgress(float progressStart, float progressStop)
     {
         _progressStart = clamp!float(progressStart, 0.0f, 1.0f);
         _progressStop = clamp!float(progressStop, 0.0f, 1.0f);
@@ -102,6 +110,21 @@ public:
         return _buttonSize;
     }
 
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        if (getButtonBoxA().contains(vec2i(x, y)))
+        {
+            onScrollChangeButton(true);
+            return true;
+        }
+        else if (getButtonBoxB().contains(vec2i(x, y)))
+        {
+            onScrollChangeButton(false);
+            return true;
+        }
+        return false;
+    }
+
 private:
 
     int _widthOfFocusBar;
@@ -112,10 +135,24 @@ private:
     float _progressStop;
     int _buttonSize;
 
+    State _state;
+
     enum State
     {
+        initial,
         clicked, // dragging the scrollbar
-        
+    }
+
+    box2i getButtonBoxA()
+    {
+        return box2i(0, 0, 0 + _buttonSize, 0 + _buttonSize);
+    }
+
+    box2i getButtonBoxB()
+    {
+        int x = _vertical ? 0 : _position.width - _buttonSize;
+        int y = _vertical ? _position.height - _buttonSize : 0;
+        return box2i(x, y, x + _buttonSize, y + _buttonSize);
     }
 
     box2i getFocusBox()

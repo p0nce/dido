@@ -182,9 +182,4 @@ class SelectionSet
         foreach(ref sel; selections)
             sel.anchor = sel.edge;
     }
-
-    invariant()
-    {
-        assert(selections.length >= 1);
-    }
 }
