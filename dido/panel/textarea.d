@@ -186,7 +186,7 @@ public:
 
         if (horizontalScrollbar !is null)
         {
-            int actualRange = maxCameraX() + 3 * charWidth;
+            int actualRange = maxCameraX() + _position.width;
             float start = _cameraX / cast(float)(actualRange);
             float stop = (_cameraX + _position.width) / cast(float)(actualRange);
             horizontalScrollbar.setProgress(start, stop);
@@ -224,9 +224,7 @@ public:
     int maxCameraX()
     {
         int maxLineLength = _buffer.getLongestLineLength();
-        if (maxLineLength == 0)
-            maxLineLength = 1;
-        return maxLineLength * charWidth; // TODO maintain length of longest line in Buffer
+        return max(0, maxLineLength * charWidth - _position.width);
     }
 
     int maxCameraY()
@@ -344,7 +342,7 @@ public:
 
         override void onScrollChangeMouse(float newProgressStart)
         {
-            int actualRange = maxCameraX() + 3 * charWidth;
+            int actualRange = maxCameraX() + _position.width;
             _cameraX = cast(int)(0.5f + newProgressStart * actualRange);
             normalizeCamera();
         }

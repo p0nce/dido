@@ -89,6 +89,11 @@ public:
         return false;
     }
 
+    // Called when mouse move over this Element.
+    void onMouseMove(int x, int y, int dx, int dy)
+    {
+    }
+
     // Called when mouse enter this Element.
     void onMouseEnter()
     {
@@ -147,6 +152,7 @@ public:
         {
             if (!_mouseOver)
                 onMouseEnter();
+            onMouseMove(x - _position.min.x, y - _position.min.y, dx, dy);
             _mouseOver = true;
         }
         else

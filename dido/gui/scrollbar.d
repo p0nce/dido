@@ -110,6 +110,7 @@ public:
         return _buttonSize;
     }
 
+
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
     {
         // clicking on a button
@@ -122,27 +123,28 @@ public:
         {
             onScrollChangeButton(false);
             return true;
-        }        
+        }
         else
         {
-            float clickProgress;
-            if (_vertical)
-            {
-                int heightWithoutButton = _position.height - 2 * _buttonSize;
-                clickProgress = cast(float)(y - _buttonSize) / heightWithoutButton;
-            }
-            else
-            {
-                int widthWithoutButton = _position.width - 2 * _buttonSize;
-                clickProgress = cast(float)(x - _buttonSize) / widthWithoutButton;
-            }                
-
-            // now this clickProgress should move the _center_ of the scrollbar to it
-            float newStartProgress = clickProgress - (_progressStop - _progressStart) * 0.5f;
-            
-            onScrollChangeMouse(newStartProgress);
+            mouseCallback(x, y);
+            _state = State.dragging;
         }
         return false;        
+    }
+
+    // Called when mouse move over this Element.
+    override void onMouseMove(int x, int y, int dx, int dy)
+    {
+        if (_state == State.dragging)
+        {
+            mouseCallback(x, y);
+        }
+    }
+
+    // Called when mouse enter this Element.
+    override void onMouseExit()
+    {
+        _state = State.initial;
     }
 
 private:
@@ -160,7 +162,27 @@ private:
     enum State
     {
         initial,
-        clicked, // dragging the scrollbar                
+        dragging,
+    }
+
+    void mouseCallback(int x, int y)
+    {
+        float clickProgress;
+        if (_vertical)
+        {
+            int heightWithoutButton = _position.height - 2 * _buttonSize;
+            clickProgress = cast(float)(y - _buttonSize) / heightWithoutButton;
+        }
+        else
+        {
+            int widthWithoutButton = _position.width - 2 * _buttonSize;
+            clickProgress = cast(float)(x - _buttonSize) / widthWithoutButton;
+        }                
+
+        // now this clickProgress should move the _center_ of the scrollbar to it
+        float newStartProgress = clickProgress - (_progressStop - _progressStart) * 0.5f;
+
+        onScrollChangeMouse(newStartProgress);
     }
 
     box2i getButtonBoxA()

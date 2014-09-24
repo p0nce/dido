@@ -182,4 +182,13 @@ class SelectionSet
         foreach(ref sel; selections)
             sel.anchor = sel.edge;
     }
+
+    void clampSelections()
+    {
+        foreach(ref sel; selections)
+        {
+            sel.anchor.cursor = sel.anchor.buffer.clampCursor(sel.anchor.cursor);
+            sel.edge.cursor = sel.edge.buffer.clampCursor(sel.edge.cursor);
+        }
+    }
 }

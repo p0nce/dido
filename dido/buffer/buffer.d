@@ -471,24 +471,37 @@ public:
 
     void cleanup()
     {
-        foreach(ref line; lines)
+        enqueueBarrier();
+        enqueueSaveSelections();
+
+        _selectionSet.keepOnlyFirst();
+        _selectionSet.selections[0].edge.cursor = Cursor(0, 0);
+        _selectionSet.selections[0].anchor.cursor = Cursor(0, 0);
+
+        for (int i = 0; i < lines.length; ++i)
         {
-            import std.string;
-
-            // remove tabs
-            line = detab(line, 4);
-
-            // remove trailing spaces
-            while(line.length >= 2 && line[$-2] == ' ')
+            bool whitespace = true;
+            int start = i == lines.length - 1 ? cast(int)(lines[i].length) - 1 : cast(int)(lines[i].length) - 2;
+            for (int j = start; j >= 0; --j)
             {
-                line = line[0..$-2] ~ line[$-1];
-            }
+                dchar ch = lines[i][j];
+                if (whitespace && ch == ' ')
+                {
+                    Selection sel = Selection(BufferIterator(this, Cursor(i, j)), BufferIterator(this, Cursor(i, j + 1)));
+                    enqueueEdit(sel, ""d);
+                }
+                else
+                    whitespace = false;
 
-            while(line.length >= 1 && line[$-1] == ' ')
-            {
-                line = line[0..$-1];
+                if (ch == '\t')
+                {
+                    Selection sel = Selection(BufferIterator(this, Cursor(i, j)), BufferIterator(this, Cursor(i, j + 1)));
+                    enqueueEdit(sel, "    "d);
+                }
             }
         }
+        _selectionSet.normalize();
+        enqueueSaveSelections();
     }
 /*
     invariant()
@@ -707,7 +720,6 @@ private:
         enqueueBarrier();
         enqueueSaveSelections();
 
-        int displacement = 0;
         for (int i = 0; i < _selectionSet.selections.length; ++i)
         {
             Selection selectionBeforeEdit = _selectionSet.selections[i];
