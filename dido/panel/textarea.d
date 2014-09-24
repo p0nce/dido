@@ -82,8 +82,6 @@ public:
         int firstVisibleColumn = getFirstVisibleColumn();
         int firstNonVisibleColumn = getFirstNonVisibleColumn();
         int longestLineLength = _buffer.getLongestLineLength();
-        if (longestLineLength == 0)
-            longestLineLength = 1; // for scrollbar purpose, avoid division by 0
 
         // draw selection background
         SelectionSet selset = _buffer.selectionSet();
@@ -170,16 +168,18 @@ public:
 
         if (verticalScrollbar !is null)
         {
-            float topProgress = cast(float)firstVisibleLine / _buffer.numLines();
-            float bottomProgress = cast(float)firstNonVisibleLine / _buffer.numLines();
-            verticalScrollbar.setState(topProgress, bottomProgress);
+            int actualRange = maxCameraY() + _position.height;
+            float start = _cameraY / cast(float)(actualRange);
+            float stop = (_cameraY + _position.height) / cast(float)(actualRange);
+            verticalScrollbar.setState(start, stop);
         }
 
         if (horizontalScrollbar !is null)
         {
-            float leftProgress = cast(float)firstVisibleColumn / longestLineLength;
-            float rightProgress = cast(float)firstNonVisibleColumn / longestLineLength;
-            horizontalScrollbar.setState(leftProgress, rightProgress);
+            int actualRange = maxCameraX() + 3 * charWidth;
+            float start = _cameraX / cast(float)(actualRange);
+            float stop = (_cameraX + _position.width) / cast(float)(actualRange);
+            horizontalScrollbar.setState(start, stop);
         }
     }
 
@@ -213,7 +213,10 @@ public:
 
     int maxCameraX()
     {
-        return 92 * charWidth; // TODO maintain length of longest line in Buffer
+        int maxLineLength = _buffer.getLongestLineLength();
+        if (maxLineLength == 0)
+            maxLineLength = 1;
+        return maxLineLength * charWidth; // TODO maintain length of longest line in Buffer
     }
 
     int maxCameraY()

@@ -16,15 +16,14 @@ public:
         _vertical = vertical;
 
         setState(0.45f, 0.55f);
-        _alpha = 128;
     }
 
     override void reflow(box2i availableSpace)
     {
-        int width = 12;
         int margin = 0;
 
         _position = availableSpace;
+        _buttonSize = (widthOfScrollbar + 2 * padding);
 
         if (_vertical)
         {
@@ -44,27 +43,36 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
+        // Do not display useless scrollbar
+        if (_progressStart <= 0.0f && _progressStop >= 1.0f)
+            return;
+
         if (isMouseOver())
-            renderer.setColor(52, 52, 56, _alpha);
+            renderer.setColor(42, 42, 46, 255);
         else
-            renderer.setColor(42, 42, 46, _alpha);
+            renderer.setColor(32, 32, 36, 255);
 
         renderer.fillRect(0, 0, _position.width, _position.height);
         
         if (isMouseOver())
-            renderer.setColor(194, 194, 194, _alpha);
+            renderer.setColor(140, 140, 140, 255);
         else
-            renderer.setColor(134, 134, 134, _alpha);
+            renderer.setColor(100, 100, 100, 255);
 
         box2i focus = getFocusBox();
-        if (focus.height > 2 && focus.width > 2)
+        roundedRect(renderer, focus);
+    }
+
+    void roundedRect(SDL2Renderer renderer, box2i b)
+    {
+        if (b.height > 2 && b.width > 2)
         {
-            renderer.fillRect(focus.min.x + 1, focus.min.y    , focus.width - 2, 1);
-            renderer.fillRect(focus.min.x    , focus.min.y + 1, focus.width    , focus.height - 2);
-            renderer.fillRect(focus.min.x + 1, focus.max.y - 1, focus.width - 2, 1);
+            renderer.fillRect(b.min.x + 1, b.min.y    , b.width - 2, 1);
+            renderer.fillRect(b.min.x    , b.min.y + 1, b.width    , b.height - 2);
+            renderer.fillRect(b.min.x + 1, b.max.y - 1, b.width - 2, 1);
         }
         else
-            renderer.fillRect(focus.min.x, focus.min.y, focus.width, focus.height);
+            renderer.fillRect(b.min.x, b.min.y, b.width, b.height);
     }
 
     void setState(float progressStart, float progressStop)
@@ -79,25 +87,30 @@ private:
     bool _vertical;
     float _progressStart;
     float _progressStop;
-    ubyte _alpha;
+    int _buttonSize;
 
     box2i getFocusBox()
     {
         if (_vertical)
         {
-            int iprogressStart = cast(int)(0.5f + _progressStart * _position.height);
-            int iprogressStop = cast(int)(0.5f + _progressStop * _position.height);
+            int iprogressStart = cast(int)(0.5f + _progressStart * (_position.height - 2 * _buttonSize));
+            int iprogressStop = cast(int)(0.5f + _progressStop * (_position.height - 2 * _buttonSize));
             int x = padding;
-            int y = iprogressStart;
+            int y = iprogressStart + _buttonSize;
             return box2i(x, y, x + _position.width - 2 * padding, y + iprogressStop - iprogressStart);
         }
         else
         {
-            int iprogressStart = cast(int)(0.5f + _progressStart * _position.width);
-            int iprogressStop = cast(int)(0.5f + _progressStop * _position.width);
-            int x = iprogressStart;
+            int iprogressStart = cast(int)(0.5f + _progressStart * (_position.width - 2 * _buttonSize));
+            int iprogressStop = cast(int)(0.5f + _progressStop * (_position.width - 2 * _buttonSize));
+            int x = iprogressStart + _buttonSize;
             int y = padding;
             return box2i(x, y, x + iprogressStop - iprogressStart, y + _position.height - 2 * padding);
         }
+    }
+
+    void drawExtremity(int x, int y, int width)
+    {
+
     }
 }
