@@ -49,6 +49,8 @@ public:
 
     SDL2Texture getCharTexture(dchar ch)
     {
+        if (ch == 0)
+            ch = 0xFFFD;
         try
         {
             if (! (ch in _glyphCache))
