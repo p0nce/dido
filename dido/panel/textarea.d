@@ -28,6 +28,9 @@ public:
 
             addChild(new HorzScrollBar(context, 9, 4, false));
             horizontalScrollbar = cast(ScrollBar) child(1);
+
+            addChild(new LanguagePanel(context, 17, 17));
+            _languagePanel = cast(LanguagePanel) child(2);
         }
 
         if (haveLineNumbers)
@@ -50,6 +53,9 @@ public:
 
     override void reflow(box2i availableSpace)
     {
+        if (_languagePanel !is null)
+            _languagePanel.reflow(availableSpace);
+    
         if (lineNumberArea !is null)
         {
             lineNumberArea.reflow(availableSpace);
@@ -386,6 +392,7 @@ private:
     LineNumberArea lineNumberArea;
     ScrollBar verticalScrollbar;
     ScrollBar horizontalScrollbar;
+    LanguagePanel _languagePanel;
 
     int getFirstVisibleLine() pure const nothrow
     {
@@ -512,3 +519,32 @@ private:
     int _firstVisibleLine;
     int _firstNonVisibleLine;
 }
+
+
+class LanguagePanel : UIElement
+{
+public:
+    this(UIContext context, int width, int height)
+    {
+        super(context);
+        _width = width;
+        _height = height;
+    }
+
+    override void preRender(SDL2Renderer renderer)
+    {
+        renderer.copy(context.image(UIImage.dlang), 0, 0);
+    }
+
+    override void reflow(box2i availableSpace)
+    {
+        _position = availableSpace;
+        _position.min.x = _position.max.x - _width;
+        _position.min.y = _position.max.y - _height;
+    }
+
+private:
+    int _width;
+    int _height;
+}
+

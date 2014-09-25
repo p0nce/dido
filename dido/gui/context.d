@@ -12,6 +12,7 @@ enum UIImage : int
     scrollbarS,
     scrollbarE,
     scrollbarW,
+    dlang
 }
 
 
@@ -29,6 +30,7 @@ public:
         _surfaces[UIImage.scrollbarS] = loadImage(sdl2, imageScrollbarS);
         _surfaces[UIImage.scrollbarE] = loadImage(sdl2, imageScrollbarE);
         _surfaces[UIImage.scrollbarW] = loadImage(sdl2, imageScrollbarW);
+        _surfaces[UIImage.dlang]      = loadImage(sdl2, imageDlang);
 
         // create textures
         for(int i = 0; i < _surfaces.length; ++i)
@@ -63,6 +65,7 @@ static immutable imageScrollbarN = cast(immutable(ubyte[])) import("scrollbarN.p
 static immutable imageScrollbarS = cast(immutable(ubyte[])) import("scrollbarS.png");
 static immutable imageScrollbarE = cast(immutable(ubyte[])) import("scrollbarE.png");
 static immutable imageScrollbarW = cast(immutable(ubyte[])) import("scrollbarW.png");
+static immutable imageDlang      = cast(immutable(ubyte[])) import("dlang.png");
 
 
 SDL2Surface loadImage(SDL2 sdl2, immutable(ubyte[]) imageData)
