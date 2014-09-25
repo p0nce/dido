@@ -100,7 +100,7 @@ public:
             SDL2Renderer renderer = _window.renderer();
             
             renderer.setViewportFull();
-            renderer.setColor(23, 23, 23, 255);
+            renderer.setColor(20, 19, 18, 255);
             renderer.clear();
 
             int width = _window.getWidth();

@@ -23,10 +23,10 @@ public:
 
         if (hasScrollbars)
         {
-            addChild(new VertScrollBar(context, 8, 4, true));
+            addChild(new VertScrollBar(context, 9, 4, true));
             verticalScrollbar = cast(ScrollBar) child(0);
 
-            addChild(new HorzScrollBar(context, 8, 4, false));
+            addChild(new HorzScrollBar(context, 9, 4, false));
             horizontalScrollbar = cast(ScrollBar) child(1);
         }
 

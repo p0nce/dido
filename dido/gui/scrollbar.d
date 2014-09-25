@@ -58,11 +58,7 @@ public:
         if (_progressStart <= 0.0f && _progressStop >= 1.0f)
             return;
 
-        if (isMouseOver())
-            renderer.setColor(42, 42, 46, 255);
-        else
-            renderer.setColor(32, 32, 36, 255);
-
+        renderer.setColor(0x30, 0x2C, 0x2C, 255);
         renderer.fillRect(0, 0, _position.width, _position.height);
         
         if (isMouseOver())
