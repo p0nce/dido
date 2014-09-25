@@ -568,10 +568,10 @@ package:
 
 private:
 
-    void updateLongestLine() pure const nothrow
+    void updateLongestLine() pure nothrow
     {
         int maxLength = 0;
-        int _longestLine = 0;
+        _longestLine = 0;
 
         for (int i = 0; i < cast(int)lines.length; ++i)
         {
@@ -630,12 +630,16 @@ private:
         {
             int col = pos.cursor.column;
             int line = pos.cursor.line;
-            bool shouldUpdateLongestLine = (line == _longestLine);                
+            bool shouldUpdateLongestLine = (line == _longestLine);
+            bool shouldAddOneToLongestLine = (line < _longestLine);
             dstring thisLine = lines[line];
             lines.insertInPlace(line, thisLine[0..col].idup ~ '\n'); // copy sub-part addind a \n
             lines[line + 1] = lines[line + 1][col..$]; // next line becomes everything else
 
             // in case we broke the longest line, linear search of longest line
+            if (shouldAddOneToLongestLine)
+                _longestLine++;
+
             if (shouldUpdateLongestLine)
                 updateLongestLine();
 

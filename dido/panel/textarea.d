@@ -159,7 +159,7 @@ public:
                 box2i charBox = box2i(posX, posY, posX + charWidth, posY + charHeight);
 
 
-          //      if (visibleBox.intersects(charBox))
+                if (visibleBox.intersects(charBox))
                 {
                     if (charIsSelected)
                     {
