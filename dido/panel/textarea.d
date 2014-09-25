@@ -93,12 +93,7 @@ public:
         int firstNonVisibleColumn = getFirstNonVisibleColumn();
         int longestLineLength = _buffer.getLongestLineLength();
 
-        // draw selection background
-        SelectionSet selset = _buffer.selectionSet();
-        foreach(Selection sel; selset.selections)
-        {
-            renderSelectionBackground(renderer, editPosX, editPosY, sel);
-        }
+        box2i visibleBox = box2i(0, 0, _position.width, _position.height);
 
         for (int i = firstVisibleLine; i < firstNonVisibleLine; ++i)
         {
@@ -110,6 +105,9 @@ public:
             int maxCol =  min(line.length, firstNonVisibleColumn);
             for(int j = firstVisibleColumn; j < maxCol; ++j)
             {
+                Buffer.Hit hit = _buffer.intersectsSelection(Cursor(i, j));
+                bool charIsSelected = hit.charInSelection;
+
                 dchar ch = line[j];
                 int widthOfChar = 1;
                 switch (ch)
@@ -156,16 +154,27 @@ public:
                         break;
                 }
 
-                box2i visibleBox = box2i(0, 0, _position.width, _position.height);
+                
                 int posX = editPosX + posXInChars * charWidth;
                 box2i charBox = box2i(posX, posY, posX + charWidth, posY + charHeight);
-                if (visibleBox.intersects(charBox))
+
+
+          //      if (visibleBox.intersects(charBox))
+                {
+                    if (charIsSelected)
+                    {
+                        renderer.setColor(43, 54, 66, 255);
+                        renderer.fillRect(charBox.min.x, charBox.min.y, charBox.width, charBox.height);
+                    }
+
                     font.renderChar(ch, posX, posY);
+                }
                 posXInChars += widthOfChar;
             }
         }
 
         // draw selection foreground
+        SelectionSet selset = _buffer.selectionSet();
         foreach(Selection sel; selset.selections)
         {
             renderSelectionForeground(renderer, editPosX, editPosY, sel, _drawCursors);
@@ -413,30 +422,6 @@ private:
         if (edgeBox.max.y > camBox.max.y - scrollMargin)
             _cameraY += (edgeBox.max.y - camBox.max.y + scrollMargin);
         normalizeCamera();
-    }
-
-    void renderSelectionBackground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection)
-    {
-        Selection sorted = selection.sorted();
-
-        // don't draw invisible selections
-        if (sorted.edge.cursor.line < getFirstVisibleLine())
-            return;
-
-        if (sorted.anchor.cursor.line >= getFirstNonVisibleLine())
-            return;
-
-        
-        // draw the selection part
-        BufferIterator it = sorted.anchor;
-        while (it < sorted.edge)
-        {
-            int startX = offsetX + it.cursor.column * charWidth;
-            int startY = offsetY + it.cursor.line * charHeight;
-            renderer.setColor(43, 54, 66, 255);
-            renderer.fillRect(startX, startY, charWidth, charHeight);
-            ++it;
-        }
     }
 
     void renderSelectionForeground(SDL2Renderer renderer, int offsetX, int offsetY, Selection selection, bool drawCursors)

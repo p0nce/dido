@@ -72,19 +72,6 @@ struct Selection
             return Selection(edge, anchor);
     }
 
-    // lenght of selection in chars
-    int area()
-    {
-        Selection tsorted = this.sorted();
-        int result = 0;
-        while(tsorted.anchor < tsorted.edge)
-        {
-            ++tsorted.anchor;
-            result += 1;
-        }
-        return result;
-    }
-
     bool isValid() pure const nothrow
     {
         return anchor.isValid() && edge.isValid();

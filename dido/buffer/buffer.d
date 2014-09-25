@@ -512,25 +512,47 @@ public:
         _selectionSet.normalize();
         enqueueSaveSelections();
     }
-/*
-    invariant()
+
+    struct Hit 
     {
-        // at least one line
-        assert(lines.length > 0);
-        for(size_t i = 0; i < lines.length; ++i)
+        bool charInSelection;
+  //      bool cursorThere;
+        Selection selInside;
+    }
+
+    // return a combination of Hit flags
+    Hit intersectsSelection(Cursor cursor)
+    {
+        Hit hit;
+        hit.charInSelection = false;
+   //     hit.cursorThere = false;
+
+        int min = 0;
+        int max =  _selectionSet.selections.length - 1;
+        while(min <= max) // assume sorted selections
         {
-            if( i == lines.length - 1)
+            int middle = (min + max + 1) / 2;
+            Selection sel = _selectionSet.selections[middle];
+            Selection ssel = sel.sorted();
+            if (cursor < ssel.anchor.cursor)
             {
-                if (lines[i].length > 0)
-                    assert(lines[i][$-1] != '\n');
+                max = middle - 1;
+            }
+            else if (cursor >= ssel.edge.cursor)
+            {
+                min = middle + 1;
+            }
+            else if (cursor >= ssel.anchor.cursor && cursor < ssel.edge.cursor)
+            {
+                hit.charInSelection = true;
+                hit.selInside = sel;
+                break;
             }
             else
-            {
-                assert(lines[i].length > 0);
-                assert(lines[i][$-1] == '\n');
-            }
+                assert(false);
         }
-    }*/
+        return hit;
+    }
 
 package:
 

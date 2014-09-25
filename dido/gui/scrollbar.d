@@ -9,11 +9,11 @@ class ScrollBar : UIElement
 {
 public:    
 
-    this(UIContext context, int widthOfFocusBar, int padding, bool vertical)
+    this(UIContext context, int thicknessOfFocusBar, int padding, bool vertical)
     {
         super(context);
         _vertical = vertical;
-        _widthOfFocusBar = widthOfFocusBar;
+        _thicknessOfFocusBar = thicknessOfFocusBar;
         _padding = padding;
         setProgress(0.45f, 0.55f);
 
@@ -34,7 +34,7 @@ public:
 
     int thickness() pure const nothrow
     {
-        return _widthOfFocusBar + 2 * _padding;
+        return _thicknessOfFocusBar + 2 * _padding;
     }
 
     override void reflow(box2i availableSpace)
@@ -62,9 +62,9 @@ public:
         renderer.fillRect(0, 0, _position.width, _position.height);
         
         if (isMouseOver())
-            renderer.setColor(140, 140, 140, 255);
+            renderer.setColor(120, 120, 120, 255);
         else
-            renderer.setColor(100, 100, 100, 255);
+            renderer.setColor( 80,  80,  80, 255);
 
         box2i focus = getFocusBox();
         roundedRect(renderer, focus);
@@ -145,7 +145,7 @@ public:
 
 private:
 
-    int _widthOfFocusBar;
+    int _thicknessOfFocusBar;
     int _padding;
 
     bool _vertical;
