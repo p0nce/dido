@@ -133,8 +133,15 @@ public:
                         break;
 
                     case '\n':
-                        ch = ' '; //0x2193; // down arrow
-                        font.setColor(40, 40, 40);
+                        if (charIsSelected)
+                        {
+                            ch = 0x2193;
+                            font.setColor(131, 137, 152);
+                        }
+                        else
+                        {
+                            ch = ' ';
+                        }
                         break;
 
                     case '\t':
@@ -145,39 +152,42 @@ public:
                         break;
 
                     case ' ':
-                        ch = 0x2D1;
-                        font.setColor(60, 60, 70);
+                        if (charIsSelected)
+                        {
+                            ch = 0x2D1;
+                            font.setColor(131, 137, 152);
+                        }
                         break;
 
                     default:
                         font.setColor(250, 250, 250);
                         break;
                 }
-
                 
                 int posX = editPosX + posXInChars * charWidth;
                 box2i charBox = box2i(posX, posY, posX + charWidth, posY + charHeight);
-
 
                 if (visibleBox.intersects(charBox))
                 {
                     if (charIsSelected)
                     {
+                        // draw selection background
                         renderer.setColor(43, 54, 66, 255);
                         renderer.fillRect(charBox.min.x, charBox.min.y, charBox.width, charBox.height);
                     }
 
-                    font.renderChar(ch, posX, posY);
+                    if (ch != ' ')
+                        font.renderChar(ch, posX, posY);
+
+                    if (hit.cursorThere && _drawCursors)
+                    {
+                        // draw cursor
+                        renderer.setColor(255, 255, 255, 255);
+                        renderer.fillRect(charBox.min.x, charBox.min.y, 1, charHeight - 1);
+                    }
                 }
                 posXInChars += widthOfChar;
             }
-        }
-
-        // draw selection foreground
-        SelectionSet selset = _buffer.selectionSet();
-        foreach(Selection sel; selset.selections)
-        {
-            renderSelectionForeground(renderer, editPosX, editPosY, sel, _drawCursors);
         }
 
         if (lineNumberArea !is null)

@@ -516,7 +516,7 @@ public:
     struct Hit 
     {
         bool charInSelection;
-  //      bool cursorThere;
+        bool cursorThere;
         Selection selInside;
     }
 
@@ -525,7 +525,7 @@ public:
     {
         Hit hit;
         hit.charInSelection = false;
-   //     hit.cursorThere = false;
+        hit.cursorThere = false;
 
         int min = 0;
         int max =  _selectionSet.selections.length - 1;
@@ -534,6 +534,10 @@ public:
             int middle = (min + max + 1) / 2;
             Selection sel = _selectionSet.selections[middle];
             Selection ssel = sel.sorted();
+
+            if (cursor == sel.edge.cursor)
+                hit.cursorThere = true;
+
             if (cursor < ssel.anchor.cursor)
             {
                 max = middle - 1;
