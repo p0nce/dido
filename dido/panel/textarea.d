@@ -103,12 +103,17 @@ public:
             int posY = editPosY + i * charHeight;
             
             int maxCol =  min(line.length, firstNonVisibleColumn);
+
+            // Allows to draw cursor on the very last file position
+            if ( (maxCol == 0) && ( i + 1 == _buffer.numLines() ))
+                maxCol = 1;
+
             for(int j = firstVisibleColumn; j < maxCol; ++j)
             {
                 Buffer.Hit hit = _buffer.intersectsSelection(Cursor(i, j));
                 bool charIsSelected = hit.charInSelection;
 
-                dchar ch = line[j];
+                dchar ch = j < line.length ? line[j] : ' '; // last line read a little to far
                 int widthOfChar = 1;
                 switch (ch)
                 {
