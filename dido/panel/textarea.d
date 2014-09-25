@@ -111,8 +111,8 @@ public:
             int maxCol =  min(line.length, firstNonVisibleColumn);
 
             // Allows to draw cursor on the very last file position
-            if ( (maxCol == 0) && ( i + 1 == _buffer.numLines() ))
-                maxCol = 1;
+            if ( i + 1 == _buffer.numLines() )
+                maxCol++;
 
             for(int j = firstVisibleColumn; j < maxCol; ++j)
             {
