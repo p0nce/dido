@@ -543,6 +543,13 @@ public:
         _position.min.y = _position.max.y - _height;
     }
 
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        import std.process;
+        browse("http://dlang.org/");
+        return false;
+    }
+
 private:
     int _width;
     int _height;
