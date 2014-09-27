@@ -13,8 +13,22 @@ import std.algorithm,
 
 alias Symbol = Typedef!string;
 
-// An atom is either a string, a double, a symbol, or a list of atoms
-alias Atom = Algebraic!(string, double, Symbol, This[]);
+class Closure
+{
+public:
+    this(Environment env, Atom params, Atom body_)
+    {
+        this.env = env;
+        this.params = params;
+        this.body_ = body_;
+    }
+    Environment env;
+    Atom params;
+    Atom body_;
+}
+
+// An atom is either a string, a double, a symbol, a function (env, params, body) or a list of atoms
+alias Atom = Algebraic!(string, double, Symbol, Closure, This[]);
 
 
 /// The one exception type thrown in this interpreter.
@@ -94,6 +108,86 @@ Atom makeNil()
     return Atom(values);
 }
 
+Symbol toSymbol(Atom atom)
+{
+    Symbol failure(Atom x0)
+    {
+        throw new SchemeException(format("%s is not a symbol", toString(x0)));
+    }
+
+    return atom.visit!(
+        (Symbol sym) => sym,
+        (string s) => failure(atom),
+        (double x) => failure(atom),
+        (Atom[] atoms) => failure(atom),
+        (Closure fun) => failure(atom)
+    );
+}
+
+bool toBool(Atom atom)
+{
+    bool failure(Atom x0)
+    {
+        throw new SchemeException(format("%s cannot be converted to a truth value", toString(x0)));
+    }
+
+    return atom.visit!(
+        (Symbol sym) => failure(atom),
+        (string s) => s.length > 0, // "" is falsey
+        (double x) => x != 0, // 0 and NaN is falsey
+        (Atom[] atoms) => failure(atom), // empty list is falsey
+        (Closure fun) => failure(atom)
+    );
+}
+
+string toString(Atom atom)
+{
+    string atomJoiner(Atom[] atoms)
+    {
+        return map!toString(atoms).joiner(", " ).array.to!string;
+    }
+
+    return atom.visit!(
+        (Symbol sym) => cast(string)sym,
+        (string s) => s,
+        (double x) => to!string(x),
+        (Atom[] atoms) => atomJoiner(atoms),
+        (Closure fun) => "#closure"
+    );
+}
+
+Closure toClosure(Atom atom)
+{
+    Closure failure(Atom x0)
+    {
+        throw new SchemeException(format("%s is not a closure", toString(x0)));
+    }
+
+    return atom.visit!(
+        (Symbol sym) => failure(atom),
+        (string s) => failure(atom),
+        (double x) => failure(atom),
+        (Atom[] atoms) => failure(atom),
+        (Closure fun) => fun
+    );
+}
+
+Atom[] toList(Atom atom)
+{
+    Atom[] failure(Atom x0)
+    {
+        throw new SchemeException(format("%s is not a list", toString(x0)));
+    }
+
+    return atom.visit!(
+        (Symbol sym) => failure(atom),
+        (string s) => failure(atom),
+        (double x) => failure(atom),
+        (Atom[] atoms) => atoms,
+        (Closure fun) => failure(atom)
+    );
+}
+
 Atom eval(Atom atom, Environment env)
 {
     Atom evalFailure(Atom x0)
@@ -105,6 +199,7 @@ Atom eval(Atom atom, Environment env)
         (Symbol sym) => env.findSymbol(sym),
         (string s) => atom,
         (double x) => atom,
+        (Closure fun) => evalFailure(atom),
         (Atom[] atoms)
         {
             // empty list evaluate to itself
@@ -118,6 +213,7 @@ Atom eval(Atom atom, Environment env)
                 {
                     switch(cast(string)sym)
                     {
+                        // Special forms
                         case "quote": 
                             if (atoms.length < 2)
                                 throw new SchemeException("Empty quote");
@@ -144,125 +240,51 @@ Atom eval(Atom atom, Environment env)
                             return makeNil();
 
                         case "lambda":
-                        case "begin":
-                        default:
-/*
-                            // evaluate alls
-                            Atom[] evaluated;
-                            foreach(atom; atoms)  = atoms.map!eval(
-*/
+                            if (atoms.length != 3)
+                                throw new SchemeException("Invalid lambda expression, should be (lambda params body)");
+                            return Atom(new Closure(env, atoms[1], atoms[2]));
 
-                            return makeNil();
+                        case "begin":
+                            if (atoms.length == 3)
+                                return atom;
+                            Atom lastValue;
+                            foreach(ref Atom x; atoms[1..$])
+                                lastValue = eval(x, env);
+                            return lastValue;
+
+                        default:
+                            // function call
+                            Atom[] values;
+                            foreach(ref Atom x; atoms[1..$])
+                                values ~= eval(x, env);
+                            return apply(eval(atoms[0], env), values);
                     }
                 },
                 (string s) => evalFailure(x0),
                 (double x) => evalFailure(x0),
-                (Atom[] atoms) => evalFailure(x0)
+                (Atom[] atoms) => evalFailure(x0),
+                (Closure fun) => evalFailure(x0)
             );
         }
     );   
     return result;
 }
 
-Symbol toSymbol(Atom atom)
+
+Atom apply(Atom atom, Atom[] arguments)
 {
-    Symbol failure(Atom x0)
-    {
-        throw new SchemeException(format("%s is not a symbol", toString(x0)));
-    }
+    auto closure = atom.toClosure();
 
-    return atom.visit!(
-        (Symbol sym) => sym,
-        (string s) => failure(atom),
-        (double x) => failure(atom),
-        (Atom[] atoms) => failure(atom)
-    );
+    // build new environment
+    Atom[] paramList = toList(closure.params);
+    Atom[string] values;
+
+    if (paramList.length != arguments.length)
+        throw new SchemeException(format("Exoected %s arguments, got %s", paramList.length, arguments.length));
+
+    for(size_t i = 0; i < paramList.length; ++i)
+        values[cast(string)(paramList[i].toSymbol())] = arguments[i];
+
+    Environment newEnv = new Environment(values, closure.env);
+    return eval(closure.body_, newEnv);
 }
-
-bool toBool(Atom atom)
-{
-    bool failure(Atom x0)
-    {
-        throw new SchemeException(format("%s cannot be converted to a truth value", toString(x0)));
-    }
-
-    return atom.visit!(
-        (Symbol sym) => failure(atom),
-        (string s) => s.length > 0, // "" is falsey
-        (double x) => x != 0, // 0 and NaN is falsey
-        (Atom[] atoms) => failure(atom) // empty list is falsey
-    );
-}
-
-string toString(Atom atom)
-{
-    string atomJoiner(Atom[] atoms)
-    {
-        return map!toString(atoms).joiner(", " ).array.to!string;
-    }
-
-    return atom.visit!(
-        (Symbol sym) => cast(string)sym,
-        (string s) => s,
-        (double x) => to!string(x),
-        (Atom[] atoms) => atomJoiner(atoms)
-    );
-}
-
-/+
-
-    elif x[0] == 'set!':           # (set! var exp)
-        (_, var, exp) = x
-        env.find(var)[var] = eval(exp, env)
-    elif x[0] == 'define':         # (define var exp)
-        (_, var, exp) = x
-        env[var] = eval(exp, env)
-    elif x[0] == 'lambda':         # (lambda (var*) exp)
-        (_, vars, exp) = x
-        return lambda *args: eval(exp, Env(vars, args, env))
-    elif x[0] == 'begin':          # (begin exp*)
-        for exp in x[1:]:
-            val = eval(exp, env)
-        return val
-    else:                          # (proc exp*)
-        exps = [eval(exp, env) for exp in x]
-        proc = exps.pop(0)
-        return proc(*exps)
-
-################ parse, read, and user interaction
-
-def read(s):
-    "Read a Scheme expression from a string."
-    return read_from(tokenize(s))
-
-parse = read
-
-def tokenize(s):
-    "Convert a string into a list of tokens."
-    return s.replace('(',' ( ').replace(')',' ) ').split()
-
-def read_from(tokens):
-    "Read an expression from a sequence of tokens."
-    if len(tokens) == 0:
-        raise SyntaxError('unexpected EOF while reading')
-    token = tokens.pop(0)
-    if '(' == token:
-        L = []
-        while tokens[0] != ')':
-            L.append(read_from(tokens))
-        tokens.pop(0) # pop off ')'
-        return L
-    elif ')' == token:
-        raise SyntaxError('unexpected )')
-    else:
-        return atom(token)
-
-def atom(token):
-    "Numbers become numbers; every other token is a symbol."
-    try: return int(token)
-    except ValueError:
-        try: return float(token)
-        except ValueError:
-            return Symbol(token)
-
-+/
