@@ -14,7 +14,7 @@ import dido.scheme.parser;
 /// Returns: Text representation of the result expression.
 string execute(string code, Environment env)
 {
-    Atom result = eval(parse(code), env);
+    Atom result = eval(parseExpression(code), env);
     return toString(result);
 }
 
