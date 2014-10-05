@@ -10,21 +10,13 @@ import std.json;
 
 import dido.app;
 import dido.config;
-import sdlang;
 
 void main(string[] args)
 {
     try
     {
         DidoConfig config = new DidoConfig;
-        // import configuration
-        string configPath = buildPath(dirName(absolutePath(thisExePath())), "dido.sdl");
-        if (std.file.exists(configPath))
-        {
-            Tag root = parseFile(configPath);
-            config.read(root);
-        }
-
+        
         string[] inputFiles;
 
         for (int argIndex = 1; argIndex < args.length; ++argIndex)
