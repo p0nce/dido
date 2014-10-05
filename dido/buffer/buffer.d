@@ -29,7 +29,7 @@ public:
     // create new
     this()
     {
-        lines = [""d];
+        lines = ["\n"d];
         _selectionSet = new SelectionSet(this);
         _filepath = null;
         _hasBeenLoaded = true;
@@ -38,7 +38,7 @@ public:
 
     this(string filepath)
     {
-        lines = [""d];
+        lines = ["\n"d];
         _selectionSet = new SelectionSet(this);
         _filepath = filepath;
         _hasBeenLoaded = false;
@@ -47,7 +47,7 @@ public:
 
     void clearContent()
     {
-        lines = [""d];
+        lines = ["\n"d];
         _selectionSet = new SelectionSet(this);
         _filepath = null;
         _hasBeenLoaded = true;
@@ -74,9 +74,15 @@ public:
     ubyte[] toSource()
     {
         ubyte[] result;
-        foreach(ref dstring dline; lines)
+        for (size_t i = 0; i < lines.length; ++i)
         {
-            string line = to!string(dline);
+            string line = to!string(lines[i]);
+
+            // don't output virtual EOL of last line
+            assert(line.length > 0);
+            if (i + 1 == lines.length)
+                line = line[0..$-1];
+
             version(Windows)
             {
                 if (line.length > 0 && line[$-1] == '\n')
@@ -116,10 +122,7 @@ public:
     // maximum column allowed for cursor on this line
     int maxColumn(int lineIndex) pure const nothrow
     {
-        if (lineIndex + 1 < lines.length)
-            return lines[lineIndex].length - 1;
-        else
-            return lines[lineIndex].length;
+        return lines[lineIndex].length - 1;
     }
 
     inout(dstring) line(int lineIndex) pure inout nothrow
@@ -362,7 +365,7 @@ public:
     void addNewSelection(int line, int column, bool keepExistingSelections)
     {
         BufferIterator it = BufferIterator(this, clampCursor(Cursor(line, column)));
-        Selection newSel = Selection(it, it);        
+        Selection newSel = Selection(it, it);
         assert(newSel.isValid);
 
         if (keepExistingSelections)
@@ -415,7 +418,7 @@ public:
         dstring content = "    "d;
         bySelectionEdit( (int i) 
                         { 
-                            return content; 
+                            return content;
                         } );
     }
 
@@ -556,6 +559,33 @@ public:
                 assert(false);
         }
         return hit;
+    }
+
+
+    invariant()
+    {
+        if (_hasBeenLoaded)
+        {
+            // at least one line
+            if (lines.length < 1)
+            {
+                assert(false);
+            }
+
+            // every line finish by a \n
+            for (size_t i = 0; i < lines.length; ++i)
+            {
+                dstring l = lines[i];
+                if (l.length == 0)
+                {
+                    assert(false);
+                }
+                if (l[$-1] != '\n')
+                {
+                    assert(false);
+                }
+            }
+        }
     }
 
 package:
@@ -828,7 +858,8 @@ private
             }
         }
 
-        // always add a line without line feed
+        // last line must have a virtual line-feed, this simplify things
+        currentLine ~= '\n';
         lines ~= currentLine.dup;
         numLine++;
         return lines;
