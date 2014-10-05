@@ -38,7 +38,7 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
-        renderer.setColor(14, 14, 14, 230);
+        renderer.setColor(15, 14, 14, 255);
         renderer.fillRect(0, 0, _position.width, _position.height);        
 
         {

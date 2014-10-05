@@ -8,11 +8,11 @@ Status: early.
 
 - Multiple cursors editing
 - dido contains a small GUI package built on top of SDL2 renderers
-- configuration file in sdlang: https://github.com/Abscissa/SDLang-D
 - portable graphics, SDL is the only binary dependency: https://www.libsdl.org/
 
 ## Current limitations
 
+- currently not configurable
 - DUB integration is minimal
 - Multiple views not supported
 - only UTF-8 files support (load and save)
