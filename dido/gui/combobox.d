@@ -45,9 +45,19 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
+        if (isMouseOver())
+        {
+            renderer.setColor(30, 27, 27, 255);
+            renderer.fillRect(1, 1, _position.width - 2, _position.height -2);
+        }
+
         renderer.setColor(70, 67, 67, 255);
         renderer.drawRect(0, 0, _position.width, _position.height);       
-        font.setColor(200, 200, 200);        
+
+        if (isMouseOver())
+            font.setColor(255, 255, 200);
+        else
+            font.setColor(200, 200, 200);
 
         dstring textChoice = choice(_select);
         int heightOfText = font.charHeight;
@@ -61,7 +71,7 @@ public:
         if (_choices.length == 0)
             return false;
         setSelectedChoice((_select + 1) % _choices.length);
-        return true;    
+        return true;
     }
 
     // Called when mouse move over this Element.
