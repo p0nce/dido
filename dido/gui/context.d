@@ -6,6 +6,8 @@ import gfm.image.stb_image;
 public import dido.gui.font;
 import std.file;
 
+import dido.gui.element;
+
 enum UIImage : int
 {
     scrollbarN,
@@ -51,10 +53,34 @@ public:
     SDL2 sdl2;
     SDL2Renderer renderer;
     Font font;
+    UIElement dragged = null; // current dragged element
 
     SDL2Texture image(UIImage which)
     {
         return _textures[which];
+    }
+
+    void beginDragging(UIElement element)
+    {
+        stopDragging();
+
+        // Uncomment this once SDL_CaptureMouse is in Derelict
+        // SDL_CaptureMouse(SDL_TRUE);
+
+        dragged = element;
+        dragged.onBeginDrag();
+    }
+
+    void stopDragging()
+    {
+        if (dragged !is null)
+        {
+            dragged.onStopDrag();
+            dragged = null;
+
+            // Uncomment this once SDL_CaptureMouse is in Derelict
+            // SDL_CaptureMouse(SDL_FALSE);
+        }
     }
 
 private:

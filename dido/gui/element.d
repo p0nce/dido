@@ -94,6 +94,21 @@ public:
     {
     }
 
+    // Called when clicked with left/middle/right button
+    void onBeginDrag()
+    {
+    }
+
+    // Called when mouse drag this Element.
+    void onMouseDrag(int x, int y, int dx, int dy)
+    {
+    }
+
+    // Called once drag is finished
+    void onStopDrag()
+    {
+    }
+
     // Called when mouse enter this Element.
     void onMouseEnter()
     {
@@ -116,10 +131,19 @@ public:
         if (_position.contains(vec2i(x, y)))
         {
             if(onMouseClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick))
+            {
+                _context.beginDragging(this);
                 return true;
+            }
         }
 
         return false;
+    }
+
+    // to be called when the mouse is released
+    final void mouseRelease(int x, int y, int button)
+    {
+        _context.stopDragging();
     }
 
     // to be called when the mouse clicked
@@ -143,6 +167,9 @@ public:
     // to be called when the mouse moved
     final void mouseMove(int x, int y, int dx, int dy)
     {
+        if (isDragged)
+            onMouseDrag(x, y, dx, dy);
+
         foreach(child; _children)
         {
             child.mouseMove(x, y, dx, dy);
@@ -205,6 +232,12 @@ protected:
     {
         return _mouseOver;
     }
+
+    final bool isDragged() pure const nothrow
+    {
+        return _context.dragged is this;
+    }
+
 
 private:
     UIContext _context;

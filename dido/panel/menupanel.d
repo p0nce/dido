@@ -8,6 +8,9 @@ class MenuPanel : UIElement
     {
         super(context);
 
+        addChild(new BuildButton(context));
+        addChild(new RunButton(context));
+
         addChild(new CompilerCombo(context));        
         addChild(new ArchCombo(context));
         addChild(new BuildCombo(context));
@@ -18,17 +21,24 @@ class MenuPanel : UIElement
         _position = availableSpace;
         _position.max.y = availableSpace.min.y + 8 + 8 + charHeight;
 
-        availableSpace = _position.shrink(4);
+        int margin = 4;
 
-        availableSpace.min.x += 16 + 8 + 2;
+        availableSpace = _position.shrink(margin);
 
-        child(0).reflow(availableSpace);
+        availableSpace.min.x += 16 + 6 + margin;
 
-        availableSpace.min.x = child(0).position.max.x + 4;
-        child(1).reflow(availableSpace);
+        void reflowChild(int n)
+        {
+            child(n).reflow(availableSpace);
+            availableSpace.min.x = child(n).position.max.x + margin;
+        }
 
-        availableSpace.min.x = child(1).position.max.x + 4;
-        child(2).reflow(availableSpace);
+
+        reflowChild(0);
+        reflowChild(1);
+        reflowChild(2);
+        reflowChild(3);
+        reflowChild(4);
     }
 
     override void preRender(SDL2Renderer renderer)
@@ -51,7 +61,6 @@ class BuildCombo : ComboBox
 
     override void onChoice(int n)
     {
-
     }
 }
 
@@ -64,7 +73,6 @@ class ArchCombo : ComboBox
 
     override void onChoice(int n)
     {
-        
     }
 }
 
@@ -78,6 +86,21 @@ class CompilerCombo : ComboBox
 
     override void onChoice(int n)
     {
+    }
+}
 
+class BuildButton : UIButton
+{
+    this(UIContext context)
+    {
+        super(context, "Build");
+    }
+}
+
+class RunButton : UIButton
+{
+    this(UIContext context)
+    {
+        super(context, "Run");
     }
 }

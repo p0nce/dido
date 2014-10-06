@@ -569,6 +569,13 @@ private:
                     break;
                 }
 
+                case SDL_MOUSEBUTTONUP:
+                {
+                    const (SDL_MouseButtonEvent*) mbEvent = &event.button;
+                    _mainPanel.mouseRelease(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button);
+                    break;
+                }
+
                 case SDL_MOUSEWHEEL:
                 {
                     _mainPanel.mouseWheel(_sdl2.mouse.x, _sdl2.mouse.y, _sdl2.mouse.wheelDeltaX(), _sdl2.mouse.wheelDeltaY());
