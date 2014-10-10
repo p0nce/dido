@@ -334,6 +334,18 @@ public:
         return false;
     }
 
+    override void onMouseDrag(int x, int y, int dx, int dy)
+    {
+        if (_buffer is null)
+            return;
+
+        // implement drag selection        
+        {
+            // TODO, need selection timestamps, or some way to have a selection outside of Buffer (better)
+
+        }
+    }
+
     class VertScrollBar : ScrollBar
     {
     public:
