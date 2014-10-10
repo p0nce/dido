@@ -119,7 +119,7 @@ public:
             _solutionPanel.updateState(_buffers, _bufferSelect);
             _cmdlinePanel.updateState(_commandLineMode, drawCursors);
             
-            _textArea.setState(_buffers[_bufferSelect], drawCursors);
+            _textArea.setState(_buffers[_bufferSelect], !_commandLineMode && drawCursors);
 
             _mainPanel.reflow(box2i(0, 0, width, height));
 
