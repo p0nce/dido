@@ -69,13 +69,13 @@ public:
 
         if (_vertical)
         {
-            renderer.copy(context.image(UIImage.scrollbarN), 0, 0);
-            renderer.copy(context.image(UIImage.scrollbarS), 0, _position.height - _buttonSize);
+            renderer.copy(context.image("scrollbarN"), 0, 0);
+            renderer.copy(context.image("scrollbarS"), 0, _position.height - _buttonSize);
         }
         else
         {
-            renderer.copy(context.image(UIImage.scrollbarW), 0, 0);
-            renderer.copy(context.image(UIImage.scrollbarE), _position.width - _buttonSize, 0);
+            renderer.copy(context.image("scrollbarW"), 0, 0);
+            renderer.copy(context.image("scrollbarE"), _position.width - _buttonSize, 0);
         }
     }
 

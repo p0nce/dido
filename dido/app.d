@@ -51,6 +51,11 @@ public:
 
         _uiContext = new UIContext(_sdl2, _window.renderer(), _font);
 
+        {
+            import dido.panel.images;
+            addAllImage(_uiContext);
+        }
+
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext);
         _cmdlinePanel = new CommandLinePanel(_uiContext);

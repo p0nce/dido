@@ -545,7 +545,7 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
-        renderer.copy(context.image(UIImage.dlang), 0, 0);
+        renderer.copy(context.image("dlang"), 0, 0);
     }
 
     override void reflow(box2i availableSpace)

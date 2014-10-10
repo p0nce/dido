@@ -47,7 +47,7 @@ class MenuPanel : UIElement
         renderer.fillRect(0, 0, _position.width, _position.height);
 
         //renderer.setColor(255, 255, 255, 255);
-        renderer.copy(context.image(UIImage.dido), 6, (_position.height - 20) / 2);
+        renderer.copy(context.image("dido"), 6, (_position.height - 20) / 2);
 
     }
 }
