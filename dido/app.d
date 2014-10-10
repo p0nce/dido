@@ -66,7 +66,7 @@ public:
         _mainPanel.addChild(_solutionPanel);
         _mainPanel.addChild(_cmdlinePanel);
         _mainPanel.addChild(_menuPanel);
-        _mainPanel.addChild(new CornerPanel(_uiContext, 36, 40));
+        _mainPanel.addChild(new UIImage(_uiContext, "corner"));
     }
 
     ~this()

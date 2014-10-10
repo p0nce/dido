@@ -52,3 +52,34 @@ private:
     int _paddingW;
     int _paddingH;
 }
+
+class UIImage : UIElement
+{
+public:
+    this(UIContext context, string imageName)
+    {
+        super(context);
+        _tex = context.image(imageName);
+        _width = _tex.width();
+        _height = _tex.height();
+    }
+
+    override void preRender(SDL2Renderer renderer)
+    {
+        renderer.copy(_tex, 0, 0);
+    }
+
+    override void reflow(box2i availableSpace)
+    {
+        _position = availableSpace;
+
+        // TODO leave this logic out of UIImage
+        _position.min.x = _position.max.x - _width;
+        _position.min.y = _position.max.y - _height;
+    }
+
+private:
+    SDL2Texture _tex;
+    int _width;
+    int _height;
+}
