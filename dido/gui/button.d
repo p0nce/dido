@@ -9,7 +9,7 @@ class UIButton : UIElement
 {
 public:    
 
-    this(UIContext context, dstring label)
+    this(UIContext context, dstring label, string icon = null)
     {
         super(context);
         _label = label;

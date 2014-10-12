@@ -32,8 +32,6 @@ enum CommandType
     UNDO,
     REDO,
     SAVE,
-    SCROLL_ONE_LINE_UP,
-    SCROLL_ONE_LINE_DOWN,
     BUILD,
     RUN,
     COPY,

@@ -1,6 +1,7 @@
 module dido.panel.menupanel;
 
 import dido.gui;
+import dido.app;
 
 class MenuPanel : UIElement
 {
