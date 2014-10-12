@@ -16,11 +16,22 @@ public:
         
         _paddingW = 8;
         _paddingH = 4;
+        _icon = icon;
+        _iconWidth = 0;
+        _iconHeight = 0;
+        if (_icon !is null)
+        {
+            _iconImage = context.image(icon);
+            _iconWidth = _iconImage.width();
+            _iconHeight = _iconImage.height();
+        }
     }
 
     override void reflow(box2i availableSpace)
     {
         int width = 2 * _paddingW + _label.length * font.charWidth;
+        if (_icon !is null)
+            width += _paddingW + _iconWidth;
         int height = 2 * _paddingH + font.charHeight;
         _position = box2i(availableSpace.min.x, availableSpace.min.y, availableSpace.min.x + width, availableSpace.min.y + height);        
     }
@@ -43,14 +54,28 @@ public:
 
         dstring textChoice = _label;
         int heightOfText = font.charHeight;
-        int widthOfText = font.charWidth * textChoice.length;
-        font.renderString(textChoice, 1 + (position.width - widthOfText) / 2, 1 + (position.height - heightOfText) / 2);
+        int widthOfTextPlusIcon = font.charWidth * textChoice.length;
+        if (_icon !is null)
+            widthOfTextPlusIcon += _paddingW + _iconWidth;
+
+        int iconX = 1 + (position.width - widthOfTextPlusIcon) / 2;
+        int textX = iconX;
+        if (_icon !is null)
+        {
+            textX += _paddingW + _iconWidth;
+            renderer.copy(_iconImage, iconX, 1 + (position.height - _iconHeight));
+        }
+        font.renderString(textChoice, textX, 1 + (position.height - heightOfText) / 2);
     }
 
 private:
     dstring _label;
     int _paddingW;
     int _paddingH;
+    string _icon;
+    int _iconWidth;
+    int _iconHeight;
+    SDL2Texture _iconImage;
 }
 
 class UIImage : UIElement
