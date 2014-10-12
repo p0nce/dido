@@ -27,11 +27,13 @@ public:
         }
     }
 
+    enum marginIcon = 6;
+
     override void reflow(box2i availableSpace)
     {
         int width = 2 * _paddingW + _label.length * font.charWidth;
         if (_icon !is null)
-            width += _paddingW + _iconWidth;
+            width += marginIcon + _iconWidth;
         int height = 2 * _paddingH + font.charHeight;
         _position = box2i(availableSpace.min.x, availableSpace.min.y, availableSpace.min.x + width, availableSpace.min.y + height);        
     }
@@ -56,14 +58,14 @@ public:
         int heightOfText = font.charHeight;
         int widthOfTextPlusIcon = font.charWidth * textChoice.length;
         if (_icon !is null)
-            widthOfTextPlusIcon += _paddingW + _iconWidth;
+            widthOfTextPlusIcon += marginIcon + _iconWidth;
 
         int iconX = 1 + (position.width - widthOfTextPlusIcon) / 2;
         int textX = iconX;
         if (_icon !is null)
         {
-            textX += _paddingW + _iconWidth;
-            renderer.copy(_iconImage, iconX, 1 + (position.height - _iconHeight));
+            textX += marginIcon + _iconWidth;
+            renderer.copy(_iconImage, iconX, 1 + (position.height - _iconHeight) / 2);
         }
         font.renderString(textChoice, textX, 1 + (position.height - heightOfText) / 2);
     }

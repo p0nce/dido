@@ -94,7 +94,7 @@ class BuildButton : UIButton
 {
     this(UIContext context)
     {
-        super(context, "Build");
+        super(context, "Build", "build");
     }
 }
 
@@ -102,6 +102,6 @@ class RunButton : UIButton
 {
     this(UIContext context)
     {
-        super(context, "Run");
+        super(context, "Run", "run");
     }
 }
