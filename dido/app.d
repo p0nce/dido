@@ -41,12 +41,12 @@ public:
 
         _textArea = new TextArea(_uiContext, 16, true, true);
         
-        _menuPanel = new MenuPanel(_uiContext, _engine);
         _cmdlinePanel = new CommandLinePanel(_uiContext);
         _solutionPanel = new SolutionPanel(_uiContext);
 
         _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, paths);
         _mainPanel = new MainPanel(_uiContext);
+        _menuPanel = new MenuPanel(_uiContext, _engine);
         
 
         _mainPanel.addChild(_textArea);
