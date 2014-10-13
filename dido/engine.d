@@ -179,14 +179,6 @@ public:
                 textArea.ensureOneVisibleSelection();
                 break;
 
-            case UNDO:
-                executeCommandLine("undo"d);
-                break;
-
-            case REDO:
-                executeCommandLine("redo"d);
-                break;
-
             case ENTER_COMMANDLINE_MODE:
                 if (!_commandLineMode)
                 {
@@ -264,23 +256,6 @@ public:
                 textArea.ensureOneVisibleSelection();
                 break;
 
-            case BUILD:
-                auto dubResult = execute(["dub", "build"]);
-                if (dubResult.status != 0)
-                    throw new Exception(format("dub returned %s", dubResult.status));
-                break;
-
-            case RUN:
-                auto dubResult = execute(["dub", "run"]);
-                if (dubResult.status != 0)
-                    throw new Exception(format("dub returned %s", dubResult.status));
-                break;
-
-            case SAVE:
-                if (!_commandLineMode)
-                    saveCurrentBuffer();
-                break;
-
             case COPY:
                 _sdl2.setClipboard(to!string(buffer.copy()));
                 textArea.ensureOneVisibleSelection();
@@ -303,19 +278,7 @@ public:
         }
     }
 
-    void saveCurrentBuffer()
-    {
-        if (_bufferEdit.isBoundToFileName())
-        {
-            string filepath = _bufferEdit.filePath();
-            _bufferEdit.saveToFile(filepath);
-            greenMessage(to!dstring(format("Saved to %s", filepath)));
-        }
-        else
-        {
-            redMessage("This buffer is unbounded, try :save <filename>");
-        }
-    }
+   
 
     void greenMessage(dstring msg)
     {
@@ -431,7 +394,17 @@ public:
         {
             if (!checkArgs("s|save", args, 0, 0))
                 return makeNil();
-            saveCurrentBuffer();
+
+            if (_bufferEdit.isBoundToFileName())
+            {
+                string filepath = _bufferEdit.filePath();
+                _bufferEdit.saveToFile(filepath);
+                greenMessage(to!dstring(format("Saved to %s", filepath)));
+            }
+            else
+            {
+                redMessage("This buffer is unbounded, try :save <filename>");
+            }
             return makeNil();
         });
 
@@ -450,6 +423,27 @@ public:
                 redMessage("This buffer is unbounded, try :load <filename>");
             return makeNil();
         });
+
+        env.addBuiltin("build", (Atom[] args)
+        {
+            if (!checkArgs("build", args, 0, 0))
+                return makeNil();
+            auto dubResult = std.process.execute(["dub", "build"]);
+            if (dubResult.status != 0)
+                redMessage(to!dstring(format("DUB returned %s", dubResult.status)));
+            return makeNil();
+        });
+
+        env.addBuiltin("run", (Atom[] args)
+        {
+            if (!checkArgs("run", args, 0, 0))
+                return makeNil();
+            auto dubResult = std.process.execute(["dub", "run"]);
+            if (dubResult.status != 0)
+                redMessage(to!dstring(format("DUB returned %s", dubResult.status)));
+            return makeNil();
+        });
+
 
         // aliases
         env.values["n"] = env.values["new"];
