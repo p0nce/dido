@@ -2,15 +2,16 @@ module dido.panel.menupanel;
 
 import dido.gui;
 import dido.app;
+import dido.engine;
 
 class MenuPanel : UIElement
 {
-    this(UIContext context)
+    this(UIContext context, DidoEngine engine)
     {
         super(context);
 
-        addChild(new BuildButton(context));
-        addChild(new RunButton(context));
+        addChild(new BuildButton(context, engine));
+        addChild(new RunButton(context, engine));
 
         addChild(new CompilerCombo(context));        
         addChild(new ArchCombo(context));
@@ -92,16 +93,37 @@ class CompilerCombo : ComboBox
 
 class BuildButton : UIButton
 {
-    this(UIContext context)
+public:
+    this(UIContext context, DidoEngine engine)
     {
         super(context, "Build", "build");
+        _engine = engine;
     }
+
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        _engine.executeCommandLine("build");
+        return true;
+    }
+private:
+    DidoEngine _engine;
 }
 
 class RunButton : UIButton
 {
-    this(UIContext context)
+public:
+    this(UIContext context, DidoEngine engine)
     {
         super(context, "Run", "run");
+        _engine = engine;
     }
+
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        _engine.executeCommandLine("run");
+        return true;
+    }
+
+private:
+    DidoEngine _engine;
 }

@@ -10,6 +10,8 @@ import dido.command;
 import dido.buffer.buffer;
 import dido.window;
 
+import schemed;
+
 // Model
 class DidoEngine
 {
@@ -23,6 +25,9 @@ private:
     Window _window;
     SDL2 _sdl2;
     bool _finished;
+
+    // scheme-d environment
+    Environment _env;
 
 public:
 
@@ -48,6 +53,9 @@ public:
         _commandLineMode = false;
         _finished = false;
         _sdl2 = sdl2;
+
+        _env = defaultEnvironment();
+        addBuiltins(_env);
     }
 
     Buffer[] buffers()
@@ -172,13 +180,11 @@ public:
                 break;
 
             case UNDO:
-                buffer.undo();
-                textArea.ensureOneVisibleSelection();
+                executeCommandLine("undo"d);
                 break;
 
             case REDO:
-                buffer.redo();
-                textArea.ensureOneVisibleSelection();
+                executeCommandLine("redo"d);
                 break;
 
             case ENTER_COMMANDLINE_MODE:
@@ -321,30 +327,119 @@ public:
         _cmdlinePanel.redMessage(msg);
     }
 
+    void executeScheme(dstring cmdline)
+    {
+        string code = to!string(cmdline);
+
+        try
+        {            
+            Atom result = execute(code, _env); // result is discarded
+        }
+        catch(SchemeParseException e)
+        {
+            // try to execute again, but with parens appended
+
+            try
+            {
+                Atom result = execute("(" ~ code ~ ")", _env);
+            }
+            catch(SchemeException e2)
+            {
+                // another error, print the _first_ message
+                redMessage(to!dstring(e.msg));
+            }
+        }
+        catch(SchemeEvalException e)
+        {
+            redMessage(to!dstring(e.msg));
+        }
+    }
+
     void executeCommandLine(dstring cmdline)
     {
         if (cmdline == ""d)
-        {
             _bufferEdit.insertChar(':');
-        }
+        else
+            executeScheme(cmdline);
+    }
 
-        if (cmdline == "q"d || cmdline == "exit"d)
+    bool checkArgs(string func, Atom[] args, int min, int max)
+    {
+        if (args.length < min)
         {
+            redMessage(to!dstring(format("%s expects %s to %s arguments", to!string(func), min, max)));
+            return false;
+        }
+        else if (args.length > max)
+        {
+            redMessage(to!dstring(format("%s expects %s to %s arguments", to!string(func), min, max)));
+            return false;
+        }
+        else
+            return true;
+    }
+
+    void addBuiltins(Environment env)
+    {
+        env.addBuiltin("exit", (Atom[] args)
+        {
+            if (!checkArgs("q|exit", args, 0, 0))
+                return makeNil();
             _finished = true;
             greenMessage("Bye"d);
-        }
-        else if (cmdline == "new"d || cmdline == "n"d)
+            return makeNil(); 
+        });
+
+        env.addBuiltin("undo", (Atom[] args)
         {
+            if (!checkArgs("u|undo", args, 0, 0))
+                return makeNil();
+            currentBuffer().undo();
+            currentTextArea().ensureOneVisibleSelection();
+            return makeNil(); 
+        });
+
+        env.addBuiltin("redo", (Atom[] args)
+        {
+            if (!checkArgs("r|redo", args, 0, 0))
+                return makeNil();
+            currentBuffer().redo();
+            currentTextArea().ensureOneVisibleSelection();
+            return makeNil(); 
+        });
+
+        env.addBuiltin("new", (Atom[] args)
+        {
+            if (!checkArgs("n|new", args, 0, 0))
+                return makeNil();
             _buffers ~= new Buffer;
             setCurrentBufferEdit(_buffers.length - 1);
             greenMessage("Created new file"d);
-        }
-        else if (cmdline == "save"d || cmdline == "s"d)
+            return makeNil(); 
+        });
+
+        env.addBuiltin("clean", (Atom[] args)
         {
+            if (!checkArgs("clean", args, 0, 0))
+                return makeNil();
+            _bufferEdit.cleanup();
+            greenMessage("Buffer cleaned up"d);
+            return makeNil();
+        });
+
+        env.addBuiltin("save", (Atom[] args)
+        {
+            if (!checkArgs("s|save", args, 0, 0))
+                return makeNil();
             saveCurrentBuffer();
-        }
-        else if (cmdline == "load"d || cmdline == "l"d)
+            return makeNil();
+        });
+
+        env.addBuiltin("load", (Atom[] args)
         {
+            if (!checkArgs("l|load", args, 0, 0))
+                return makeNil();
+
             if (_bufferEdit.isBoundToFileName())
             {
                 string filepath = _bufferEdit.filePath();
@@ -353,18 +448,15 @@ public:
             }
             else
                 redMessage("This buffer is unbounded, try :load <filename>");
-        }
-        else if (cmdline == "undo" || cmdline == "u")
-            _bufferEdit.undo();
-        else if (cmdline == "redo" || cmdline == "r")
-            _bufferEdit.redo();
-        else if (cmdline == "clean")
-        {
-            _bufferEdit.cleanup();
-            greenMessage("Buffer cleaned up"d);
-        }
-        else
-            redMessage(to!dstring(format("Unknown command '%s'"d, cmdline)));
-    }
+            return makeNil();
+        });
 
+        // aliases
+        env.values["n"] = env.values["new"];
+        env.values["s"] = env.values["save"];
+        env.values["l"] = env.values["load"];
+        env.values["u"] = env.values["undo"];
+        env.values["r"] = env.values["redo"];
+        env.values["q"] = env.values["exit"];
+    }
 }

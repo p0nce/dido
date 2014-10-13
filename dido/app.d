@@ -38,11 +38,16 @@ public:
             addAllImage(_uiContext);
         }
 
-        _mainPanel = new MainPanel(_uiContext);
-        _menuPanel = new MenuPanel(_uiContext);
+
+        _textArea = new TextArea(_uiContext, 16, true, true);
+        
+        _menuPanel = new MenuPanel(_uiContext, _engine);
         _cmdlinePanel = new CommandLinePanel(_uiContext);
         _solutionPanel = new SolutionPanel(_uiContext);
-        _textArea = new TextArea(_uiContext, 16, true, true);
+
+        _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, paths);
+        _mainPanel = new MainPanel(_uiContext);
+        
 
         _mainPanel.addChild(_textArea);
         _mainPanel.addChild(_solutionPanel);
@@ -50,7 +55,7 @@ public:
         _mainPanel.addChild(_menuPanel);
         _mainPanel.addChild(new UIImage(_uiContext, "corner"));
 
-        _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, paths);
+        
     }
 
     ~this()
