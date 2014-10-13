@@ -170,23 +170,23 @@ private:
 
                         // copy/cut/paste
                         else if (key.sym == SDLK_c && ctrl)
-                            _engine.executeCommand(Command(CommandType.COPY));
+                            _engine.executeScheme("copy");
                         else if (key.sym == SDLK_x && ctrl)
-                            _engine.executeCommand(Command(CommandType.CUT));
+                            _engine.executeScheme("cut");
                         else if (key.sym == SDLK_v && ctrl)
-                            _engine.executeCommand(Command(CommandType.PASTE));
+                            _engine.executeScheme("paste");
                         else if (key.sym == SDLK_COPY)
-                            _engine.executeCommand(Command(CommandType.COPY));
+                            _engine.executeScheme("copy");
                         else if (key.sym == SDLK_CUT)
-                            _engine.executeCommand(Command(CommandType.CUT));
+                            _engine.executeScheme("cut");
                         else if (key.sym == SDLK_PASTE)
-                            _engine.executeCommand(Command(CommandType.PASTE));
+                            _engine.executeScheme("paste");
                         else if (key.sym == SDLK_DELETE && shift)
-                            _engine.executeCommand(Command(CommandType.CUT));
+                            _engine.executeScheme("cut");
                         else if (key.sym == SDLK_INSERT && ctrl)
-                            _engine.executeCommand(Command(CommandType.COPY));
+                            _engine.executeScheme("copy");
                         else if (key.sym == SDLK_INSERT && shift)
-                            _engine.executeCommand(Command(CommandType.PASTE));
+                            _engine.executeScheme("paste");
 
 
                         else if (key.sym == SDLK_LEFT)

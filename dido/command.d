@@ -29,9 +29,6 @@ enum CommandType
     BACKSPACE,
     ROTATE_NEXT_BUFFER,
     ROTATE_PREVIOUS_BUFFER,
-    COPY,
-    CUT,
-    PASTE,
     TAB,
 }
 

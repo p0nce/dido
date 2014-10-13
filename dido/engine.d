@@ -256,22 +256,6 @@ public:
                 textArea.ensureOneVisibleSelection();
                 break;
 
-            case COPY:
-                _sdl2.setClipboard(to!string(buffer.copy()));
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case CUT:
-                _sdl2.setClipboard(to!string(buffer.cut()));
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case PASTE:
-                dstring clipboard = to!dstring(_sdl2.getClipboard());
-                buffer.paste(clipboard);
-                textArea.ensureOneVisibleSelection();
-                break;
-
             case TAB:
                 buffer.insertTab();
                 textArea.ensureOneVisibleSelection();
@@ -441,6 +425,34 @@ public:
             auto dubResult = std.process.execute(["dub", "run"]);
             if (dubResult.status != 0)
                 redMessage(to!dstring(format("DUB returned %s", dubResult.status)));
+            return makeNil();
+        });
+
+        env.addBuiltin("copy", (Atom[] args)
+        {
+            if (!checkArgs("copy", args, 0, 0))
+                return makeNil();
+            _sdl2.setClipboard(to!string(currentBuffer.copy()));
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("cut", (Atom[] args)
+        {
+            if (!checkArgs("cut", args, 0, 0))
+                return makeNil();
+            _sdl2.setClipboard(to!string(currentBuffer.cut()));
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("paste", (Atom[] args)
+        {
+            if (!checkArgs("paste", args, 0, 0))
+                return makeNil();
+            dstring clipboard = to!dstring(_sdl2.getClipboard());
+            currentBuffer.paste(clipboard);
+            currentTextArea.ensureOneVisibleSelection();
             return makeNil();
         });
 
