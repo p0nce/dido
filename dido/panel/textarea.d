@@ -115,6 +115,7 @@ public:
 
                 dchar ch = j < line.length ? line[j] : ' '; // last line read a little to far
                 int widthOfChar = 1;
+                bool drawDot = false;
                 switch (ch)
                 {
                     case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -159,8 +160,8 @@ public:
                     case ' ':
                         if (charIsSelected)
                         {
-                            ch = 0x2D1;
-                            font.setColor(131, 137, 152);
+                            drawDot = true;
+//                            font.setColor(131, 137, 152);
                         }
                         break;
 
@@ -181,7 +182,12 @@ public:
                         renderer.fillRect(charBox.min.x, charBox.min.y, charBox.width, charBox.height);
                     }
 
-                    if (ch != ' ')
+                    if (drawDot)
+                    {
+                        renderer.setColor(131, 137, 152, 255);
+                        renderer.fillRect(charBox.min.x + charBox.width/2, charBox.min.y + charBox.height/2, 1, 1);
+                    }
+                    else if (ch != ' ')
                         font.renderChar(ch, posX, posY);
 
                     if (hit.cursorThere && _drawCursors)
