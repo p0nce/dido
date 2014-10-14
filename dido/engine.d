@@ -111,24 +111,7 @@ public:
         Buffer buffer = currentBuffer();
         TextArea textArea = currentTextArea();
         final switch (command.type) with (CommandType)
-        {            
-            case TOGGLE_FULLSCREEN:
-                _window.toggleFullscreen();
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case ROTATE_NEXT_BUFFER:
-                setCurrentBufferEdit( (_bufferSelect + 1) % _buffers.length );
-                currentTextArea().clearCamera();
-                currentTextArea().ensureOneVisibleSelection();
-                break;
-
-            case ROTATE_PREVIOUS_BUFFER:
-                setCurrentBufferEdit( (_bufferSelect + _buffers.length - 1) % _buffers.length );
-                currentTextArea().clearCamera();
-                currentTextArea().ensureOneVisibleSelection();
-                break;
-
+        {
             case ENTER_COMMANDLINE_MODE:
                 if (!_commandLineMode)
                 {
@@ -181,20 +164,6 @@ public:
                 textArea.ensureOneVisibleSelection();
                 break;
 
-            case EXTEND_SELECTION_UP:
-                buffer.extendSelectionVertical(-1);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case EXTEND_SELECTION_DOWN:
-                buffer.extendSelectionVertical(1);
-                textArea.ensureOneVisibleSelection();
-                break;   
-
-            case SELECT_ALL_BUFFER:
-                buffer.selectAll();
-                textArea.ensureOneVisibleSelection();
-                break;
 
             case TAB:
                 buffer.insertTab();
@@ -495,6 +464,54 @@ public:
             currentBuffer.moveToLineEnd(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
-        }); 
+        });
+
+        env.addBuiltin("extend-selection-vertical", (Atom[] args)
+        {
+            if (!checkArgs("extend-selection-vertical", args, 1, 1))
+                return makeNil();
+            int displacement = to!int(toDouble(args[0]));
+            currentBuffer.extendSelectionVertical(displacement);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("select-all", (Atom[] args)
+        {
+            if (!checkArgs("select-all", args, 0, 0))
+                return makeNil();
+            currentBuffer.selectAll();
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("next-buffer", (Atom[] args)
+        { 
+            if (!checkArgs("next-buffer", args, 0, 0))
+                return makeNil();
+            setCurrentBufferEdit( (_bufferSelect + 1) % _buffers.length );
+            currentTextArea().clearCamera();
+            currentTextArea().ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("previous-buffer", (Atom[] args)
+        { 
+            if (!checkArgs("previous-buffer", args, 0, 0))
+                return makeNil();
+            setCurrentBufferEdit( (_bufferSelect + _buffers.length - 1) % _buffers.length );
+            currentTextArea().clearCamera();
+            currentTextArea().ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("toggle-fullscreen", (Atom[] args)
+        { 
+            if (!checkArgs("toggle-fullscreen", args, 0, 0))
+                return makeNil();
+            _window.toggleFullscreen();
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
     }
 }

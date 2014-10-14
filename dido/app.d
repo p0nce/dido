@@ -155,11 +155,11 @@ private:
                         string sshift = shift ? "#t" : "#f";
 
                         if (key.sym == SDLK_RETURN && alt)
-                            _engine.executeCommand(Command(CommandType.TOGGLE_FULLSCREEN));     
+                            _engine.executeScheme("toggle-fullscreen");
                         else if (key.sym == SDLK_UP && ctrl && alt)
-                            _engine.executeCommand(Command(CommandType.EXTEND_SELECTION_UP));
+                            _engine.executeScheme("extend-selection-vertical -1");
                         else if (key.sym == SDLK_DOWN && ctrl && alt)
-                            _engine.executeCommand(Command(CommandType.EXTEND_SELECTION_DOWN));
+                            _engine.executeScheme("extend-selection-vertical 1");
                         else if (key.sym == SDLK_LEFT && ctrl)
                             _engine.executeScheme("move-word-left " ~ sshift);
                         else if (key.sym == SDLK_RIGHT && ctrl)
@@ -205,15 +205,15 @@ private:
                         else if (key.sym == SDLK_END && ctrl)
                             _engine.executeScheme("move-buffer-end " ~ sshift);
                         else if (key.sym == SDLK_a && ctrl)
-                            _engine.executeCommand(Command(CommandType.SELECT_ALL_BUFFER));
+                            _engine.executeScheme("select-all");
                         else if (key.sym == SDLK_END)
                             _engine.executeScheme("move-line-end " ~ sshift);
                         else if (key.sym == SDLK_HOME)
                             _engine.executeScheme("move-line-start " ~ sshift);
                         else if (key.sym == SDLK_PAGEUP && ctrl)
-                            _engine.executeCommand(Command(CommandType.ROTATE_PREVIOUS_BUFFER));
+                            _engine.executeScheme("previous-buffer");
                         else if (key.sym == SDLK_PAGEDOWN && ctrl)
-                            _engine.executeCommand(Command(CommandType.ROTATE_NEXT_BUFFER));
+                            _engine.executeScheme("next-buffer");
                         else if (key.sym == SDLK_PAGEUP)
                             _engine.executeScheme("move-vertical (- (visible-lines)) " ~ sshift);
                         else if (key.sym == SDLK_PAGEDOWN)
