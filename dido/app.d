@@ -152,6 +152,7 @@ private:
                         bool alt = (key.mod & KMOD_ALT) != 0;
                         bool shift = (key.mod & KMOD_SHIFT) != 0;
                         bool ctrl = (key.mod & KMOD_CTRL) != 0;
+                        string sshift = shift ? "#t" : "#f";
 
                         if (key.sym == SDLK_RETURN && alt)
                             _engine.executeCommand(Command(CommandType.TOGGLE_FULLSCREEN));     
@@ -194,9 +195,9 @@ private:
                         else if (key.sym == SDLK_RIGHT)
                             _engine.executeCommand(Command(CommandType.MOVE_RIGHT, shift));
                         else if (key.sym == SDLK_UP)
-                            _engine.executeCommand(Command(CommandType.MOVE_UP, shift));
+                            _engine.executeScheme("move-cursor-vertical -1 " ~ sshift);
                         else if (key.sym == SDLK_DOWN)
-                            _engine.executeCommand(Command(CommandType.MOVE_DOWN, shift));
+                            _engine.executeScheme("move-cursor-vertical 1 " ~ sshift);
                         else if (key.sym == SDLK_BACKSPACE)
                             _engine.executeCommand(Command(CommandType.BACKSPACE));
                         else if (key.sym == SDLK_DELETE)
@@ -216,9 +217,9 @@ private:
                         else if (key.sym == SDLK_PAGEDOWN && ctrl)
                             _engine.executeCommand(Command(CommandType.ROTATE_NEXT_BUFFER));
                         else if (key.sym == SDLK_PAGEUP)
-                            _engine.executeCommand(Command(CommandType.PAGE_UP, shift));
+                            _engine.executeScheme("move-cursor-vertical (- (visible-lines)) " ~ sshift);
                         else if (key.sym == SDLK_PAGEDOWN)
-                            _engine.executeCommand(Command(CommandType.PAGE_DOWN, shift));
+                            _engine.executeScheme("move-cursor-vertical (visible-lines) " ~ sshift);
                         else if (key.sym == SDLK_z && ctrl)
                             _engine.executeScheme("undo");
                         else if (key.sym == SDLK_y && ctrl)

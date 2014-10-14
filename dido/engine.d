@@ -112,16 +112,6 @@ public:
         TextArea textArea = currentTextArea();
         final switch (command.type) with (CommandType)
         {            
-            case MOVE_UP:
-                buffer.moveSelectionVertical(-1, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case MOVE_DOWN:
-                buffer.moveSelectionVertical(1, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
             case MOVE_LEFT:
                 buffer.moveSelectionHorizontal(-1, command.shift);
                 textArea.ensureOneVisibleSelection();
@@ -167,16 +157,6 @@ public:
                 setCurrentBufferEdit( (_bufferSelect + _buffers.length - 1) % _buffers.length );
                 currentTextArea().clearCamera();
                 currentTextArea().ensureOneVisibleSelection();
-                break;
-
-            case PAGE_UP:
-                buffer.moveSelectionVertical(-_textArea.numVisibleLines, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case PAGE_DOWN:
-                buffer.moveSelectionVertical(_textArea.numVisibleLines, command.shift);
-                textArea.ensureOneVisibleSelection();
                 break;
 
             case ENTER_COMMANDLINE_MODE:
@@ -274,10 +254,8 @@ public:
         _cmdlinePanel.redMessage(msg);
     }
 
-    void executeScheme(dstring cmdline)
+    void executeScheme(string code)
     {
-        string code = to!string(cmdline);
-
         try
         {            
             Atom result = execute(code, _env); // result is discarded
@@ -290,10 +268,14 @@ public:
             {
                 Atom result = execute("(" ~ code ~ ")", _env);
             }
-            catch(SchemeException e2)
+            catch(SchemeParseException e2)
             {
                 // another error, print the _first_ message
                 redMessage(to!dstring(e.msg));
+            }
+            catch(SchemeEvalException e2)
+            {
+                redMessage(to!dstring(e2.msg));
             }
         }
         catch(SchemeEvalException e)
@@ -307,7 +289,7 @@ public:
         if (cmdline == ""d)
             _bufferEdit.insertChar(':');
         else
-            executeScheme(cmdline);
+            executeScheme(to!string(cmdline));
     }
 
     bool checkArgs(string func, Atom[] args, int min, int max)
@@ -464,5 +446,27 @@ public:
         env.values["u"] = env.values["undo"];
         env.values["r"] = env.values["redo"];
         env.values["q"] = env.values["exit"];
+
+        env.addBuiltin("visible-lines", (Atom[] args)
+        {
+            if (!checkArgs("visible-lines", args, 0, 0))
+                return makeNil();
+            double lines = _textArea.numVisibleLines;
+            return Atom(lines);
+        });
+
+        env.addBuiltin("move-cursor-vertical", (Atom[] args)
+        {
+            if (!checkArgs("move-cursor-vertical", args, 2, 2))
+                return makeNil();           
+            int lines = to!int(toDouble(args[0]));
+            bool shift = toBool(args[1]);
+            currentBuffer.moveSelectionVertical(lines, shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+
+        
     }
 }
