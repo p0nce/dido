@@ -6,7 +6,6 @@ import std.string;
 import gfm.sdl2;
 
 import dido.panel;
-import dido.command;
 import dido.buffer.buffer;
 import dido.window;
 
@@ -106,72 +105,20 @@ public:
             return _textArea;
     }
 
-    void executeCommand(Command command)
+    void enterCommandLineMode()
     {
-        Buffer buffer = currentBuffer();
-        TextArea textArea = currentTextArea();
-        final switch (command.type) with (CommandType)
+        if (!_commandLineMode)
         {
-            case ENTER_COMMANDLINE_MODE:
-                if (!_commandLineMode)
-                {
-                    _commandLineMode = true;
-                    currentBuffer().clearContent();                    
-                }
-                else
-                {
-                    _commandLineMode = false;
-                    currentBuffer().insertChar(':');
-                    currentTextArea().ensureOneVisibleSelection();                    
-                }
-                break;
-
-            case BACKSPACE:
-                buffer.deleteSelection(true);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case DELETE:
-                buffer.deleteSelection(false);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case RETURN:
-                if (_commandLineMode)
-                {
-                    executeCommandLine(_cmdlinePanel.getCommandLine());
-                    goto case ESCAPE;
-                }
-                else
-                {
-                    buffer.insertChar('\n');
-                    textArea.ensureOneVisibleSelection();
-                    break;
-                }
-
-            case ESCAPE:
-                if (_commandLineMode)
-                    _commandLineMode = false;
-                else
-                {
-                    buffer.selectionSet().keepOnlyFirst();
-                    textArea.ensureOneVisibleSelection();
-                }
-                break;
-
-            case INSERT_CHAR:
-                buffer.insertChar(command.ch);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-
-            case TAB:
-                buffer.insertTab();
-                textArea.ensureOneVisibleSelection();
+            _commandLineMode = true;
+            currentBuffer().clearContent();
+        }
+        else
+        {
+            _commandLineMode = false;
+            currentBuffer().insertChar(':');
+            currentTextArea().ensureOneVisibleSelection();
         }
     }
-
-   
 
     void greenMessage(dstring msg)
     {
@@ -219,6 +166,21 @@ public:
             _bufferEdit.insertChar(':');
         else
             executeScheme(to!string(cmdline));
+    }
+
+    void enter()
+    {
+        // TODO implement this logic in Scheme itself
+        if (_commandLineMode)
+        {
+            executeCommandLine(_cmdlinePanel.getCommandLine());
+            _commandLineMode = false;
+        }
+        else
+        {
+            currentBuffer.insertChar('\n');
+            currentTextArea.ensureOneVisibleSelection();
+        }
     }
 
     bool checkArgs(string func, Atom[] args, int min, int max)
@@ -510,6 +472,49 @@ public:
             if (!checkArgs("toggle-fullscreen", args, 0, 0))
                 return makeNil();
             _window.toggleFullscreen();
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("escape", (Atom[] args)
+        { 
+            if (!checkArgs("escape", args, 0, 0))
+                return makeNil();
+            if (_commandLineMode)
+                _commandLineMode = false;
+            else
+            {
+                currentBuffer.selectionSet().keepOnlyFirst();
+                currentTextArea.ensureOneVisibleSelection();
+            }
+            return makeNil();
+        });
+
+        env.addBuiltin("indent", (Atom[] args)
+        { 
+            if (!checkArgs("indent", args, 0, 0))
+                return makeNil();
+            currentBuffer.insertTab();
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("delete-selection", (Atom[] args)
+        {
+            if (!checkArgs("delete", args, 1, 1))
+                return makeNil();
+            bool isBackspace = toBool(args[0]);
+            currentBuffer.deleteSelection(isBackspace);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("insert-char", (Atom[] args)
+        {
+            if (!checkArgs("insert-char", args, 1, 1))
+                return makeNil();
+            dchar ch = to!dchar(to!int(toDouble(args[0])));
+            currentBuffer.insertChar(ch);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
         });

@@ -10,7 +10,6 @@ import gfm.core;
 
 import dido.buffer.buffer;
 import dido.window;
-import dido.command;
 import dido.buffer.selection;
 import dido.panel;
 import dido.gui;
@@ -165,9 +164,9 @@ private:
                         else if (key.sym == SDLK_RIGHT && ctrl)
                             _engine.executeScheme("move-word-right " ~ sshift);
                         else if (key.sym == SDLK_ESCAPE)
-                            _engine.executeCommand(Command(CommandType.ESCAPE));
+                            _engine.executeScheme("escape");
                         else if (key.sym == SDLK_RETURN)
-                            _engine.executeCommand(Command(CommandType.RETURN));
+                            _engine.enter();
 
                         // copy/cut/paste
                         else if (key.sym == SDLK_c && ctrl)
@@ -197,9 +196,9 @@ private:
                         else if (key.sym == SDLK_DOWN)
                             _engine.executeScheme("move-vertical 1 " ~ sshift);
                         else if (key.sym == SDLK_BACKSPACE)
-                            _engine.executeCommand(Command(CommandType.BACKSPACE));
+                            _engine.executeScheme("delete-selection #t");
                         else if (key.sym == SDLK_DELETE)
-                            _engine.executeCommand(Command(CommandType.DELETE));
+                            _engine.executeScheme("delete-selection #f");
                         else if (key.sym == SDLK_HOME && ctrl)
                             _engine.executeScheme("move-buffer-start " ~ sshift);
                         else if (key.sym == SDLK_END && ctrl)
@@ -229,7 +228,7 @@ private:
                         else if (key.sym == SDLK_F5)
                             _engine.executeScheme("run");
                         else if (key.sym == SDLK_TAB)
-                            _engine.executeCommand(Command(CommandType.TAB));
+                            _engine.executeScheme("indent");
                         else 
                         {
                         }
@@ -242,15 +241,12 @@ private:
                         string s = sanitizeUTF8(event.text.text.ptr);
 
                         if (s == ":")
-                        {
-                            _engine.executeCommand(Command(CommandType.ENTER_COMMANDLINE_MODE));
-                        }
+                            _engine.enterCommandLineMode();
                         else
                         {
                             dstring ds = to!dstring(s);
-
                             foreach(ch; ds)
-                                _engine.executeCommand(Command(CommandType.INSERT_CHAR, ch));
+                                _engine.executeScheme(format("(insert-char %s)", to!int(ch)));
                         }
                     }
                     break;
