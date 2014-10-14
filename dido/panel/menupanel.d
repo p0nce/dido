@@ -102,7 +102,7 @@ public:
 
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
     {
-        _engine.executeScheme("build");
+        _engine.executeScheme("(build)");
         return true;
     }
 private:
@@ -120,7 +120,7 @@ public:
 
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
     {
-        _engine.executeScheme("run");
+        _engine.executeScheme("(run)");
         return true;
     }
 

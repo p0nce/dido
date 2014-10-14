@@ -154,81 +154,81 @@ private:
                         string sshift = shift ? "#t" : "#f";
 
                         if (key.sym == SDLK_RETURN && alt)
-                            _engine.executeScheme("toggle-fullscreen");
+                            _engine.executeScheme("(toggle-fullscreen)");
                         else if (key.sym == SDLK_UP && ctrl && alt)
-                            _engine.executeScheme("extend-selection-vertical -1");
+                            _engine.executeScheme("(extend-selection-vertical -1)");
                         else if (key.sym == SDLK_DOWN && ctrl && alt)
-                            _engine.executeScheme("extend-selection-vertical 1");
+                            _engine.executeScheme("(extend-selection-vertical 1)");
                         else if (key.sym == SDLK_LEFT && ctrl)
-                            _engine.executeScheme("move-word-left " ~ sshift);
+                            _engine.executeScheme(format("(move-word-left %s)", sshift));
                         else if (key.sym == SDLK_RIGHT && ctrl)
-                            _engine.executeScheme("move-word-right " ~ sshift);
+                            _engine.executeScheme(format("(move-word-right %s)", sshift));
                         else if (key.sym == SDLK_ESCAPE)
-                            _engine.executeScheme("escape");
+                            _engine.executeScheme("(escape)");
                         else if (key.sym == SDLK_RETURN)
                             _engine.enter();
 
                         // copy/cut/paste
                         else if (key.sym == SDLK_c && ctrl)
-                            _engine.executeScheme("copy");
+                            _engine.executeScheme("(copy)");
                         else if (key.sym == SDLK_x && ctrl)
-                            _engine.executeScheme("cut");
+                            _engine.executeScheme("(cut)");
                         else if (key.sym == SDLK_v && ctrl)
-                            _engine.executeScheme("paste");
+                            _engine.executeScheme("(paste)");
                         else if (key.sym == SDLK_COPY)
-                            _engine.executeScheme("copy");
+                            _engine.executeScheme("(copy)");
                         else if (key.sym == SDLK_CUT)
-                            _engine.executeScheme("cut");
+                            _engine.executeScheme("(cut)");
                         else if (key.sym == SDLK_PASTE)
-                            _engine.executeScheme("paste");
+                            _engine.executeScheme("(paste)");
                         else if (key.sym == SDLK_DELETE && shift)
-                            _engine.executeScheme("cut");
+                            _engine.executeScheme("(cut)");
                         else if (key.sym == SDLK_INSERT && ctrl)
-                            _engine.executeScheme("copy");
+                            _engine.executeScheme("(copy)");
                         else if (key.sym == SDLK_INSERT && shift)
-                            _engine.executeScheme("paste");
+                            _engine.executeScheme("(paste)");
                         else if (key.sym == SDLK_LEFT)
-                            _engine.executeScheme("move-horizontal -1 " ~ sshift);
+                            _engine.executeScheme(format("(move-horizontal -1 %s)", sshift));
                         else if (key.sym == SDLK_RIGHT)
-                            _engine.executeScheme("move-horizontal 1 " ~ sshift);
+                            _engine.executeScheme(format("(move-horizontal 1 %s)", sshift));
                         else if (key.sym == SDLK_UP)
-                            _engine.executeScheme("move-vertical -1 " ~ sshift);
+                            _engine.executeScheme(format("(move-vertical -1 %s)", sshift));
                         else if (key.sym == SDLK_DOWN)
-                            _engine.executeScheme("move-vertical 1 " ~ sshift);
+                            _engine.executeScheme(format("(move-vertical 1 %s)", sshift));
                         else if (key.sym == SDLK_BACKSPACE)
-                            _engine.executeScheme("delete-selection #t");
+                            _engine.executeScheme("(delete-selection #t)");
                         else if (key.sym == SDLK_DELETE)
-                            _engine.executeScheme("delete-selection #f");
+                            _engine.executeScheme("(delete-selection #f)");
                         else if (key.sym == SDLK_HOME && ctrl)
-                            _engine.executeScheme("move-buffer-start " ~ sshift);
+                            _engine.executeScheme(format("(move-buffer-start %s)", sshift));
                         else if (key.sym == SDLK_END && ctrl)
-                            _engine.executeScheme("move-buffer-end " ~ sshift);
+                            _engine.executeScheme(format("(move-buffer-end %s)", sshift));
                         else if (key.sym == SDLK_a && ctrl)
-                            _engine.executeScheme("select-all");
+                            _engine.executeScheme("(select-all)");
                         else if (key.sym == SDLK_END)
-                            _engine.executeScheme("move-line-end " ~ sshift);
+                            _engine.executeScheme(format("(move-line-end %s)", sshift));
                         else if (key.sym == SDLK_HOME)
-                            _engine.executeScheme("move-line-start " ~ sshift);
+                            _engine.executeScheme(format("(move-line-start %s)", sshift));
                         else if (key.sym == SDLK_PAGEUP && ctrl)
-                            _engine.executeScheme("previous-buffer");
+                            _engine.executeScheme("(previous-buffer)");
                         else if (key.sym == SDLK_PAGEDOWN && ctrl)
-                            _engine.executeScheme("next-buffer");
+                            _engine.executeScheme("(next-buffer)");
                         else if (key.sym == SDLK_PAGEUP)
-                            _engine.executeScheme("move-vertical (- (visible-lines)) " ~ sshift);
+                            _engine.executeScheme(format("(move-vertical (- (visible-lines)) %s)", sshift));
                         else if (key.sym == SDLK_PAGEDOWN)
-                            _engine.executeScheme("move-vertical (visible-lines) " ~ sshift);
+                            _engine.executeScheme(format("(move-vertical (visible-lines) %s)", sshift));
                         else if (key.sym == SDLK_z && ctrl)
-                            _engine.executeScheme("undo");
+                            _engine.executeScheme("(undo)");
                         else if (key.sym == SDLK_y && ctrl)
-                            _engine.executeScheme("redo");
+                            _engine.executeScheme("(redo)");
                         else if (key.sym == SDLK_s && ctrl)
-                            _engine.executeScheme("save");
+                            _engine.executeScheme("(save)");
                         else if (key.sym == SDLK_F4)
-                            _engine.executeScheme("build");
+                            _engine.executeScheme("(build)");
                         else if (key.sym == SDLK_F5)
-                            _engine.executeScheme("run");
+                            _engine.executeScheme("(run)");
                         else if (key.sym == SDLK_TAB)
-                            _engine.executeScheme("indent");
+                            _engine.executeScheme("(indent)");
                         else 
                         {
                         }
@@ -258,9 +258,9 @@ private:
 
                     // undo
                     if (mbEvent.button == SDL_BUTTON_X1)
-                        _engine.executeScheme("undo");
+                        _engine.executeScheme("(undo)");
                     else if (mbEvent.button == SDL_BUTTON_X2)
-                        _engine.executeScheme("redo");
+                        _engine.executeScheme("(redo)");
                     else
                         _mainPanel.mouseClick(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button, mbEvent.clicks > 1);
                     break;
