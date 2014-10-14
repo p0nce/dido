@@ -161,9 +161,9 @@ private:
                         else if (key.sym == SDLK_DOWN && ctrl && alt)
                             _engine.executeCommand(Command(CommandType.EXTEND_SELECTION_DOWN));
                         else if (key.sym == SDLK_LEFT && ctrl)
-                            _engine.executeCommand(Command(CommandType.MOVE_WORD_LEFT, shift));
+                            _engine.executeScheme("move-word-left " ~ sshift);
                         else if (key.sym == SDLK_RIGHT && ctrl)
-                            _engine.executeCommand(Command(CommandType.MOVE_WORD_RIGHT, shift));
+                            _engine.executeScheme("move-word-right " ~ sshift);
                         else if (key.sym == SDLK_ESCAPE)
                             _engine.executeCommand(Command(CommandType.ESCAPE));
                         else if (key.sym == SDLK_RETURN)
@@ -188,38 +188,36 @@ private:
                             _engine.executeScheme("copy");
                         else if (key.sym == SDLK_INSERT && shift)
                             _engine.executeScheme("paste");
-
-
                         else if (key.sym == SDLK_LEFT)
-                            _engine.executeCommand(Command(CommandType.MOVE_LEFT, shift));
+                            _engine.executeScheme("move-horizontal -1 " ~ sshift);
                         else if (key.sym == SDLK_RIGHT)
-                            _engine.executeCommand(Command(CommandType.MOVE_RIGHT, shift));
+                            _engine.executeScheme("move-horizontal 1 " ~ sshift);
                         else if (key.sym == SDLK_UP)
-                            _engine.executeScheme("move-cursor-vertical -1 " ~ sshift);
+                            _engine.executeScheme("move-vertical -1 " ~ sshift);
                         else if (key.sym == SDLK_DOWN)
-                            _engine.executeScheme("move-cursor-vertical 1 " ~ sshift);
+                            _engine.executeScheme("move-vertical 1 " ~ sshift);
                         else if (key.sym == SDLK_BACKSPACE)
                             _engine.executeCommand(Command(CommandType.BACKSPACE));
                         else if (key.sym == SDLK_DELETE)
                             _engine.executeCommand(Command(CommandType.DELETE));
                         else if (key.sym == SDLK_HOME && ctrl)
-                            _engine.executeCommand(Command(CommandType.GOTO_START_OF_BUFFER, shift));
+                            _engine.executeScheme("move-buffer-start " ~ sshift);
                         else if (key.sym == SDLK_END && ctrl)
-                            _engine.executeCommand(Command(CommandType.GOTO_END_OF_BUFFER, shift));
+                            _engine.executeScheme("move-buffer-end " ~ sshift);
                         else if (key.sym == SDLK_a && ctrl)
                             _engine.executeCommand(Command(CommandType.SELECT_ALL_BUFFER));
                         else if (key.sym == SDLK_END)
-                            _engine.executeCommand(Command(CommandType.MOVE_LINE_END, shift));
+                            _engine.executeScheme("move-line-end " ~ sshift);
                         else if (key.sym == SDLK_HOME)
-                            _engine.executeCommand(Command(CommandType.MOVE_LINE_BEGIN, shift));
+                            _engine.executeScheme("move-line-start " ~ sshift);
                         else if (key.sym == SDLK_PAGEUP && ctrl)
                             _engine.executeCommand(Command(CommandType.ROTATE_PREVIOUS_BUFFER));
                         else if (key.sym == SDLK_PAGEDOWN && ctrl)
                             _engine.executeCommand(Command(CommandType.ROTATE_NEXT_BUFFER));
                         else if (key.sym == SDLK_PAGEUP)
-                            _engine.executeScheme("move-cursor-vertical (- (visible-lines)) " ~ sshift);
+                            _engine.executeScheme("move-vertical (- (visible-lines)) " ~ sshift);
                         else if (key.sym == SDLK_PAGEDOWN)
-                            _engine.executeScheme("move-cursor-vertical (visible-lines) " ~ sshift);
+                            _engine.executeScheme("move-vertical (visible-lines) " ~ sshift);
                         else if (key.sym == SDLK_z && ctrl)
                             _engine.executeScheme("undo");
                         else if (key.sym == SDLK_y && ctrl)

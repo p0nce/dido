@@ -112,36 +112,6 @@ public:
         TextArea textArea = currentTextArea();
         final switch (command.type) with (CommandType)
         {            
-            case MOVE_LEFT:
-                buffer.moveSelectionHorizontal(-1, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case MOVE_RIGHT:            
-                buffer.moveSelectionHorizontal(+1, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case MOVE_WORD_LEFT:
-                buffer.moveSelectionWord(-1, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case MOVE_WORD_RIGHT:
-                buffer.moveSelectionWord(+1, command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case MOVE_LINE_BEGIN:
-                buffer.moveToLineBegin(command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case MOVE_LINE_END:
-                buffer.moveToLineEnd(command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
             case TOGGLE_FULLSCREEN:
                 _window.toggleFullscreen();
                 textArea.ensureOneVisibleSelection();
@@ -219,17 +189,7 @@ public:
             case EXTEND_SELECTION_DOWN:
                 buffer.extendSelectionVertical(1);
                 textArea.ensureOneVisibleSelection();
-                break;
-
-            case GOTO_START_OF_BUFFER:
-                buffer.moveSelectionToBufferStart(command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
-
-            case GOTO_END_OF_BUFFER:
-                buffer.moveSelectionToBufferEnd(command.shift);
-                textArea.ensureOneVisibleSelection();
-                break;
+                break;   
 
             case SELECT_ALL_BUFFER:
                 buffer.selectAll();
@@ -455,18 +415,86 @@ public:
             return Atom(lines);
         });
 
-        env.addBuiltin("move-cursor-vertical", (Atom[] args)
+        env.addBuiltin("move-vertical", (Atom[] args)
         {
-            if (!checkArgs("move-cursor-vertical", args, 2, 2))
+            if (!checkArgs("move-vertical", args, 2, 2))
                 return makeNil();           
-            int lines = to!int(toDouble(args[0]));
+            int displacement = to!int(toDouble(args[0]));
             bool shift = toBool(args[1]);
-            currentBuffer.moveSelectionVertical(lines, shift);
+            currentBuffer.moveSelectionVertical(displacement, shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
         });
 
+        env.addBuiltin("move-horizontal", (Atom[] args)
+        {
+            if (!checkArgs("move-horizontal", args, 2, 2))
+                return makeNil();           
+            int displacement = to!int(toDouble(args[0]));
+            bool shift = toBool(args[1]);
+            currentBuffer.moveSelectionHorizontal(displacement, shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
 
-        
+        env.addBuiltin("move-buffer-start", (Atom[] args)
+        {
+            if (!checkArgs("move-buffer-start", args, 1, 1))
+                return makeNil();           
+            bool shift = toBool(args[0]);
+            currentBuffer.moveSelectionToBufferStart(shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });  
+
+        env.addBuiltin("move-buffer-end", (Atom[] args)
+        {
+            if (!checkArgs("move-buffer-end", args, 1, 1))
+                return makeNil();           
+            bool shift = toBool(args[0]);
+            currentBuffer.moveSelectionToBufferStart(shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("move-word-left", (Atom[] args)
+        {
+            if (!checkArgs("move-word-left", args, 1, 1))
+                return makeNil();           
+            bool shift = toBool(args[0]);
+            currentBuffer.moveSelectionWord(-1, shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("move-word-right", (Atom[] args)
+        {
+            if (!checkArgs("move-word-right", args, 1, 1))
+                return makeNil();           
+            bool shift = toBool(args[0]);
+            currentBuffer.moveSelectionWord(1, shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("move-line-start", (Atom[] args)
+        {
+            if (!checkArgs("move-line-start", args, 1, 1))
+                return makeNil();           
+            bool shift = toBool(args[0]);
+            currentBuffer.moveToLineBegin(shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("move-line-end", (Atom[] args)
+        {
+            if (!checkArgs("move-line-end", args, 1, 1))
+                return makeNil();           
+            bool shift = toBool(args[0]);
+            currentBuffer.moveToLineEnd(shift);
+            currentTextArea.ensureOneVisibleSelection();
+            return makeNil();
+        }); 
     }
 }
