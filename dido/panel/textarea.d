@@ -139,15 +139,7 @@ public:
                         break;
 
                     case '\n':
-                        if (charIsSelected)
-                        {
-                            ch = 0x2193;
-                            font.setColor(131, 137, 152);
-                        }
-                        else
-                        {
-                            ch = ' ';
-                        }
+                        ch = ' ';
                         break;
 
                     case '\t':
@@ -161,7 +153,6 @@ public:
                         if (charIsSelected)
                         {
                             drawDot = true;
-//                            font.setColor(131, 137, 152);
                         }
                         break;
 
@@ -212,6 +203,12 @@ public:
             float start = _cameraY / cast(float)(actualRange);
             float stop = (_cameraY + _position.height) / cast(float)(actualRange);
             verticalScrollbar.setProgress(start, stop);
+
+            // annoying grey rect in scrollbar crossing
+            int scrollSize = verticalScrollbar.position.width;
+            renderer.setViewport(_position.min.x, _position.min.y, _position.width + scrollSize, _position.height + scrollSize);
+            renderer.setColor(0x30, 0x2C, 0x2C, 255);
+            renderer.fillRect(_position.width, _position.height, scrollSize, scrollSize);
         }
 
         if (horizontalScrollbar !is null)
