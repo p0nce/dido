@@ -54,7 +54,8 @@ public:
         _mainPanel.addChild(_menuPanel);
         _mainPanel.addChild(new UIImage(_uiContext, "corner"));
 
-        
+        _needReflow = true;
+        _needRedraw = true;
     }
 
     ~this()
@@ -92,10 +93,6 @@ public:
             pollCommandsFromKeyboard();
 
             SDL2Renderer renderer = _window.renderer();
-            
-            renderer.setViewportFull();
-            renderer.setColor(20, 19, 18, 255);
-            renderer.clear();
 
             int width = _window.getWidth();
             int height = _window.getHeight();
@@ -104,16 +101,31 @@ public:
 
             bool drawCursors = (_timeSinceKeypress % caretCycleTime) < caretBlinkTime;
 
-            _solutionPanel.updateState(_engine.buffers(), _engine.bufferSelect());
-            _cmdlinePanel.updateState(_engine.isCommandLineMode(), drawCursors);
-            
-            _textArea.setState(_engine.currentEditBuffer(), !_engine.isCommandLineMode() && drawCursors);
+            _needRedraw = true;
 
-            _mainPanel.reflow(box2i(0, 0, width, height));
+            // reflow
+            if (_needReflow)
+            {
+                _solutionPanel.updateState(_engine.buffers(), _engine.bufferSelect());
+                _mainPanel.reflow(box2i(0, 0, width, height));
 
-            _mainPanel.render();
-            
-            renderer.present();
+                _needReflow = false;
+            }
+
+            // redraw
+            if (_needRedraw)
+            {
+                _cmdlinePanel.updateMode(_engine.isCommandLineMode());
+                _cmdlinePanel.updateCursorState(drawCursors);
+                _textArea.setState(_engine.currentEditBuffer(), !_engine.isCommandLineMode() && drawCursors);
+
+                renderer.setViewportFull();
+                renderer.setColor(20, 19, 18, 255);
+                renderer.clear();
+
+                _mainPanel.render();
+                renderer.present();
+            }
         }
     }
 
@@ -134,6 +146,9 @@ private:
     TextArea _textArea;
     Font _font;
     UIContext _uiContext;
+
+    bool _needReflow;
+    bool _needRedraw;
     
 
     // retrieve list of commands to execute given by keyboard input
@@ -232,6 +247,9 @@ private:
                         else 
                         {
                         }
+
+                        _needReflow = true;
+                        _needRedraw = true;
                         break;
                     }
 
@@ -249,6 +267,7 @@ private:
                                 _engine.executeScheme(format("(insert-char %s)", to!int(ch)));
                         }
                     }
+                    _needRedraw = true;
                     break;
 
 
@@ -263,6 +282,7 @@ private:
                         _engine.executeScheme("(redo)");
                     else
                         _mainPanel.mouseClick(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button, mbEvent.clicks > 1);
+                    _needRedraw = true;
                     break;
                 }
 
@@ -270,22 +290,31 @@ private:
                 {
                     const (SDL_MouseButtonEvent*) mbEvent = &event.button;
                     _mainPanel.mouseRelease(_sdl2.mouse.x, _sdl2.mouse.y, mbEvent.button);
+                    _needRedraw = true;
                     break;
                 }
 
                 case SDL_MOUSEWHEEL:
                 {
                     _mainPanel.mouseWheel(_sdl2.mouse.x, _sdl2.mouse.y, _sdl2.mouse.wheelDeltaX(), _sdl2.mouse.wheelDeltaY());
+                    _needRedraw = true;
                     break;
                 }
 
                 case SDL_MOUSEMOTION:
                     _mainPanel.mouseMove(_sdl2.mouse.x, _sdl2.mouse.y, _sdl2.mouse.lastDeltaX(), _sdl2.mouse.lastDeltaY());
+                    _needRedraw = true;
                     break;
+
+                case SDL_WINDOWEVENT:
+                    _needReflow = true;
+                    _needRedraw = true;
+                    break;
+
 
                 default:
                     break;
             }
         }
-    }        
+    }
 }

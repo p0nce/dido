@@ -61,12 +61,15 @@ public:
         }
     }
 
-    void updateState(bool commandLineMode, bool showCursors)
+    void updateMode(bool commandLineMode)
     {
         _commandLineMode = commandLineMode;
-        _textArea.setState(_buffer, showCursors);
-        
         _textArea.setVisible(commandLineMode);
+    }
+
+    void updateCursorState(bool showCursors)
+    {
+        _textArea.setState(_buffer, showCursors);
     }
 
     void greenMessage(dstring msg)
