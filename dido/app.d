@@ -83,6 +83,8 @@ public:
 
         _timeSinceKeypress = 0;
 
+        bool lastdrawCursors = false;
+
         while(!_sdl2.wasQuitRequested() && !_engine.finished())
         {     
             uint time = SDL_GetTicks();
@@ -101,7 +103,10 @@ public:
 
             bool drawCursors = (_timeSinceKeypress % caretCycleTime) < caretBlinkTime;
 
-            _needRedraw = true;
+            if (lastdrawCursors != drawCursors)
+                _needRedraw = true;
+
+            lastdrawCursors = drawCursors;
 
             // reflow
             if (_needReflow)
