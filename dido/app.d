@@ -85,6 +85,8 @@ public:
 
         bool lastdrawCursors = false;
 
+        bool firstFrame = true;
+
         while(!_sdl2.wasQuitRequested() && !_engine.finished())
         {     
             uint time = SDL_GetTicks();
@@ -92,7 +94,10 @@ public:
             lastTime = time;
             _timeSinceKeypress += deltaTime;
 
-            waitForAnEventThenProcessThemAll();
+            if(!firstFrame)
+                waitForAnEventThenProcessThemAll();
+
+            firstFrame = false;
 
             SDL2Renderer renderer = _window.renderer();
 
@@ -320,7 +325,7 @@ private:
     void waitForAnEventThenProcessThemAll()
     {
         SDL_Event event;
-        if (_sdl2.waitEventTimeout(&event, 200))
+        if (_sdl2.waitEventTimeout(&event, 50))
         {
             dealWithEvent(event);
             while (_sdl2.pollEvent(&event))
