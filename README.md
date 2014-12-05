@@ -8,7 +8,7 @@ Status: early.
 
 - Multiple cursors editing
 - dido contains a small GUI package built on top of SDL2 renderers
-- portable graphics, SDL is the only binary dependency: https://www.libsdl.org/
+- portable graphics, SDL and SDL_ttf are the only dependencies: https://www.libsdl.org/
 
 ## Current limitations
 
@@ -29,4 +29,8 @@ https://github.com/mawww/kakoune
 
 - Visual Studio is an inspiration for UI
 
+## Compiling
+
+- Build with DUB (a 2.066+ front-end is required)
+- Use recent SDL and SDL_ttf binaries (2.x)
 
