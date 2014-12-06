@@ -16,7 +16,17 @@ public:
                                  SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
         _window.setTitle("Dido v0.0.1");
-        _renderer = new SDL2Renderer(_window, 0);
+
+        // Try creating default renderer
+        try
+        {
+            _renderer = new SDL2Renderer(_window, 0);
+        }
+        catch(SDL2Exception e)
+        {
+            // fallback to software renderer if it failed
+            _renderer = new SDL2Renderer(_window, SDL_RENDERER_SOFTWARE);
+        }
 
         _renderer.setBlend(SDL_BLENDMODE_BLEND);
 

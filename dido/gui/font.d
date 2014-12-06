@@ -113,11 +113,9 @@ public:
     void renderChar(dchar ch, int x, int y)
     {
         SDL2Texture tex = getCharTexture(ch);
-        if (tex !is null)
-        {
-            tex.setColorMod(_r, _g, _b);
-            _renderer.copy(tex, x, y);
-        }
+        tex.setColorMod(_r, _g, _b);
+        tex.setAlphaMod(_a);
+        _renderer.copy(tex, x, y);
     }
 
 
