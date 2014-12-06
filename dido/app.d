@@ -2,11 +2,10 @@ module dido.app;
 
 import std.file;
 import std.conv;
+import std.string;
 
 import gfm.sdl2;
 import gfm.math;
-import gfm.core;
-
 
 import dido.buffer.buffer;
 import dido.window;
@@ -39,14 +38,14 @@ public:
 
 
         _textArea = new TextArea(_uiContext, 16, true, true);
-        
+
         _cmdlinePanel = new CommandLinePanel(_uiContext);
         _solutionPanel = new SolutionPanel(_uiContext);
 
         _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, paths);
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext, _engine);
-        
+
 
         _mainPanel.addChild(_textArea);
         _mainPanel.addChild(_solutionPanel);
@@ -88,7 +87,7 @@ public:
         bool firstFrame = true;
 
         while(!_sdl2.wasQuitRequested() && !_engine.finished())
-        {     
+        {
             uint time = SDL_GetTicks();
             uint deltaTime = time - lastTime;
             lastTime = time;
@@ -146,7 +145,7 @@ private:
     SDL2 _sdl2;
     SDLTTF _sdlttf;
     Window _window;
-    
+
     uint _timeSinceKeypress;
 
     MainPanel _mainPanel;
@@ -249,7 +248,7 @@ private:
                         _engine.executeScheme("(run)");
                     else if (key.sym == SDLK_TAB)
                         _engine.executeScheme("(indent)");
-                    else 
+                    else
                     {
                     }
 
@@ -261,7 +260,7 @@ private:
             case SDL_TEXTINPUT:
                 {
                     _timeSinceKeypress = 0;
-                    string s = sanitizeUTF8(event.text.text.ptr);
+                    const(char)[] s = fromStringz(event.text.text.ptr);
 
                     if (s == ":")
                         _engine.enterCommandLineMode();
@@ -321,7 +320,7 @@ private:
                 break;
         }
     }
-    
+
     void waitForAnEventThenProcessThemAll()
     {
         SDL_Event event;
