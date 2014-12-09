@@ -30,7 +30,10 @@ public:
     void addImage(string name, immutable(ubyte[]) data)
     {
         _surfaces[name] = loadImage(sdl2, data);
-        _textures[name] = new SDL2Texture(renderer, _surfaces[name]);
+        auto texture = new SDL2Texture(renderer, _surfaces[name]);
+        texture.setAlphaMod(255);
+        texture.setColorMod(255, 255, 255);
+        _textures[name] = texture;
     }
 
     SDL2 sdl2;
