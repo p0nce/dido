@@ -67,7 +67,6 @@ public:
         if (horizontalScrollbar !is null) 
         {
             horizontalScrollbar.reflow(availableSpace);
-            availableSpace.max.y = horizontalScrollbar.position.min.y;
         }
         _position = availableSpace;
     }
@@ -83,6 +82,9 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
+        renderer.setColor(20, 19, 18, 255);
+        renderer.fillRect(0, 0, _position.width, _position.height);
+
         int editPosX = -_cameraX + _marginEditor;
         int editPosY = -_cameraY + _marginEditor;
 

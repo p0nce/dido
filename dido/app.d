@@ -129,8 +129,6 @@ public:
                 _textArea.setState(_engine.currentEditBuffer(), !_engine.isCommandLineMode() && drawCursors);
 
                 renderer.setViewportFull();
-                renderer.setColor(20, 19, 18, 255);
-                renderer.clear();
 
                 _mainPanel.render();
                 renderer.present();
