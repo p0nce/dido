@@ -46,8 +46,12 @@ public:
             renderer.fillRect(1, 1, _position.width - 2, _position.height -2);
         }
 
-        renderer.setColor(70, 67, 67, 255);
-        renderer.drawRect(0, 0, _position.width, _position.height);       
+        if (isMouseOver())
+            renderer.setColor(70, 67, 67, 255);
+        else
+            renderer.setColor(30, 27, 27, 255);
+
+        renderer.drawRect(0, 0, _position.width, _position.height);
 
         if (isMouseOver())
             font.setColor(255, 255, 200);

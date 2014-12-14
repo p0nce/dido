@@ -174,7 +174,7 @@ public:
         {
             child.mouseMove(x, y, dx, dy);
         }
-        
+
         if (_position.contains(vec2i(x, y)))
         {
             if (!_mouseOver)

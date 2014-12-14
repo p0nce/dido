@@ -49,8 +49,6 @@ public:
             _window.setFullscreenSetting(0);
     }
 
-
-
     SDL2Renderer renderer()
     {
         return _renderer;
