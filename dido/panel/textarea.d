@@ -59,7 +59,6 @@ public:
         if (verticalScrollbar !is null) 
         {
             box2i availableForVert = availableSpace;
-            availableForVert.max.y -= verticalScrollbar.buttonSize();
             verticalScrollbar.reflow(availableForVert);
             availableSpace.max.x = verticalScrollbar.position.min.x;
         }
@@ -353,12 +352,6 @@ public:
             super(context, widthOfFocusBar, padding, vertical);
         }
 
-        override void onScrollChangeButton(bool up)
-        {
-            int delta = this.outer.position.height / 4;
-            moveCamera(0, (up ? -delta : delta) );
-        }
-
         override void onScrollChangeMouse(float newProgressStart)
         {
             int actualRange = maxCameraY() + _position.height;
@@ -373,12 +366,6 @@ public:
         this(UIContext context, int widthOfFocusBar, int padding, bool vertical)
         {
             super(context, widthOfFocusBar, padding, vertical);
-        }
-
-        override void onScrollChangeButton(bool up)
-        {
-            int delta = this.outer.position.width / 4;
-            moveCamera( (up ? -delta : delta) , 0);
         }
 
         override void onScrollChangeMouse(float newProgressStart)

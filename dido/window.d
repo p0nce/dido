@@ -13,7 +13,7 @@ public:
         int initialHeight = 700;
 
         _window = new SDL2Window(sdl2, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, initialWidth, initialHeight, 
-                                 SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+                                 SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
         _window.setTitle("Dido v0.0.1");
 

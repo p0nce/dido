@@ -309,6 +309,12 @@ private:
                 break;
 
             case SDL_WINDOWEVENT:
+                /*{
+                    const (SDL_WindowEvent*) windowEvent = &event.window;
+
+                if (windowEvent.event == ) {*/
+                
+
                 _needReflow = true;
                 _needRedraw = true;
                 break;
