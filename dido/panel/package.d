@@ -9,3 +9,4 @@ public import dido.panel.commandlinepanel;
 public import dido.panel.textarea;
 public import dido.panel.solutionpanel;
 public import dido.panel.outputpanel;
+public import dido.panel.westpanel;

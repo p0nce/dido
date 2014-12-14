@@ -21,8 +21,6 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
-        renderer.setColor(34, 34, 34, 255);
-        renderer.fillRect(0, 0, _position.width, _position.height);
 
         int itemSpace = font.charHeight() + 12;
         int marginX = 16;
