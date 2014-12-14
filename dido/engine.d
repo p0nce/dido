@@ -17,6 +17,7 @@ class DidoEngine
 private:
     TextArea _textArea;
     CommandLinePanel _cmdlinePanel;
+    OutputPanel _outputPanel;
     bool _commandLineMode;
     Buffer _bufferEdit; // current buffer in edit area
     Buffer[] _buffers;
@@ -30,7 +31,7 @@ private:
 
 public:
 
-    this(SDL2 sdl2, Window window, TextArea textArea, CommandLinePanel cmdlinePanel, string[] paths)
+    this(SDL2 sdl2, Window window, TextArea textArea, CommandLinePanel cmdlinePanel, OutputPanel outputPanel, string[] paths)
     {
         foreach (ref path; paths)
         {
@@ -47,6 +48,7 @@ public:
 
         setCurrentBufferEdit(0);        
         _textArea = textArea;
+        _outputPanel = outputPanel;
         _cmdlinePanel = cmdlinePanel;
         _window = window;
         _commandLineMode = false;
@@ -122,19 +124,20 @@ public:
 
     void greenMessage(dstring msg)
     {
-        _cmdlinePanel.greenMessage(msg);
+        _outputPanel.log(LineOutput(LineType.SUCCESS, msg));
     }
 
     void redMessage(dstring msg)
     {
-        _cmdlinePanel.redMessage(msg);
+        _outputPanel.log(LineOutput(LineType.ERROR, msg));
     }
 
-    void executeScheme(string code)
+    Atom executeScheme(string code)
     {
         try
         {            
             Atom result = execute(code, _env); // result is discarded
+            return result;
         }
         catch(SchemeParseException e)
         {
@@ -143,6 +146,7 @@ public:
             try
             {
                 Atom result = execute("(" ~ code ~ ")", _env);
+                return result;
             }
             catch(SchemeParseException e2)
             {
@@ -158,6 +162,7 @@ public:
         {
             redMessage(to!dstring(e.msg));
         }
+        return makeNil();
     }
 
     void executeCommandLine(dstring cmdline)
@@ -165,7 +170,14 @@ public:
         if (cmdline == ""d)
             _bufferEdit.insertChar(':');
         else
-            executeScheme(to!string(cmdline));
+        {
+            _outputPanel.log(LineOutput(LineType.COMMAND, ":"d ~ cmdline));
+            Atom result = executeScheme(to!string(cmdline));   
+            
+            // print results if not nil
+            if (! (result.isList && result.toList().length == 0) )
+                _outputPanel.log(LineOutput(LineType.RESULT, to!dstring("=> " ~ result.toString)));
+        }
     }
 
     void enter()

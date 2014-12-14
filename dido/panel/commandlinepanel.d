@@ -23,7 +23,7 @@ public:
         super(context);
         _statusLine = "";
         _buffer = new Buffer();
-        _textArea = new TextArea(context, margin, false, false, rgba(15, 14, 14, 255));
+        _textArea = new TextArea(context, margin, false, false, rgba(15, 14, 14, 0));
         addChild(_textArea);
     }
 

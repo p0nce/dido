@@ -82,8 +82,11 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
-        renderer.setColor(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b, _backgroundColor.a);
-        renderer.fillRect(0, 0, _position.width, _position.height);
+        if (_backgroundColor.a != 0)
+        {
+            renderer.setColor(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b, _backgroundColor.a);
+            renderer.fillRect(0, 0, _position.width, _position.height);
+        }
 
         int editPosX = -_cameraX + _marginEditor;
         int editPosY = -_cameraY + _marginEditor;

@@ -42,16 +42,20 @@ public:
 
         _cmdlinePanel = new CommandLinePanel(_uiContext);
         _solutionPanel = new SolutionPanel(_uiContext);
+        _outputPanel = new OutputPanel(_uiContext);
 
-        _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, paths);
+        _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, _outputPanel, paths);
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext, _engine);
+        
+
 
 
         _mainPanel.addChild(_textArea);
+        _mainPanel.addChild(_outputPanel);
         _mainPanel.addChild(_solutionPanel);
         _mainPanel.addChild(_cmdlinePanel);
-        _mainPanel.addChild(_menuPanel);
+        _mainPanel.addChild(_menuPanel);        
         _mainPanel.addChild(new UIImage(_uiContext, "corner"));
 
         _needReflow = true;
@@ -151,6 +155,7 @@ private:
     MenuPanel _menuPanel;
     CommandLinePanel _cmdlinePanel;
     SolutionPanel _solutionPanel;
+    OutputPanel _outputPanel;
     TextArea _textArea;
     Font _font;
     UIContext _uiContext;

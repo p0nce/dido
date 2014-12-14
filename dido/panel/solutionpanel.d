@@ -16,9 +16,7 @@ public:
 
     override void reflow(box2i availableSpace)
     {
-        _position = availableSpace;
-        int widthOfSolutionExplorer = (250 + availableSpace.width / 3) / 2;
-        _position.max.x = widthOfSolutionExplorer;
+        _position = availableSpace;        
     }
 
     override void preRender(SDL2Renderer renderer)

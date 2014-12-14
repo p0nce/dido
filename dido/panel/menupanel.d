@@ -35,7 +35,6 @@ class MenuPanel : UIElement
             availableSpace.min.x = child(n).position.max.x + margin;
         }
 
-
         reflowChild(0);
         reflowChild(1);
         reflowChild(2);
