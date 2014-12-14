@@ -9,7 +9,7 @@ class ComboBox : UIElement
 {
 public:    
 
-    this(UIContext context, dstring[] choices)
+    this(UIContext context, dstring[] choices, string icon = null)
     {
         super(context);
         _choices = choices;
@@ -17,8 +17,20 @@ public:
         
         _paddingW = 8;
         _paddingH = 4;
-        setSelectedChoice(0);        
+        setSelectedChoice(0);     
+
+        _icon = icon;
+        _iconWidth = 0;
+        _iconHeight = 0;
+        if (_icon !is null)
+        {
+            _iconImage = context.image(icon);
+            _iconWidth = _iconImage.width();
+            _iconHeight = _iconImage.height();
+        }
     }
+
+    enum marginIcon = 6;
 
     final void setSelectedChoice(int n)
     {
@@ -38,6 +50,8 @@ public:
     override void reflow(box2i availableSpace)
     {
         int width = 2 * _paddingW + longestStringLength() * font.charWidth;
+        if (_icon !is null)
+            width += marginIcon + _iconWidth;
         int height = 2 * _paddingH + font.charHeight;
 
         _position = box2i(availableSpace.min.x, availableSpace.min.y, availableSpace.min.x + width, availableSpace.min.y + height);        
@@ -62,8 +76,15 @@ public:
         dstring textChoice = choice(_select);
         int heightOfText = font.charHeight;
         int widthOfText = font.charWidth * textChoice.length;
-        font.renderString(textChoice, 1 + (position.width - widthOfText) / 2, 1 + (position.height - heightOfText) / 2);
-
+        int iconX = _paddingW;
+        int availableWidthForText = position.width - ((_icon is null) ? 0 : (marginIcon + _iconWidth));
+        int textX = 1 + (availableWidthForText - widthOfText) / 2;
+        if (_icon !is null)
+        {
+            textX += marginIcon + _iconWidth;
+            renderer.copy(_iconImage, iconX, 1 + (position.height - _iconHeight) / 2);
+        }
+        font.renderString(textChoice, textX, 1 + (position.height - heightOfText) / 2);
     }
 
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
@@ -95,6 +116,11 @@ private:
     int _select;
     int _paddingW;
     int _paddingH;
+
+    string _icon;
+    int _iconWidth;
+    int _iconHeight;
+    SDL2Texture _iconImage;
 
     dstring[] _choices;
 

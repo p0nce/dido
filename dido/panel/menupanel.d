@@ -58,7 +58,7 @@ class BuildCombo : ComboBox
 {
     this(UIContext context)
     {
-        super(context, [ "debug", "plain", "release", "release-nobounds", "unittest", "profile", "docs", "ddox", "cov", "unittest-cov" ]);
+        super(context, [ "debug", "plain", "release", "release-nobounds", "unittest", "profile", "docs", "ddox", "cov", "unittest-cov" ], "cycle");
     }
 
     override void onChoice(int n)
@@ -70,7 +70,7 @@ class ArchCombo : ComboBox
 {
     this(UIContext context)
     {
-        super(context, [ "x86", "x86_64" ]);
+        super(context, [ "x86", "x86_64" ], "cycle");
     }
 
     override void onChoice(int n)
@@ -83,7 +83,7 @@ class CompilerCombo : ComboBox
 {
     this(UIContext context)
     {
-        super(context, [ "DMD", "GDC", "LDC" ]);
+        super(context, [ "DMD", "GDC", "LDC" ], "cycle");
     }
 
     override void onChoice(int n)

@@ -15,6 +15,8 @@ public:
     {
         renderer = renderer_;
         font = font_;
+        
+        
         sdl2 = sdl2_;
     }
 
