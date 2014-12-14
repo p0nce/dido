@@ -14,6 +14,7 @@ import dido.panel;
 import dido.gui;
 import dido.engine;
 import dido.config;
+import dido.colors;
 
 
 final class App
@@ -37,7 +38,7 @@ public:
         }
 
 
-        _textArea = new TextArea(_uiContext, 16, true, true);
+        _textArea = new TextArea(_uiContext, 16, true, true, rgba(20, 19, 18, 255));
 
         _cmdlinePanel = new CommandLinePanel(_uiContext);
         _solutionPanel = new SolutionPanel(_uiContext);

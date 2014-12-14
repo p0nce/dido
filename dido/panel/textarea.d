@@ -15,7 +15,7 @@ class TextArea : UIElement
 {
 public:
 
-    this(UIContext context, int marginEditor, bool haveLineNumbers, bool hasScrollbars)
+    this(UIContext context, int marginEditor, bool haveLineNumbers, bool hasScrollbars, vec4ub backgroundColor)
     {
         super(context);
 
@@ -38,6 +38,7 @@ public:
 
         _editCursor = new SDL2Cursor(context.sdl2, SDL_SYSTEM_CURSOR_IBEAM);
         _previousCursor = SDL2Cursor.getCurrent(context.sdl2);
+        _backgroundColor = backgroundColor;
     }
 
     override void close()
@@ -81,7 +82,7 @@ public:
 
     override void preRender(SDL2Renderer renderer)
     {
-        renderer.setColor(20, 19, 18, 255);
+        renderer.setColor(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b, _backgroundColor.a);
         renderer.fillRect(0, 0, _position.width, _position.height);
 
         int editPosX = -_cameraX + _marginEditor;
@@ -381,6 +382,8 @@ private:
     int _cameraY = 0;
     Buffer _buffer;    
     bool _drawCursors;
+
+    vec4ub _backgroundColor;
 
     SDL2Cursor _editCursor;
     SDL2Cursor _previousCursor;

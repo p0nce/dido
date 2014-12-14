@@ -2,6 +2,7 @@ module dido.panel.commandlinepanel;
 
 import gfm.math;
 import dido.gui;
+import dido.colors;
 
 import dido.panel.textarea;
 import dido.buffer.buffer;
@@ -22,7 +23,7 @@ public:
         super(context);
         _statusLine = "";
         _buffer = new Buffer();
-        _textArea = new TextArea(context, margin, false, false);
+        _textArea = new TextArea(context, margin, false, false, rgba(15, 14, 14, 255));
         addChild(_textArea);
     }
 
@@ -39,7 +40,7 @@ public:
     override void preRender(SDL2Renderer renderer)
     {
         renderer.setColor(15, 14, 14, 255);
-        renderer.fillRect(0, 0, _position.width, _position.height);        
+        renderer.fillRect(0, 0, _position.width, _position.height);
 
         {
             // commandline bar at bottom
