@@ -111,7 +111,7 @@ public:
 
     int lineLength(int lineIndex) pure const nothrow
     {
-        return lines[lineIndex].length;
+        return cast (int) lines[lineIndex].length;
     }
 
     int getLongestLineLength() pure const nothrow
@@ -122,7 +122,7 @@ public:
     // maximum column allowed for cursor on this line
     int maxColumn(int lineIndex) pure const nothrow
     {
-        return lines[lineIndex].length - 1;
+        return cast(int) lines[lineIndex].length - 1;
     }
 
     inout(dstring) line(int lineIndex) pure inout nothrow
@@ -531,7 +531,7 @@ public:
         hit.cursorThere = false;
 
         int min = 0;
-        int max =  _selectionSet.selections.length - 1;
+        int max =  cast(int) _selectionSet.selections.length - 1;
         while(min <= max) // assume sorted selections
         {
             int middle = (min + max + 1) / 2;
@@ -597,7 +597,7 @@ package:
 
     BufferIterator end()
     {
-        return BufferIterator(this, Cursor(lines.length - 1, maxColumn(lines.length - 1)));
+        return BufferIterator(this, Cursor(cast(int) lines.length - 1, maxColumn(cast(int) lines.length - 1)));
     }
 
 private:
@@ -611,7 +611,7 @@ private:
         {
             if (lines[i].length > maxLength)
             {
-                maxLength = lines[i].length;
+                maxLength = cast(int) lines[i].length;
                 _longestLine = i;
             }
         }
@@ -621,7 +621,7 @@ private:
     {
         // strip previous history, add command
         _history = _history[0.._historyIndex] ~ command;
-        _historyIndex = _history.length;
+        _historyIndex = cast(int) _history.length;
     }
 
     // replace a Selection content by a new content
@@ -842,7 +842,7 @@ private
                 if (currentLine.length > maxLength)
                 {
                     longestLine = numLine;
-                    maxLength = currentLine.length;
+                    maxLength = cast(int) currentLine.length;
                 }
                 lines ~= currentLine.dup;
                 numLine++;
