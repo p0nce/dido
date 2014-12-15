@@ -47,13 +47,11 @@ public:
         _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, _outputPanel, paths);
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext, _engine);
-        
-
+        _westPanel = new WestPanel(_uiContext, _solutionPanel, _outputPanel);
 
 
         _mainPanel.addChild(_textArea);
-        _mainPanel.addChild(_outputPanel);
-        _mainPanel.addChild(_solutionPanel);
+        _mainPanel.addChild(_westPanel);
         _mainPanel.addChild(_cmdlinePanel);
         _mainPanel.addChild(_menuPanel);        
         _mainPanel.addChild(new UIImage(_uiContext, "corner"));
@@ -156,6 +154,7 @@ private:
     CommandLinePanel _cmdlinePanel;
     SolutionPanel _solutionPanel;
     OutputPanel _outputPanel;
+    WestPanel _westPanel;
     TextArea _textArea;
     Font _font;
     UIContext _uiContext;

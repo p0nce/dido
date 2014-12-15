@@ -16,6 +16,8 @@ class MenuPanel : UIElement
         addChild(new CompilerCombo(context));        
         addChild(new ArchCombo(context));
         addChild(new BuildCombo(context));
+        addChild(new DlangOrgButton(context));
+        addChild(new DubRegistryButton(context));
     }
 
     override void reflow(box2i availableSpace)
@@ -40,6 +42,8 @@ class MenuPanel : UIElement
         reflowChild(2);
         reflowChild(3);
         reflowChild(4);
+        reflowChild(5);
+        reflowChild(6);
     }
 
     override void preRender(SDL2Renderer renderer)
@@ -47,9 +51,7 @@ class MenuPanel : UIElement
         renderer.setColor(15, 14, 14, 255);
         renderer.fillRect(0, 0, _position.width, _position.height);
 
-        //renderer.setColor(255, 255, 255, 255);
         renderer.copy(context.image("dido"), 6, (_position.height - 20) / 2);
-
     }
 }
 
@@ -125,4 +127,36 @@ public:
 
 private:
     DidoEngine _engine;
+}
+
+class DlangOrgButton : UIButton
+{
+public:
+    this(UIContext context)
+    {
+        super(context, "Home", "dlang");
+    }
+
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        import std.process;
+        browse("http://dlang.org/");
+        return true;
+    }
+}
+
+class DubRegistryButton : UIButton
+{
+public:
+    this(UIContext context)
+    {
+        super(context, "Registry", "dub");
+    }
+
+    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    {
+        import std.process;
+        browse("http://code.dlang.org/");
+        return true;
+    }
 }
