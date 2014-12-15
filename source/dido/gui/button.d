@@ -31,7 +31,7 @@ public:
 
     override void reflow(box2i availableSpace)
     {
-        int width = 2 * _paddingW + _label.length * font.charWidth;
+        int width = 2 * _paddingW + cast(int) _label.length * font.charWidth;
         if (_icon !is null)
             width += marginIcon + _iconWidth;
         int height = 2 * _paddingH + font.charHeight;
@@ -60,7 +60,7 @@ public:
 
         dstring textChoice = _label;
         int heightOfText = font.charHeight;
-        int widthOfTextPlusIcon = font.charWidth * textChoice.length;
+        int widthOfTextPlusIcon = font.charWidth * cast(int) textChoice.length;
         if (_icon !is null)
             widthOfTextPlusIcon += marginIcon + _iconWidth;
 

@@ -49,9 +49,9 @@ public:
         if (4 + _log.length * fh < _position.height)
             _cameraY = 0;
         else
-            _cameraY = 4 + _log.length * fh - _position.height;
+            _cameraY = 4 + cast(int) _log.length * fh - _position.height;
 
-        for (int i = 0; i < cast(int)(_log.length); ++i)
+        for (int i = 0; i < cast(int) (_log.length); ++i)
         {
             final switch(_log[i].type) with (LineType)
             {
