@@ -2,8 +2,8 @@
     "name": "dido",
 
     "targetType": "executable",
-    "importPaths": ["."],
-    "sourcePaths": ["."],
+    "importPaths": ["source"],
+    "sourcePaths": ["source"],
     "stringImportPaths": ["resources"],
 
     "dependencies": {
