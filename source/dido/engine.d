@@ -245,7 +245,7 @@ public:
             if (!checkArgs("n|new", args, 0, 0))
                 return makeNil();
             _buffers ~= new Buffer;
-            setCurrentBufferEdit(_buffers.length - 1);
+            setCurrentBufferEdit(cast(int) _buffers.length - 1);
             greenMessage("Created new file"d);
             return makeNil(); 
         });
@@ -463,7 +463,7 @@ public:
         { 
             if (!checkArgs("next-buffer", args, 0, 0))
                 return makeNil();
-            setCurrentBufferEdit( (_bufferSelect + 1) % _buffers.length );
+            setCurrentBufferEdit( (_bufferSelect + 1) % cast(int) _buffers.length );
             currentTextArea().clearCamera();
             currentTextArea().ensureOneVisibleSelection();
             return makeNil();
@@ -473,7 +473,7 @@ public:
         { 
             if (!checkArgs("previous-buffer", args, 0, 0))
                 return makeNil();
-            setCurrentBufferEdit( (_bufferSelect + _buffers.length - 1) % _buffers.length );
+            setCurrentBufferEdit( (_bufferSelect + cast(int) _buffers.length - 1) % cast(int) _buffers.length );
             currentTextArea().clearCamera();
             currentTextArea().ensureOneVisibleSelection();
             return makeNil();

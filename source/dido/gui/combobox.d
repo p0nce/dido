@@ -79,7 +79,7 @@ public:
 
         dstring textChoice = choice(_select);
         int heightOfText = font.charHeight;
-        int widthOfText = font.charWidth * textChoice.length;
+        int widthOfText = font.charWidth * cast(int) textChoice.length;
         int iconX = _paddingW;
         int availableWidthForText = position.width - ((_icon is null) ? 0 : (marginIcon + _iconWidth));
         int textX = 1 + (availableWidthForText - widthOfText) / 2;
@@ -95,7 +95,7 @@ public:
     {
         if (_choices.length == 0)
             return false;
-        setSelectedChoice((_select + 1) % _choices.length);
+        setSelectedChoice((_select + 1) % cast(int) _choices.length);
         return true;
     }
 
@@ -133,8 +133,8 @@ private:
         int maximum = 0;
         foreach(ref dstring c; _choices)
         {
-            if (maximum < c.length)
-                maximum = c.length;
+            if (maximum < cast(int) c.length)
+                maximum = cast(int) c.length;
         }
         return maximum;
     }
