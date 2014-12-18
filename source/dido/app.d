@@ -1,5 +1,6 @@
 module dido.app;
 
+import std.path;
 import std.file;
 import std.conv;
 import std.string;
@@ -26,7 +27,10 @@ public:
         _sdlttf = new SDLTTF(_sdl2);
         _window = new Window(_sdl2, _sdlttf);
 
-        _font = new Font(_sdlttf, _window.renderer(), config.fontFace, config.fontSize);
+        // font path is relative to application directory
+        string appDir = dirName(thisExePath());
+        string fontFile = buildPath(appDir, config.fontFace);
+        _font = new Font(_sdlttf, _window.renderer(), fontFile, config.fontSize);
 
         _sdl2.startTextInput();
 
