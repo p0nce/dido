@@ -2,12 +2,14 @@ module dido.engine;
 
 import std.process;
 import std.string;
+import std.concurrency;
 
 import gfm.sdl2;
 
 import dido.panel;
 import dido.buffer.buffer;
 import dido.window;
+import dido.builder;
 
 import schemed;
 
@@ -25,6 +27,7 @@ private:
     Window _window;
     SDL2 _sdl2;
     bool _finished;
+    Builder _builder;
 
     // scheme-d environment
     Environment _env;
@@ -57,6 +60,8 @@ public:
 
         _env = defaultEnvironment();
         addBuiltins(_env);
+
+        _builder = new Builder(this);
     }
 
     Buffer[] buffers()
@@ -122,6 +127,11 @@ public:
         }
     }
 
+    void logMessage(LineType type, dstring msg)
+    {
+        _outputPanel.log(LineOutput(type, msg));
+    }
+
     void greenMessage(dstring msg)
     {
         _outputPanel.log(LineOutput(LineType.SUCCESS, msg));
@@ -132,37 +142,44 @@ public:
         _outputPanel.log(LineOutput(LineType.ERROR, msg));
     }
 
-    Atom executeScheme(string code)
+    void executeScheme(string code, bool echo = false)
     {
+        if (echo)
+            _outputPanel.log(LineOutput(LineType.COMMAND, ":"d ~ to!dstring(code)));        
+
+        Atom result;
         try
         {            
-            Atom result = execute(code, _env); // result is discarded
-            return result;
+            result = execute(code, _env); // result is discarded
         }
         catch(SchemeParseException e)
         {
             // try to execute again, but with parens appended
-
             try
             {
-                Atom result = execute("(" ~ code ~ ")", _env);
-                return result;
+                result = execute("(" ~ code ~ ")", _env);
             }
             catch(SchemeParseException e2)
             {
                 // another error, print the _first_ message
                 redMessage(to!dstring(e.msg));
+                return;
             }
             catch(SchemeEvalException e2)
             {
                 redMessage(to!dstring(e2.msg));
+                return;
             }
         }
         catch(SchemeEvalException e)
         {
             redMessage(to!dstring(e.msg));
+            return;
         }
-        return makeNil();
+
+        // output result
+        if (echo)
+            _outputPanel.log(LineOutput(LineType.RESULT, to!dstring("=> " ~ result.toString)));
     }
 
     void executeCommandLine(dstring cmdline)
@@ -171,12 +188,7 @@ public:
             _bufferEdit.insertChar(':');
         else
         {
-            _outputPanel.log(LineOutput(LineType.COMMAND, ":"d ~ cmdline));
-            Atom result = executeScheme(to!string(cmdline));   
-            
-            // print results if not nil
-            if (! (result.isList && result.toList().length == 0) )
-                _outputPanel.log(LineOutput(LineType.RESULT, to!dstring("=> " ~ result.toString)));
+            executeScheme(to!string(cmdline), true);
         }
     }
 
@@ -213,6 +225,13 @@ public:
 
     void addBuiltins(Environment env)
     {
+        env.addBuiltin("display", (Atom[] args)
+        {
+            foreach(arg; args)
+                _outputPanel.log(LineOutput(LineType.RESULT, to!dstring(arg.toString)));
+            return makeNil();
+        });
+
         env.addBuiltin("exit", (Atom[] args)
         {
             if (!checkArgs("q|exit", args, 0, 0))
@@ -293,23 +312,35 @@ public:
             return makeNil();
         });
 
+        env.addBuiltin("stop-build", (Atom[] args)
+        {
+            if (!checkArgs("stop-build", args, 0, 0))
+                return makeNil();
+            _builder.stopBuild();
+            return makeNil();
+        });
+
         env.addBuiltin("build", (Atom[] args)
         {
-            if (!checkArgs("build", args, 0, 0))
+            if (!checkArgs("build", args, 3, 3))
                 return makeNil();
-            auto dubResult = std.process.execute(["dub", "build"]);
-            if (dubResult.status != 0)
-                redMessage(to!dstring(format("DUB returned %s", dubResult.status)));
+
+            string compiler = schemed.toString(args[0]);
+            string arch = schemed.toString(args[1]);
+            string build = schemed.toString(args[2]);
+            _builder.startBuild(compiler, arch, build);
             return makeNil();
         });
 
         env.addBuiltin("run", (Atom[] args)
         {
-            if (!checkArgs("run", args, 0, 0))
+            if (!checkArgs("run", args, 3, 3))
                 return makeNil();
-            auto dubResult = std.process.execute(["dub", "run"]);
-            if (dubResult.status != 0)
-                redMessage(to!dstring(format("DUB returned %s", dubResult.status)));
+
+            string compiler = schemed.toString(args[0]);
+            string arch = schemed.toString(args[1]);
+            string build = schemed.toString(args[2]);
+            _builder.startRun(compiler, arch, build);
             return makeNil();
         });
 
@@ -388,14 +419,14 @@ public:
             currentBuffer.moveSelectionToBufferStart(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
-        });  
+        });
 
         env.addBuiltin("move-buffer-end", (Atom[] args)
         {
             if (!checkArgs("move-buffer-end", args, 1, 1))
                 return makeNil();           
             bool shift = toBool(args[0]);
-            currentBuffer.moveSelectionToBufferStart(shift);
+            currentBuffer.moveSelectionToBufferEnd(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
         });

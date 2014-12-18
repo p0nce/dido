@@ -73,18 +73,6 @@ public:
         _textArea.setState(_buffer, showCursors);
     }
 
-    void greenMessage(dstring msg)
-    {
-        _statusLine = msg;
-        _statusColor = statusGreen;
-    }
-
-    void redMessage(dstring msg)
-    {
-        _statusLine = msg;
-        _statusColor = statusRed;
-    }
-
     dstring getCommandLine()
     {
         return _buffer.getContent();

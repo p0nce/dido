@@ -1,5 +1,7 @@
 module dido.panel.menupanel;
 
+import std.conv;
+
 import dido.gui;
 import dido.app;
 import dido.engine;
@@ -13,9 +15,9 @@ class MenuPanel : UIElement
         addChild(new BuildButton(context, engine));
         addChild(new RunButton(context, engine));
 
-        addChild(new CompilerCombo(context));        
-        addChild(new ArchCombo(context));
-        addChild(new BuildCombo(context));
+        addChild(new CompilerCombo(context, engine));
+        addChild(new ArchCombo(context, engine));
+        addChild(new BuildCombo(context, engine));
         addChild(new DlangOrgButton(context));
         addChild(new DubRegistryButton(context));
     }
@@ -57,39 +59,59 @@ class MenuPanel : UIElement
 
 class BuildCombo : ComboBox
 {
-    this(UIContext context)
+    this(UIContext context, DidoEngine engine)
     {
-        super(context, [ "debug", "plain", "release", "release-nobounds", "unittest", "profile", "docs", "ddox", "cov", "unittest-cov" ], "cycle");
+        _engine = engine;
+        super(context, 
+              [ "debug", "plain", "release", "nobounds", "unittest", "profile", "docs", "ddox", "cov", "test-cov" ], 
+              [ "debug", "plain", "release", "release-nobounds", "unittest", "profile", "docs", "ddox", "cov", "unittest-cov" ], "cycle");        
     }
 
     override void onChoice(int n)
     {
+        _engine.executeScheme("(define current-build \"" ~ to!string(choice(n)) ~ "\")");
     }
+
+private:
+    DidoEngine _engine;
 }
 
 class ArchCombo : ComboBox
 {
-    this(UIContext context)
+    this(UIContext context, DidoEngine engine)
     {
-        super(context, [ "x86", "x86_64" ], "cycle");
+        _engine = engine;
+        super(context, 
+              [ "x86", "x64" ], 
+              [ "x86", "x86_64" ],
+              "cycle");
     }
 
     override void onChoice(int n)
     {
+        _engine.executeScheme("(define current-arch \"" ~ to!string(choice(n)) ~ "\")");
     }
+private:
+    DidoEngine _engine;
 }
 
 
 class CompilerCombo : ComboBox
 {
-    this(UIContext context)
+    this(UIContext context, DidoEngine engine)
     {
-        super(context, [ "DMD", "GDC", "LDC" ], "cycle");
+        _engine = engine;
+        super(context, 
+             [ "DMD", "GDC", "LDC" ], 
+             [ "DMD", "GDC", "LDC" ], "cycle");
     }
 
     override void onChoice(int n)
     {
+        _engine.executeScheme("(define current-compiler \"" ~ to!string(choice(n)) ~ "\")");        
     }
+private:
+    DidoEngine _engine;
 }
 
 class BuildButton : UIButton
@@ -103,7 +125,7 @@ public:
 
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
     {
-        _engine.executeScheme("(build)");
+        _engine.executeScheme("(build current-compiler current-arch current-build)");
         return true;
     }
 private:
@@ -121,7 +143,7 @@ public:
 
     override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
     {
-        _engine.executeScheme("(run)");
+        _engine.executeScheme("(run current-compiler current-arch current-build)");
         return true;
     }
 

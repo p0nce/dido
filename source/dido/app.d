@@ -245,10 +245,12 @@ private:
                         _engine.executeScheme("(redo)");
                     else if (key.sym == SDLK_s && ctrl)
                         _engine.executeScheme("(save)");
+                    else if ( (key.sym == SDLK_F5 && shift) || (key.sym == SDLK_PAUSE && ctrl) )
+                        _engine.executeScheme("(stop-build)");
                     else if (key.sym == SDLK_F4)
-                        _engine.executeScheme("(build)");
+                        _engine.executeScheme("(build current-compiler current-arch current-build)");
                     else if (key.sym == SDLK_F5)
-                        _engine.executeScheme("(run)");
+                        _engine.executeScheme("(run current-compiler current-arch current-build)");
                     else if (key.sym == SDLK_TAB)
                         _engine.executeScheme("(indent)");
                     else

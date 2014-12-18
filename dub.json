@@ -11,6 +11,6 @@
         "gfm:math": "~>2.0.6",
         "gfm:image": "~>2.0.6",
         "libdparse": "~>0.1.1",
-        "scheme-d": "~>0.0.8"
+        "scheme-d": "~>0.0.11"
     }
 }

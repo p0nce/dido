@@ -9,10 +9,12 @@ class ComboBox : UIElement
 {
 public:    
 
-    this(UIContext context, dstring[] choices, string icon = null)
+    this(UIContext context, dstring[] labels, dstring[] choices, string icon = null)
     {
         super(context);
+        _labels = labels;
         _choices = choices;
+        assert(_labels.length == _choices.length);
         _select = -1;
         
         _paddingW = 8;
@@ -77,7 +79,7 @@ public:
         else
             font.setColor(200, 200, 200);
 
-        dstring textChoice = choice(_select);
+        dstring textChoice = label(_select);
         int heightOfText = font.charHeight;
         int widthOfText = font.charWidth * cast(int) textChoice.length;
         int iconX = _paddingW;
@@ -102,7 +104,6 @@ public:
     // Called when mouse move over this Element.
     override void onMouseMove(int x, int y, int dx, int dy)
     {
-        
     }
 
     // Called when mouse enter this Element.
@@ -113,6 +114,11 @@ public:
     dstring choice(int n)
     {
         return _choices[n];
+    }
+
+    dstring label(int n)
+    {
+        return _labels[n];
     }
 
 private:
@@ -126,12 +132,13 @@ private:
     int _iconHeight;
     SDL2Texture _iconImage;
 
+    dstring[] _labels;
     dstring[] _choices;
 
     int longestStringLength()
     {
         int maximum = 0;
-        foreach(ref dstring c; _choices)
+        foreach(ref dstring c; _labels)
         {
             if (maximum < cast(int) c.length)
                 maximum = cast(int) c.length;
