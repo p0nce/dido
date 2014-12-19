@@ -123,7 +123,7 @@ public:
         _engine = engine;
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {
         _engine.executeScheme("(build current-compiler current-arch current-build)");
         return true;
@@ -141,7 +141,7 @@ public:
         _engine = engine;
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {
         _engine.executeScheme("(run current-compiler current-arch current-build)");
         return true;
@@ -159,7 +159,7 @@ public:
         super(context, "Home", "dlang");
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {
         import std.process;
         browse("http://dlang.org/");
@@ -175,7 +175,7 @@ public:
         super(context, "Registry", "dub");
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {
         import std.process;
         browse("http://code.dlang.org/");

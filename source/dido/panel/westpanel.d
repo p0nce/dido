@@ -4,8 +4,10 @@ import std.path : baseName;
 
 import dido.buffer.buffer;
 import dido.gui;
+import dido.engine;
 
 import dido.panel.solutionpanel,
+       dido.panel.textarea,
        dido.panel.outputpanel;
 
 class WestPanel : UIElement
@@ -52,4 +54,26 @@ public:
 private:
     SolutionPanel _solutionPanel;
     OutputPanel _outputPanel;
+}
+
+class EastPanel : UIElement
+{
+public:
+    this(UIContext context, DidoEngine engine, TextArea textArea)
+    {
+        _textArea = textArea;
+        _engine = engine;
+        super(context);
+        addChild(textArea);
+    }
+
+    override bool onMousePreClick(int x, int y, int button, bool isDoubleClick)
+    {    
+        _engine.leaveCommandLineMode();
+        return false; // let the event bubble anyway
+    }
+
+private:
+    TextArea _textArea;
+    DidoEngine _engine;
 }

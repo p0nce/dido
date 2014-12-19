@@ -316,7 +316,7 @@ public:
         _previousCursor.setCurrent();
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {
         if (_buffer is null)
             return false;

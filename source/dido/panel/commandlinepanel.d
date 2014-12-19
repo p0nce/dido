@@ -3,6 +3,7 @@ module dido.panel.commandlinepanel;
 import gfm.math;
 import dido.gui;
 import dido.colors;
+import dido.engine;
 
 import dido.panel.textarea;
 import dido.buffer.buffer;
@@ -88,10 +89,23 @@ public:
         return _textArea;
     }
 
+    void updateEngine(DidoEngine engine)
+    {
+        _engine = engine;
+    }
+
+    override bool onMousePreClick(int x, int y, int button, bool isDoubleClick)
+    {    
+        _engine.enterCommandLineMode();
+        return false; // let the event bubble anyway
+    }
+
+
 private:
     bool _commandLineMode;
     TextArea _textArea;
     Buffer _buffer;
+    DidoEngine _engine;
 
     dstring _statusLine;
     vec3i _statusColor;

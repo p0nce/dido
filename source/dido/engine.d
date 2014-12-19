@@ -119,12 +119,23 @@ public:
             _commandLineMode = true;
             currentBuffer().clearContent();
         }
-        else
+    }
+
+    void leaveCommandLineMode()
+    {
+        if (_commandLineMode)
         {
             _commandLineMode = false;
-            currentBuffer().insertChar(':');
             currentTextArea().ensureOneVisibleSelection();
         }
+    }
+
+    void toggleCommandLineMode()
+    {
+        if (!_commandLineMode)
+            enterCommandLineMode();
+        else
+            leaveCommandLineMode();
     }
 
     void logMessage(LineType type, dstring msg)

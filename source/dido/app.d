@@ -41,7 +41,6 @@ public:
             addAllImage(_uiContext);
         }
 
-
         _textArea = new TextArea(_uiContext, 16, true, true, rgba(20, 19, 18, 255));
 
         _cmdlinePanel = new CommandLinePanel(_uiContext);
@@ -52,9 +51,12 @@ public:
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext, _engine);
         _westPanel = new WestPanel(_uiContext, _solutionPanel, _outputPanel);
+        auto eastPanel = new EastPanel(_uiContext, _engine, _textArea);
 
+        // Ugly setter to get the inter-dependent ojects live
+        _cmdlinePanel.updateEngine(_engine);
 
-        _mainPanel.addChild(_textArea);
+        _mainPanel.addChild(eastPanel);
         _mainPanel.addChild(_westPanel);
         _mainPanel.addChild(_cmdlinePanel);
         _mainPanel.addChild(_menuPanel);        
@@ -134,9 +136,7 @@ public:
                 _cmdlinePanel.updateMode(_engine.isCommandLineMode());
                 _cmdlinePanel.updateCursorState(drawCursors);
                 _textArea.setState(_engine.currentEditBuffer(), !_engine.isCommandLineMode() && drawCursors);
-
                 renderer.setViewportFull();
-
                 _mainPanel.render();
                 renderer.present();
             }
@@ -272,7 +272,7 @@ private:
                     const(char)[] s = fromStringz(event.text.text.ptr);
 
                     if (s == ":")
-                        _engine.enterCommandLineMode();
+                        _engine.toggleCommandLineMode();
                     else
                     {
                         dstring ds = to!dstring(s);

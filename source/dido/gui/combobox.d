@@ -93,7 +93,7 @@ public:
         font.renderString(textChoice, textX, 1 + (position.height - heightOfText) / 2);
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {
         if (_choices.length == 0)
             return false;

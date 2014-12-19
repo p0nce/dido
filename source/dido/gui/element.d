@@ -77,7 +77,14 @@ public:
 
     // This function is meant to be overriden.
     // It should return true if the click is handled.
-    bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
+    {
+        return false;
+    }
+
+    // This function is meant to be overriden.
+    // Happens _before_ checking for children collisions.
+    bool onMousePreClick(int x, int y, int button, bool isDoubleClick)
     {
         return false;
     }
@@ -119,9 +126,18 @@ public:
     {
     }
 
-    // to be called when the mouse clicked
-    final bool mouseClick(int x, int y, int button, bool isDoubleClick)
+    // to be called at top-level when the mouse clicked
+    bool mouseClick(int x, int y, int button, bool isDoubleClick)
     {
+        if (_position.contains(vec2i(x, y)))
+        {
+            if(onMousePreClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick))
+            {
+                _context.beginDragging(this);
+                return true;
+            }
+        }
+
         foreach(child; _children)
         {
             if (child.mouseClick(x, y, button, isDoubleClick))
@@ -130,7 +146,7 @@ public:
 
         if (_position.contains(vec2i(x, y)))
         {
-            if(onMouseClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick))
+            if(onMousePostClick(x - _position.min.x, y - _position.min.y, button, isDoubleClick))
             {
                 _context.beginDragging(this);
                 return true;

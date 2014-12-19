@@ -81,7 +81,7 @@ public:
             _progressStop = _progressStart;
     }
 
-    override bool onMouseClick(int x, int y, int button, bool isDoubleClick)
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
     {        
         float clickProgress;
         if (_vertical)
