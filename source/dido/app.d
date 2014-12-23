@@ -24,13 +24,12 @@ public:
     this(DidoConfig config, string paths[])
     {
         _sdl2 = new SDL2(null);
-        _sdlttf = new SDLTTF(_sdl2);
-        _window = new Window(_sdl2, _sdlttf);
+        _window = new Window(_sdl2);
 
         // font path is relative to application directory
         string appDir = dirName(thisExePath());
         string fontFile = buildPath(appDir, config.fontFace);
-        _font = new Font(_sdlttf, _window.renderer(), fontFile, config.fontSize);
+        _font = new Font(_sdl2, _window.renderer(), fontFile, config.fontSize);
 
         _sdl2.startTextInput();
 
@@ -78,7 +77,6 @@ public:
         _sdl2.stopTextInput();
         _font.close();
         _window.close();
-        _sdlttf.close();
         _sdl2.close();
     }
 
@@ -148,7 +146,6 @@ private:
 
     DidoEngine _engine;
     SDL2 _sdl2;
-    SDLTTF _sdlttf;
     Window _window;
 
     uint _timeSinceKeypress;

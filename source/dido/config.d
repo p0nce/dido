@@ -6,7 +6,7 @@ class DidoConfig
 public:
 
     string fontFace = "fonts/SourceCodePro-Semibold.ttf";
-    int fontSize = 15;
+    int fontSize = 20;
 
     this()
     {

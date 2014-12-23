@@ -6,7 +6,7 @@ import dido.gui.font;
 final class Window
 {
 public:
-    this(SDL2 sdl2, SDLTTF sdlttf)
+    this(SDL2 sdl2)
     {
 
         int initialWidth = 800;
