@@ -46,7 +46,12 @@ void main(string[] args)
                 foreach (file; pack["files"].array())
                 {
                     string filepath = file["path"].str();
-                    inputFiles ~= buildPath(packpath, filepath);
+
+					// only add files dido can render
+					if (filepath.endsWith(".d") || filepath.endsWith(".json") || filepath.endsWith(".res"))
+					{
+						inputFiles ~= buildPath(packpath, filepath);
+					}
                 }
             }
         }
