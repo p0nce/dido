@@ -7,9 +7,9 @@
     "stringImportPaths": ["resources"],
 
     "dependencies": {
-        "gfm:sdl2": "~>2.0.6",
-        "gfm:math": "~>2.0.6",
-        "gfm:image": "~>2.0.6",
+        "gfm:sdl2": "~>2.0",
+        "gfm:math": "~>2.0",
+        "gfm:image": "~>2.0",
         "libdparse": "~>0.1.1",
         "scheme-d": "~>0.0.11"
     }
