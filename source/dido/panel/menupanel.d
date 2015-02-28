@@ -82,7 +82,7 @@ class ArchCombo : ComboBox
     {
         _engine = engine;
         super(context, 
-              [ "x86", "x64" ], 
+              [ "32-bit", "64-bit" ], 
               [ "x86", "x86_64" ],
               "cycle");
     }
