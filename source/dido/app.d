@@ -21,7 +21,7 @@ import dido.colors;
 final class App
 {
 public:
-    this(DidoConfig config, string paths[])
+    this(DidoConfig config, string dubPaths[])
     {
         _sdl2 = new SDL2(null);
         _window = new Window(_sdl2);
@@ -46,7 +46,7 @@ public:
         _solutionPanel = new SolutionPanel(_uiContext);
         _outputPanel = new OutputPanel(_uiContext);
 
-        _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, _outputPanel, paths);
+        _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, _outputPanel, dubPaths);
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext, _engine);
         _westPanel = new WestPanel(_uiContext, _solutionPanel, _outputPanel);
@@ -122,7 +122,7 @@ public:
             // reflow
             if (_needReflow)
             {
-                _solutionPanel.updateState(_engine.buffers(), _engine.bufferSelect());
+                _solutionPanel.updateState(_engine.projects()[0].buffers(), _engine.projects()[0].bufferSelect());
                 _mainPanel.reflow(box2i(0, 0, width, height));
 
                 _needReflow = false;

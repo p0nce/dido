@@ -1,14 +1,12 @@
 module app;
 
 import std.algorithm;
+import std.file;
 import std.array;
 import std.typecons;
-import std.process;
 import std.stdio;
-import std.path;
 import std.string;
-import std.file;
-import std.json;
+import std.path;
 
 import dido.app;
 import dido.config;
@@ -87,56 +85,15 @@ void main(string[] args)
         {
             string s = baseName(dubFiles[i]);
             if (s != "dub.json" && s != "package.json")
-                throw new Exception(format("File '%s' should be named package.json or dub.json"));            
+                throw new Exception(format("File '%s' should be named package.json or dub.json"));
 
             if (!exists(dubFiles[i]))
                 throw new Exception(format("File '%s' does not exist"));
         }
 
-        string[] inputFiles;
-
-        void enumerateProject(string dubFile)
-        {
-            // change directory
-            string oldDir = getcwd();
-            chdir(dirName(dubFile));
-            scope(exit)
-                chdir(oldDir);
-
-            auto dubResult = execute(["dub", "describe", "--nodeps"]);
-
-            if (dubResult.status != 0)
-                throw new Exception(format("dub returned %s", dubResult.status));
-
-            JSONValue description = parseJSON(dubResult.output);
-
-            foreach (pack; description["packages"].array())
-            {
-                string packpath = pack["path"].str;
-
-                foreach (file; pack["files"].array())
-                {
-                    string filepath = file["path"].str();
-
-					// only add files dido can render
-					if (filepath.endsWith(".d") || filepath.endsWith(".json") || filepath.endsWith(".res"))
-					{
-						inputFiles ~= buildPath(packpath, filepath);
-					}
-                }
-            }
-        }
-
-        writefln("Found %s projects:", dubFiles.length);
-        foreach(dubFile; dubFiles)
-        {
-            writefln("- %s", dubFile);
-            enumerateProject(dubFile);
-        }
-
         DidoConfig config = new DidoConfig;
-        
-        auto app = scoped!App(config, inputFiles);
+
+        auto app = scoped!App(config, dubFiles);
         app.mainLoop();
 
     }

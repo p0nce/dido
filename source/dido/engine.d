@@ -10,6 +10,7 @@ import dido.panel;
 import dido.buffer.buffer;
 import dido.window;
 import dido.builder;
+import dido.project;
 
 import schemed;
 
@@ -22,8 +23,10 @@ private:
     OutputPanel _outputPanel;
     bool _commandLineMode;
     Buffer _bufferEdit; // current buffer in edit area
-    Buffer[] _buffers;
-    int _bufferSelect;
+    Project[] _projects;
+
+    int _projectSelect;
+    
     Window _window;
     SDL2 _sdl2;
     bool _finished;
@@ -34,22 +37,18 @@ private:
 
 public:
 
-    this(SDL2 sdl2, Window window, TextArea textArea, CommandLinePanel cmdlinePanel, OutputPanel outputPanel, string[] paths)
+    this(SDL2 sdl2, Window window, TextArea textArea, CommandLinePanel cmdlinePanel, OutputPanel outputPanel, string[] dubPaths)
     {
-        foreach (ref path; paths)
+        foreach (ref dubPath; dubPaths)
         {
-            Buffer buf = new Buffer(path);
-            _buffers ~= buf;
+            Project project = new Project(dubPath);
+            _projects ~= project;
         }
 
-        // create an empty buffer if no file provided
-        if (_buffers.length == 0)
-        {
-            Buffer buf = new Buffer;
-            _buffers ~= buf;
-        }
+        setCurrentProject(0);        
+        currentProject.setCurrentBuffer(0);
+        showCurrentBuffer();        
 
-        setCurrentBufferEdit(0);        
         _textArea = textArea;
         _outputPanel = outputPanel;
         _cmdlinePanel = cmdlinePanel;
@@ -64,26 +63,37 @@ public:
         _builder = new Builder(this);
     }
 
-    Buffer[] buffers()
+    void showCurrentBuffer()
     {
-        return _buffers;
+        setEditableBuffer(currentProject.currentBuffer);
     }
+
+    Project[] projects()
+    {
+        return _projects;
+    }    
 
     bool isCommandLineMode()
     {
         return _commandLineMode;
     }
 
-    int bufferSelect()
+    // change the current editable
+    void setEditableBuffer(Buffer buffer)
     {
-        return _bufferSelect;
+        _bufferEdit = buffer;
+        _bufferEdit.ensureLoaded();
     }
 
-    void setCurrentBufferEdit(int bufferSelect)
+    // change current edited buffer
+    void setCurrentProject(int projectSelect)
     {
-        _bufferSelect = bufferSelect;
-        _bufferEdit = _buffers[_bufferSelect];
-        _bufferEdit.ensureLoaded();
+        _projectSelect = projectSelect;
+    }
+
+    Project currentProject()
+    {
+        return _projects[_projectSelect];
     }
 
     Buffer currentEditBuffer()
@@ -274,8 +284,9 @@ public:
         {
             if (!checkArgs("n|new", args, 0, 0))
                 return makeNil();
-            _buffers ~= new Buffer;
-            setCurrentBufferEdit(cast(int) _buffers.length - 1);
+            currentProject().buffers() ~= new Buffer;
+            currentProject().setCurrentBuffer(currentProject().numBuffers() - 1);
+            showCurrentBuffer();
             greenMessage("Created new file"d);
             return makeNil();
         });
@@ -501,11 +512,34 @@ public:
             return makeNil();
         });
 
+        env.addBuiltin("next-project", (Atom[] args)
+        {
+            if (!checkArgs("next-project", args, 0, 0))
+                return makeNil();
+            setCurrentProject((_projectSelect + 1) % cast(int) _projects.length );
+            showCurrentBuffer();
+            currentTextArea().clearCamera();
+            currentTextArea().ensureOneVisibleSelection();
+            return makeNil();
+        });
+
+        env.addBuiltin("previous-project", (Atom[] args)
+        {
+            if (!checkArgs("previous-project", args, 0, 0))
+                return makeNil();
+            setCurrentProject((_projectSelect + cast(int) _projects.length - 1) % cast(int) _projects.length );
+            showCurrentBuffer();
+            currentTextArea().clearCamera();
+            currentTextArea().ensureOneVisibleSelection();
+            return makeNil();
+        });
+
         env.addBuiltin("next-buffer", (Atom[] args)
         {
             if (!checkArgs("next-buffer", args, 0, 0))
                 return makeNil();
-            setCurrentBufferEdit( (_bufferSelect + 1) % cast(int) _buffers.length );
+            currentProject.nextBuffer();
+            showCurrentBuffer();
             currentTextArea().clearCamera();
             currentTextArea().ensureOneVisibleSelection();
             return makeNil();
@@ -515,7 +549,8 @@ public:
         {
             if (!checkArgs("previous-buffer", args, 0, 0))
                 return makeNil();
-            setCurrentBufferEdit( (_bufferSelect + cast(int) _buffers.length - 1) % cast(int) _buffers.length );
+            currentProject.previousBuffer();            
+            showCurrentBuffer();
             currentTextArea().clearCamera();
             currentTextArea().ensureOneVisibleSelection();
             return makeNil();
