@@ -156,19 +156,19 @@ public:
     void executeScheme(string code, bool echo = false)
     {
         if (echo)
-            _outputPanel.log(LineOutput(LineType.COMMAND, ":"d ~ to!dstring(code)));        
+            _outputPanel.log(LineOutput(LineType.COMMAND, ":"d ~ to!dstring(code)));
 
         Atom result;
         try
-        {            
-            result = execute(code, _env); // result is discarded
+        {
+            result = Atom(execute(code, _env)); // result is discarded
         }
         catch(SchemeParseException e)
         {
             // try to execute again, but with parens appended
             try
             {
-                result = execute("(" ~ code ~ ")", _env);
+                result = Atom(execute("(" ~ code ~ ")", _env));
             }
             catch(SchemeParseException e2)
             {
@@ -249,7 +249,7 @@ public:
                 return makeNil();
             _finished = true;
             greenMessage("Bye"d);
-            return makeNil(); 
+            return makeNil();
         });
 
         env.addBuiltin("undo", (Atom[] args)
@@ -258,7 +258,7 @@ public:
                 return makeNil();
             currentBuffer().undo();
             currentTextArea().ensureOneVisibleSelection();
-            return makeNil(); 
+            return makeNil();
         });
 
         env.addBuiltin("redo", (Atom[] args)
@@ -267,7 +267,7 @@ public:
                 return makeNil();
             currentBuffer().redo();
             currentTextArea().ensureOneVisibleSelection();
-            return makeNil(); 
+            return makeNil();
         });
 
         env.addBuiltin("new", (Atom[] args)
@@ -277,7 +277,7 @@ public:
             _buffers ~= new Buffer;
             setCurrentBufferEdit(cast(int) _buffers.length - 1);
             greenMessage("Created new file"d);
-            return makeNil(); 
+            return makeNil();
         });
 
         env.addBuiltin("clean", (Atom[] args)
@@ -336,9 +336,9 @@ public:
             if (!checkArgs("build", args, 3, 3))
                 return makeNil();
 
-            string compiler = schemed.toString(args[0]);
-            string arch = schemed.toString(args[1]);
-            string build = schemed.toString(args[2]);
+            string compiler = args[0].toString();
+            string arch = args[1].toString();
+            string build = args[2].toString();
             _builder.startBuild(compiler, arch, build);
             return makeNil();
         });
@@ -348,9 +348,9 @@ public:
             if (!checkArgs("run", args, 3, 3))
                 return makeNil();
 
-            string compiler = schemed.toString(args[0]);
-            string arch = schemed.toString(args[1]);
-            string build = schemed.toString(args[2]);
+            string compiler = args[0].toString();
+            string arch = args[1].toString();
+            string build = args[2].toString();
             _builder.startRun(compiler, arch, build);
             return makeNil();
         });
@@ -403,9 +403,9 @@ public:
         env.addBuiltin("move-vertical", (Atom[] args)
         {
             if (!checkArgs("move-vertical", args, 2, 2))
-                return makeNil();           
-            int displacement = to!int(toDouble(args[0]));
-            bool shift = toBool(args[1]);
+                return makeNil();
+            int displacement = to!int(args[0].toDouble);
+            bool shift = args[1].toBool;
             currentBuffer.moveSelectionVertical(displacement, shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -414,9 +414,9 @@ public:
         env.addBuiltin("move-horizontal", (Atom[] args)
         {
             if (!checkArgs("move-horizontal", args, 2, 2))
-                return makeNil();           
-            int displacement = to!int(toDouble(args[0]));
-            bool shift = toBool(args[1]);
+                return makeNil();
+            int displacement = to!int(args[0].toDouble);
+            bool shift = args[1].toBool;
             currentBuffer.moveSelectionHorizontal(displacement, shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -425,8 +425,8 @@ public:
         env.addBuiltin("move-buffer-start", (Atom[] args)
         {
             if (!checkArgs("move-buffer-start", args, 1, 1))
-                return makeNil();           
-            bool shift = toBool(args[0]);
+                return makeNil();
+            bool shift = args[0].toBool;
             currentBuffer.moveSelectionToBufferStart(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -435,8 +435,8 @@ public:
         env.addBuiltin("move-buffer-end", (Atom[] args)
         {
             if (!checkArgs("move-buffer-end", args, 1, 1))
-                return makeNil();           
-            bool shift = toBool(args[0]);
+                return makeNil();
+            bool shift = args[0].toBool;
             currentBuffer.moveSelectionToBufferEnd(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -445,8 +445,8 @@ public:
         env.addBuiltin("move-word-left", (Atom[] args)
         {
             if (!checkArgs("move-word-left", args, 1, 1))
-                return makeNil();           
-            bool shift = toBool(args[0]);
+                return makeNil();
+            bool shift = args[0].toBool;
             currentBuffer.moveSelectionWord(-1, shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -455,8 +455,8 @@ public:
         env.addBuiltin("move-word-right", (Atom[] args)
         {
             if (!checkArgs("move-word-right", args, 1, 1))
-                return makeNil();           
-            bool shift = toBool(args[0]);
+                return makeNil();
+            bool shift = args[0].toBool;
             currentBuffer.moveSelectionWord(1, shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -465,8 +465,8 @@ public:
         env.addBuiltin("move-line-start", (Atom[] args)
         {
             if (!checkArgs("move-line-start", args, 1, 1))
-                return makeNil();           
-            bool shift = toBool(args[0]);
+                return makeNil();
+            bool shift = args[0].toBool;
             currentBuffer.moveToLineBegin(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -475,8 +475,8 @@ public:
         env.addBuiltin("move-line-end", (Atom[] args)
         {
             if (!checkArgs("move-line-end", args, 1, 1))
-                return makeNil();           
-            bool shift = toBool(args[0]);
+                return makeNil();
+            bool shift = args[0].toBool;
             currentBuffer.moveToLineEnd(shift);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -486,7 +486,7 @@ public:
         {
             if (!checkArgs("extend-selection-vertical", args, 1, 1))
                 return makeNil();
-            int displacement = to!int(toDouble(args[0]));
+            int displacement = to!int(args[0].toDouble);
             currentBuffer.extendSelectionVertical(displacement);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -502,7 +502,7 @@ public:
         });
 
         env.addBuiltin("next-buffer", (Atom[] args)
-        { 
+        {
             if (!checkArgs("next-buffer", args, 0, 0))
                 return makeNil();
             setCurrentBufferEdit( (_bufferSelect + 1) % cast(int) _buffers.length );
@@ -512,7 +512,7 @@ public:
         });
 
         env.addBuiltin("previous-buffer", (Atom[] args)
-        { 
+        {
             if (!checkArgs("previous-buffer", args, 0, 0))
                 return makeNil();
             setCurrentBufferEdit( (_bufferSelect + cast(int) _buffers.length - 1) % cast(int) _buffers.length );
@@ -522,7 +522,7 @@ public:
         });
 
         env.addBuiltin("toggle-fullscreen", (Atom[] args)
-        { 
+        {
             if (!checkArgs("toggle-fullscreen", args, 0, 0))
                 return makeNil();
             _window.toggleFullscreen();
@@ -531,7 +531,7 @@ public:
         });
 
         env.addBuiltin("escape", (Atom[] args)
-        { 
+        {
             if (!checkArgs("escape", args, 0, 0))
                 return makeNil();
             if (_commandLineMode)
@@ -545,7 +545,7 @@ public:
         });
 
         env.addBuiltin("indent", (Atom[] args)
-        { 
+        {
             if (!checkArgs("indent", args, 0, 0))
                 return makeNil();
             currentBuffer.insertTab();
@@ -557,7 +557,7 @@ public:
         {
             if (!checkArgs("delete", args, 1, 1))
                 return makeNil();
-            bool isBackspace = toBool(args[0]);
+            bool isBackspace = args[0].toBool;
             currentBuffer.deleteSelection(isBackspace);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
@@ -567,7 +567,7 @@ public:
         {
             if (!checkArgs("insert-char", args, 1, 1))
                 return makeNil();
-            dchar ch = to!dchar(to!int(toDouble(args[0])));
+            dchar ch = to!dchar(to!int(args[0].toDouble));
             currentBuffer.insertChar(ch);
             currentTextArea.ensureOneVisibleSelection();
             return makeNil();
