@@ -12,23 +12,29 @@ import dido.buffer.buffer;
 class Project
 {
 private:
-    string _absPath;
+    string _absPath; // path of dub.json
 
+    string _mainPackage;
     
     Buffer[] _buffers;
     int _bufferSelect;
+
+    ProjectPackage[] _packages;
 
 public:
     this(string absPath)
     {
         _absPath = absPath;
-        string[] paths = enumerateFiles();
+        getDubDescription();
 
-        foreach (ref path; paths)
+        foreach (ProjectPackage projectPackage; _packages)
         {
-            Buffer buf = new Buffer(path);
-            _buffers ~= buf;
-        }
+            foreach (ref path; projectPackage.files)
+            {
+                Buffer buf = new Buffer(path);
+                _buffers ~= buf;
+            }
+        }        
 
         // create an empty buffer if no file provided
         if (_buffers.length == 0)
@@ -81,10 +87,10 @@ public:
         return _buffers[_bufferSelect];
     }
 
-    string[] enumerateFiles()
-    {
-        string[] inputFiles;
+private:
 
+    void getDubDescription()
+    {      
         // change directory
         string oldDir = getcwd();
         chdir(dirName(_absPath));
@@ -98,9 +104,14 @@ public:
 
         JSONValue description = parseJSON(dubResult.output);
 
+        _mainPackage = description["mainPackage"].str;
+
         foreach (pack; description["packages"].array())
         {
-            string packpath = pack["path"].str;
+            ProjectPackage projectPackage = new ProjectPackage;
+
+            projectPackage.name = pack["name"].str;
+            projectPackage.absPath = pack["path"].str;
 
             foreach (file; pack["files"].array())
             {
@@ -109,11 +120,19 @@ public:
                 // only add files dido can render
                 if (filepath.endsWith(".d") || filepath.endsWith(".json") || filepath.endsWith(".res"))
                 {
-                    inputFiles ~= buildPath(packpath, filepath);
+                    projectPackage.files ~= buildPath(projectPackage.absPath, filepath);
                 }
             }
-        }
 
-        return inputFiles;
+            _packages ~= projectPackage;
+        }
     }
+}
+
+
+class ProjectPackage
+{
+    string absPath;
+    string name;
+    string[] files;
 }

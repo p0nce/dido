@@ -42,11 +42,12 @@ public:
 
         _textArea = new TextArea(_uiContext, 16, true, true, rgba(20, 19, 18, 255));
 
-        _cmdlinePanel = new CommandLinePanel(_uiContext);
-        _solutionPanel = new SolutionPanel(_uiContext);
+        _cmdlinePanel = new CommandLinePanel(_uiContext);        
         _outputPanel = new OutputPanel(_uiContext);
 
         _engine = new DidoEngine(_sdl2, _window, _textArea, _cmdlinePanel, _outputPanel, dubPaths);
+
+        _solutionPanel = new SolutionPanel(_uiContext, _engine.projects());
         _mainPanel = new MainPanel(_uiContext);
         _menuPanel = new MenuPanel(_uiContext, _engine);
         _westPanel = new WestPanel(_uiContext, _solutionPanel, _outputPanel);
@@ -54,7 +55,7 @@ public:
 
         // Ugly setter to get the inter-dependent ojects live
         _cmdlinePanel.updateEngine(_engine);
-
+        
         _mainPanel.addChild(eastPanel);
         _mainPanel.addChild(_westPanel);
         _mainPanel.addChild(_cmdlinePanel);
@@ -122,7 +123,7 @@ public:
             // reflow
             if (_needReflow)
             {
-                _solutionPanel.updateState(_engine.projects()[0].buffers(), _engine.projects()[0].bufferSelect());
+                _solutionPanel.updateState(_engine.projectSelect);
                 _mainPanel.reflow(box2i(0, 0, width, height));
 
                 _needReflow = false;

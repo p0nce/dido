@@ -91,6 +91,11 @@ public:
         _projectSelect = projectSelect;
     }
 
+    int projectSelect()
+    {
+        return _projectSelect;
+    }
+
     Project currentProject()
     {
         return _projects[_projectSelect];
