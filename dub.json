@@ -10,7 +10,7 @@
         "gfm:sdl2": "~>2.0",
         "gfm:math": "~>2.0",
         "gfm:image": "~>2.0",
-        "libdparse": "~>0.1.1",
+        "libdparse": "~>0.2",
         "scheme-d": "~>1.0"
     }
 }

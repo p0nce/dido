@@ -591,7 +591,7 @@ int stbtt_GetGlyphShape(const stbtt_fontinfo *info, int glyph_index, stbtt_verte
          int comp_num_verts = 0, i;
          stbtt_vertex* comp_verts = null,
                        tmp = null;
-         float mtx[6] = [1,0,0,1,0,0];
+         float[6] mtx = [1,0,0,1,0,0];
          float m, n;
 
          flags = ttSHORT(comp); comp+=2;
@@ -904,7 +904,7 @@ void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e, int n,
    int y,j=0;
    int max_weight = (255 / vsubsample);  // weight per vertical scanline
    int s; // vertical subsample index
-   ubyte scanline_data[512];
+   ubyte[512] scanline_data;
    ubyte* scanline;
 
    if (result.w > 512)

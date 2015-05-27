@@ -21,7 +21,7 @@ import dido.colors;
 final class App
 {
 public:
-    this(DidoConfig config, string dubPaths[])
+    this(DidoConfig config, string[] dubPaths)
     {
         _sdl2 = new SDL2(null);
         _window = new Window(_sdl2);

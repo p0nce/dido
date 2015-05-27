@@ -75,8 +75,8 @@ public:
 
     void setProgress(float progressStart, float progressStop)
     {
-        _progressStart = clamp!float(progressStart, 0.0f, 1.0f);
-        _progressStop = clamp!float(progressStop, 0.0f, 1.0f);
+        _progressStart = gfm.math.clamp!float(progressStart, 0.0f, 1.0f);
+        _progressStop = gfm.math.clamp!float(progressStop, 0.0f, 1.0f);
         if (_progressStop < _progressStart)
             _progressStop = _progressStart;
     }
