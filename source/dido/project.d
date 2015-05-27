@@ -97,7 +97,7 @@ private:
         scope(exit)
             chdir(oldDir);
 
-        auto dubResult = execute(["dub", "describe", "--nodeps"]);
+        auto dubResult = execute(["dub", "describe"]);
 
         if (dubResult.status != 0)
             throw new Exception(format("dub returned %s", dubResult.status));
