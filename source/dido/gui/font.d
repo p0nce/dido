@@ -2,7 +2,7 @@ module dido.gui.font;
 
 import std.conv;
 import gfm.sdl2;
-import dido.gui.stb_truetype;
+import gfm.image;
 
 final class Font
 {

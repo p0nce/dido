@@ -6,5 +6,3 @@ public import dido.gui.font;
 public import dido.gui.scrollbar;
 public import dido.gui.combobox;
 public import dido.gui.button;
-public import dido.gui.stb_truetype;
-
