@@ -9,16 +9,17 @@ Status: early.
 - Multiple cursors editing
 - dido contains a small GUI package built on top of SDL2 renderers
 - portable graphics, SDL 2.x is the only dependency: https://www.libsdl.org/
+- minimal DUB integration
 
 ## Current limitations
 
 - currently not configurable
-- DUB integration is minimal
+- no file browser
 - Multiple views not supported
 - only UTF-8 files support (load and save)
-- see Issues
 - command language is very incomplete
 - currently no syntax highlighting
+- see Issues for more limitations
 
 ## Inspiration
 
@@ -32,5 +33,5 @@ https://github.com/mawww/kakoune
 ## Compiling
 
 - Build with DUB (a 2.066+ front-end is required)
-- Use recent SDL and SDL_ttf binaries (2.x)
+- Use recent SDL 2.x binaries
 
