@@ -8,7 +8,7 @@ Status: early.
 
 - Multiple cursors editing
 - dido contains a small GUI package built on top of SDL2 renderers
-- portable graphics, SDL and SDL_ttf are the only dependencies: https://www.libsdl.org/
+- portable graphics, SDL 2.x is the only dependency: https://www.libsdl.org/
 
 ## Current limitations
 
