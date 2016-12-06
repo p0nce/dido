@@ -372,6 +372,18 @@ public:
             return makeNil();
         });
 
+        env.addBuiltin("test", (Atom[] args)
+        {
+            if (!checkArgs("test", args, 3, 3))
+                return makeNil();
+
+            string compiler = args[0].toString();
+            string arch = args[1].toString();
+            string build = args[2].toString();
+            _builder.startTest(compiler, arch, build);
+            return makeNil();
+        });
+
         env.addBuiltin("copy", (Atom[] args)
         {
             if (!checkArgs("copy", args, 0, 0))

@@ -14,6 +14,7 @@ class MenuPanel : UIElement
 
         addChild(new BuildButton(context, engine));
         addChild(new RunButton(context, engine));
+        addChild(new TestButton(context, engine));
 
         addChild(new CompilerCombo(context, engine));
         addChild(new ArchCombo(context, engine));
@@ -62,9 +63,9 @@ class BuildCombo : ComboBox
     this(UIContext context, DidoEngine engine)
     {
         _engine = engine;
-        super(context, 
-              [ "debug", "plain", "release", "nobounds", "unittest", "profile", "docs", "ddox", "cov", "test-cov" ], 
-              [ "debug", "plain", "release", "release-nobounds", "unittest", "profile", "docs", "ddox", "cov", "unittest-cov" ], "cycle");        
+        super(context,
+              [ "debug", "release", "nobounds" ],
+              [ "debug", "release", "release-nobounds"], "cycle");
     }
 
     override void onChoice(int n)
@@ -81,8 +82,8 @@ class ArchCombo : ComboBox
     this(UIContext context, DidoEngine engine)
     {
         _engine = engine;
-        super(context, 
-              [ "32-bit", "64-bit" ], 
+        super(context,
+              [ "32-bit", "64-bit" ],
               [ "x86", "x86_64" ],
               "cycle");
     }
@@ -101,14 +102,14 @@ class CompilerCombo : ComboBox
     this(UIContext context, DidoEngine engine)
     {
         _engine = engine;
-        super(context, 
-             [ "DMD", "GDC", "LDC" ], 
-             [ "DMD", "GDC", "LDC" ], "cycle");
+        super(context,
+             [ "DMD", "LDC" ],
+             [ "DMD", "LDC" ], "cycle");
     }
 
     override void onChoice(int n)
     {
-        _engine.executeScheme("(define current-compiler \"" ~ to!string(choice(n)) ~ "\")");        
+        _engine.executeScheme("(define current-compiler \"" ~ to!string(choice(n)) ~ "\")");
     }
 private:
     DidoEngine _engine;
@@ -120,6 +121,24 @@ public:
     this(UIContext context, DidoEngine engine)
     {
         super(context, "Build", "build");
+        _engine = engine;
+    }
+
+    override bool onMousePostClick(int x, int y, int button, bool isDoubleClick)
+    {
+        _engine.executeScheme("(build current-compiler current-arch current-build)");
+        return true;
+    }
+private:
+    DidoEngine _engine;
+}
+
+class TestButton : UIButton
+{
+public:
+    this(UIContext context, DidoEngine engine)
+    {
+        super(context, "Test", "test");
         _engine = engine;
     }
 

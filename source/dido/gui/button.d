@@ -7,13 +7,13 @@ import dido.gui;
 
 class UIButton : UIElement
 {
-public:    
+public:
 
     this(UIContext context, dstring label, string icon = null)
     {
         super(context);
         _label = label;
-        
+
         _paddingW = 8;
         _paddingH = 4;
         _icon = icon;
@@ -35,7 +35,7 @@ public:
         if (_icon !is null)
             width += marginIcon + _iconWidth;
         int height = 2 * _paddingH + font.charHeight;
-        _position = box2i(availableSpace.min.x, availableSpace.min.y, availableSpace.min.x + width, availableSpace.min.y + height);        
+        _position = box2i(availableSpace.min.x, availableSpace.min.y, availableSpace.min.x + width, availableSpace.min.y + height);
     }
 
     override void preRender(SDL2Renderer renderer)

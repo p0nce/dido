@@ -26,7 +26,7 @@ public:
             return;
 
         _state = State.building;
-        _buildThread = new BuildThread(this, false, compiler, arch, build);
+        _buildThread = new BuildThread(this, BuildAction.build, compiler, arch, build);
         _buildThread.start();
     }
 
@@ -37,7 +37,18 @@ public:
             return;
 
         _state = State.running;
-        _buildThread = new BuildThread(this, true, compiler, arch, build);
+        _buildThread = new BuildThread(this, BuildAction.run, compiler, arch, build);
+        _buildThread.start();
+    }
+
+    void startTest(string compiler, string arch, string build)
+    {
+        stopBuild();
+        if (_state != State.initial)
+            return;
+
+        _state = State.building;
+        _buildThread = new BuildThread(this, BuildAction.test, compiler, arch, build);
         _buildThread.start();
     }
 
@@ -48,7 +59,7 @@ public:
 
         _state = State.initial;
         _buildThread.signalStop();
-        _buildThread.join();        
+        _buildThread.join();
     }
 
 private:
@@ -59,18 +70,24 @@ private:
         running
     }
     shared State _state = State.initial;
-    
+
     DidoEngine _engine;
 
     BuildThread _buildThread;
 }
 
+enum BuildAction
+{
+    build,
+    test,
+    run
+}
 
 class BuildThread : Thread
 {
-    this(Builder builder, bool andRun, string compiler, string arch, string build)
+    this(Builder builder, BuildAction action, string compiler, string arch, string build)
     {
-        _andRun = andRun;
+        _action = action;
         _builder = builder;
 
         _compiler = compiler;
@@ -87,7 +104,7 @@ class BuildThread : Thread
 
 private:
     Builder _builder;
-    bool _andRun;
+    BuildAction _action;
     bool _stop = false;
     string _compiler;
     string _arch;
@@ -95,7 +112,13 @@ private:
 
     void run()
     {
-        string command = _andRun ? "run" : "build";
+        string command;
+        final switch(_action) with (BuildAction)
+        {
+            case BuildAction.run: command = "run"; break;
+            case BuildAction.build: command = "build"; break;
+            case BuildAction.test: command = "test"; break;
+        }
 
         auto commands = ["dub", command, "--compiler", _compiler, "--arch", _arch, "--build", _build];
         string asOneLine = "$" ~ std.array.join(commands, " ");
@@ -118,7 +141,7 @@ private:
 
         // pipe stdout to output window
         foreach (line; pipes.stdout.byLine)
-        {            
+        {
             synchronized // polling exit condition
             {
                 if (_stop)
@@ -131,7 +154,7 @@ private:
         }
 
         // pipe stderr to output window
-        foreach (line; pipes.stderr.byLine) 
+        foreach (line; pipes.stderr.byLine)
         {
             synchronized // polling exit condition
             {
@@ -142,6 +165,6 @@ private:
                 }
             }
             _builder._engine.logMessage(LineType.EXTERNAL, to!dstring(line));
-        }        
+        }
     }
 }
