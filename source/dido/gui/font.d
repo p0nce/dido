@@ -1,8 +1,10 @@
 module dido.gui.font;
 
+import std.file;
 import std.conv;
 import gfm.sdl2;
-import gfm.image;
+import dido.pngload;
+import dido.stb_truetype;
 
 final class Font
 {
@@ -10,8 +12,8 @@ public:
     this(SDL2 sdl2, SDL2Renderer renderer, string fontface, int ptSize)
     {
         _sdl2 = sdl2;
-        _renderer = renderer;  
-        
+        _renderer = renderer;
+
 
         _fontData = cast(ubyte[])(std.file.read(fontface));
         if (0 == stbtt_InitFont(&_font, _fontData.ptr, stbtt_GetFontOffsetForIndex(_fontData.ptr, 0)))
@@ -23,7 +25,7 @@ public:
 
         int ax;
         stbtt_GetCodepointHMetrics(&_font, 'A', &ax, null);
-        _charWidth = cast(int)(0.5 + (ax * _scaleFactor));        
+        _charWidth = cast(int)(0.5 + (ax * _scaleFactor));
         _charHeight = cast(int)(0.5 + (_fontAscent - _fontDescent + _fontLineGap) * _scaleFactor);
 
         _initialized = true;
@@ -36,17 +38,12 @@ public:
 
     ~this()
     {
-        close();
-    }
-
-    void close()
-    {
         if (_initialized)
         {
             foreach (tex; _glyphCache)
-                tex.close();
+                tex.destroy();
             foreach (tex; _surfaceCache)
-                tex.close();
+                tex.destroy();
             _initialized = false;
         }
     }
@@ -179,9 +176,9 @@ private:
     int _r, _g, _b, _a;
 
     SDL2 _sdl2;
-    
+
     SDL2Renderer _renderer;
-    stbtt_fontinfo _font;    
+    stbtt_fontinfo _font;
     ubyte[] _fontData;
     int _fontAscent, _fontDescent, _fontLineGap;
 

@@ -15,7 +15,7 @@ private:
     string _absPath; // path of dub.json
 
     string _mainPackage;
-    
+
     Buffer[] _buffers;
     int _bufferSelect;
 
@@ -34,7 +34,7 @@ public:
                 Buffer buf = new Buffer(path);
                 _buffers ~= buf;
             }
-        }        
+        }
 
         // create an empty buffer if no file provided
         if (_buffers.length == 0)
@@ -90,7 +90,7 @@ public:
 private:
 
     void getDubDescription()
-    {      
+    {
         // change directory
         string oldDir = getcwd();
         chdir(dirName(_absPath));
@@ -104,7 +104,14 @@ private:
 
         JSONValue description = parseJSON(dubResult.output);
 
-        _mainPackage = description["mainPackage"].str;
+        try
+        {
+            _mainPackage = description["mainPackage"].str;
+        }
+        catch(Exception e)
+        {
+            _mainPackage = description["rootPackage"].str;
+        }
 
         foreach (pack; description["packages"].array())
         {

@@ -1,8 +1,9 @@
 module dido.gui.context;
 
+import core.stdc.stdlib;
 public import gfm.math;
 public import gfm.sdl2;
-import gfm.image.stb_image;
+import dido.pngload;
 public import dido.gui.font;
 import std.file;
 
@@ -15,18 +16,18 @@ public:
     {
         renderer = renderer_;
         font = font_;
-        
-        
+
+
         sdl2 = sdl2_;
     }
 
-    void close()
+    ~this()
     {
         foreach(t; _textures)
-            t.close();
+            t.destroy();
 
         foreach(s; _surfaces)
-            s.close();
+            s.destroy();
     }
 
     void addImage(string name, immutable(ubyte[]) data)
@@ -79,15 +80,16 @@ private:
     {
         void[] data = cast(void[])imageData;
         int width, height, components;
-        ubyte* decoded = stbi_load_from_memory(data, width, height, components, 4);
-        scope(exit) stbi_image_free(decoded);
+
+        ubyte* decoded = stbi_load_png_from_memory(data, width, height, components, 4);
+        scope(exit) free(decoded);
 
         // stb_image guarantees that ouput will always have 4 components when asked
         SDL2Surface loaded = new SDL2Surface(sdl2, decoded, width, height, 32, 4 * width,
                                              0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
         SDL2Surface cloned = loaded.clone(); // to gain pixel ownership
-        loaded.close(); // scoped! strangely didn't worked out
+        loaded.destroy();
         return cloned;
     }
 }

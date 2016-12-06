@@ -1,6 +1,7 @@
 module dido.engine;
 
 import std.process;
+import std.conv;
 import std.string;
 import std.concurrency;
 
@@ -26,7 +27,7 @@ private:
     Project[] _projects;
 
     int _projectSelect;
-    
+
     Window _window;
     SDL2 _sdl2;
     bool _finished;
@@ -45,9 +46,9 @@ public:
             _projects ~= project;
         }
 
-        setCurrentProject(0);        
+        setCurrentProject(0);
         currentProject.setCurrentBuffer(0);
-        showCurrentBuffer();        
+        showCurrentBuffer();
 
         _textArea = textArea;
         _outputPanel = outputPanel;
@@ -71,7 +72,7 @@ public:
     Project[] projects()
     {
         return _projects;
-    }    
+    }
 
     bool isCommandLineMode()
     {
@@ -554,7 +555,7 @@ public:
         {
             if (!checkArgs("previous-buffer", args, 0, 0))
                 return makeNil();
-            currentProject.previousBuffer();            
+            currentProject.previousBuffer();
             showCurrentBuffer();
             currentTextArea().clearCamera();
             currentTextArea().ensureOneVisibleSelection();

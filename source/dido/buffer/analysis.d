@@ -1,8 +1,8 @@
 module dido.buffer.analysis;
 
-import std.d.lexer;
+//import std.d.lexer;
 
-
+/+
 class Analysis
 {
     this(string filename, string source)
@@ -20,4 +20,4 @@ private:
     string _filename;
     StringCache _stringCache;
     const(Token)[] _tokens;
-}
+}+/

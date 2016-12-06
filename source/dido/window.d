@@ -12,7 +12,7 @@ public:
         int initialWidth = 800;
         int initialHeight = 700;
 
-        _window = new SDL2Window(sdl2, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, initialWidth, initialHeight, 
+        _window = new SDL2Window(sdl2, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, initialWidth, initialHeight,
                                  SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
         _window.setTitle("Dido v0.0.1");
@@ -27,15 +27,10 @@ public:
 
     ~this()
     {
-        close();
-    }
-
-    void close()
-    {
         if (_initialized)
         {
-             _renderer.close();
-            _window.close();
+             _renderer.destroy();
+            _window.destroy();
             _initialized = false;
         }
     }
