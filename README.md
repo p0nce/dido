@@ -2,7 +2,7 @@ Dido is a specific text editor for the D language.
 
 ![alt tag](https://raw.github.com/p0nce/dido/master/screenshots/dido.jpg)
 
-Status: early.
+Status: Design failure. Multiple problems were met. Better start anew.
 
 ## What's inside
 
